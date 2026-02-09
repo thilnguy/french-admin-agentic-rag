@@ -1,9 +1,7 @@
-import antigravity as ag
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-@ag.skill(name="admin_translator")
 def translate_admin_text(text: str, target_language: str):
     """
     Translates French administrative text into English or Vietnamese, 

@@ -1,0 +1,11 @@
+.env
+.venv
+__pycache__/
+*.py[cod]
+infrastructure/data/
+infrastructure/qdrant_storage/
+.DS_Store
+uv.lock
+# Large model files if any
+*.bin
+*.safetensors

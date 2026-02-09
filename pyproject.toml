@@ -16,4 +16,8 @@ dependencies = [
     "datasets",
     "langchain-huggingface",
     "langchain-openai",
+    "langchain-qdrant",
+    "redis",
+    "python-multipart",
+    "sentence-transformers",
 ]

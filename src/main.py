@@ -1,8 +1,8 @@
 import os
-import antigravity as ag
 from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File
 from src.agents.orchestrator import AdminOrchestrator
+from skills.polyglot_voice.main import speech_to_text, text_to_speech
 
 load_dotenv()
 
@@ -26,22 +26,18 @@ async def voice_chat(audio: UploadFile = File(...), language: str = "fr"):
     """
     Multimodal endpoint: Speech -> Text -> Agent -> Answer -> Speech.
     """
-    stt = ag.get_skill("polyglot_voice_stt")
-    tts = ag.get_skill("polyglot_voice_tts")
-    
-    # Save temp audio
+    # 1. STT
     temp_path = f"temp_{audio.filename}"
     with open(temp_path, "wb") as f:
         f.write(await audio.read())
         
-    # 1. STT
-    user_text = stt(audio_path=temp_path, language=language)
+    user_text = speech_to_text(audio_path=temp_path, language=language)
     
     # 2. Agent Logic
     answer_text = orchestrator.handle_query(user_text, language)
     
     # 3. TTS
-    audio_response_path = tts(text=answer_text, language=language)
+    audio_response_path = text_to_speech(text=answer_text, language=language)
     
     return {
         "user_text": user_text,
@@ -51,6 +47,4 @@ async def voice_chat(audio: UploadFile = File(...), language: str = "fr"):
 
 if __name__ == "__main__":
     import uvicorn
-    # Initialize Antigravity Engine
-    ag.init(config_path=".antigravity/settings.yaml")
     uvicorn.run(app, host="0.0.0.0", port=8000)

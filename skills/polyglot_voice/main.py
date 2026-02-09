@@ -1,6 +1,3 @@
-import antigravity as ag
-
-@ag.skill(name="polyglot_voice_stt")
 def speech_to_text(audio_path: str, language: str = "fr"):
     """
     Converts audio input to text using OpenAI Whisper.
@@ -16,7 +13,6 @@ def speech_to_text(audio_path: str, language: str = "fr"):
         )
     return transcript.text
 
-@ag.skill(name="polyglot_voice_tts")
 def text_to_speech(text: str, language: str = "fr"):
     """
     Converts informative text to speech for the user.
