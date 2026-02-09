@@ -78,7 +78,7 @@ class AdminOrchestrator:
         # Step 2: Formulate answer (with Chat History)
         system_prompt = """You are a French Administrative Expert. 
         Your task is to answer the user's question accurately based on the provided CONTEXT and our CONVERSATION HISTORY.
-        - If the user asks about themselves (e.g., name), refer to HISTORY.
+        - If the user asks about themselves (e.g., name, city, location, or personal context), refer to HISTORY.
         - If the user asks about administration, prioritize the CONTEXT.
         Write your internal answer strictly in French. Do not include meta-talk about languages."""
         
