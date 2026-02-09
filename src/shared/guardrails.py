@@ -2,12 +2,13 @@ from typing import Tuple
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from src.utils.logger import logger
 
 class GuardrailManager:
     def __init__(self):
         self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-    def validate_topic(self, query: str, history: list = None) -> Tuple[bool, str]:
+    async def validate_topic(self, query: str, history: list = None) -> Tuple[bool, str]:
         """
         Ensures the query is related to French administration or law, 
         considering conversation context for follow-up questions.
@@ -36,14 +37,14 @@ class GuardrailManager:
         ])
         
         chain = prompt | self.llm | StrOutputParser()
-        response = chain.invoke({"query": query, "history": history_text})
-        print(f"DEBUG: Guardrail Response: {response}")
+        response = await chain.ainvoke({"query": query, "history": history_text})
+        logger.debug(f"Guardrail Response: {response}")
         
         if "APPROVED" in response:
             return True, ""
         return False, response.replace("REJECTED:", "").strip()
 
-    def check_hallucination(self, context: str, answer: str, query: str = "", history: list = None) -> bool:
+    async def check_hallucination(self, context: str, answer: str, query: str = "", history: list = None) -> bool:
         """
         Checks if the answer is grounded in the context, history, or the current query.
         """
@@ -51,9 +52,8 @@ class GuardrailManager:
         if history:
             history_text = "\n".join([f"{getattr(msg, 'type', msg.__class__.__name__)}: {msg.content}" for msg in history[-6:]])
 
-        print(f"DEBUG: Hallucination Check - Query: {query}")
-        print(f"DEBUG: Hallucination Check - Answer Snippet: {answer[:100]}...")
-
+        logger.debug(f"Hallucination Check - Query: {query}")
+        
         prompt = ChatPromptTemplate.from_messages([
             ("system", """You are a factual verifier for Marianne AI. 
             An answer is SAFE if it is supported by:
@@ -69,14 +69,14 @@ class GuardrailManager:
         ])
         
         chain = prompt | self.llm | StrOutputParser()
-        response = chain.invoke({"context": context, "answer": answer, "query": query, "history": history_text})
-        print(f"DEBUG: Hallucination Response: {response}")
+        response = await chain.ainvoke({"context": context, "answer": answer, "query": query, "history": history_text})
+        logger.debug(f"Hallucination Response: {response}")
         
         return "SAFE" in response
 
     def add_disclaimer(self, answer: str, language: str = "fr") -> str:
         """
-        Adds a mandatory legal disclaimer.
+        Adds a mandatory legal disclaimer. (Sync is fine here as it's just string manip)
         """
         disclaimers = {
             "fr": "\n\n*Note : Ces thông tin chỉ mang tính chất tham khảo. Pour toute décision officielle, veuillez consulter le site service-public.fr hoặc liên hệ cơ quan ban ngành có thẩm quyền.*",

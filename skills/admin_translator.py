@@ -2,7 +2,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-def translate_admin_text(text: str, target_language: str):
+async def translate_admin_text(text: str, target_language: str):
     """
     Translates French administrative text into English or Vietnamese, 
     ensuring technical terms (e.g., Prefecture, Titre de séjour) are correctly contextually translated.
@@ -23,8 +23,9 @@ def translate_admin_text(text: str, target_language: str):
     ])
     
     chain = prompt | llm | StrOutputParser()
-    return chain.invoke({"text": text, "target_language": target_language})
+    return await chain.ainvoke({"text": text, "target_language": target_language})
 
 if __name__ == "__main__":
-    # Example: print(translate_admin_text("Demande de titre de séjour à la préfecture", "Vietnamese"))
+    import asyncio
+    # Example: asyncio.run(translate_admin_text("Demande de titre de séjour à la préfecture", "Vietnamese"))
     pass
