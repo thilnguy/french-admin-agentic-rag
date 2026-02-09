@@ -1,6 +1,6 @@
 import os
 from ragas import evaluate
-from ragas.metrics import faithfulness, answer_relevancy, context_precision
+from ragas.metrics import faithfulness, answer_relevancy
 from datasets import Dataset
 from src.agents.orchestrator import AdminOrchestrator
 from dotenv import load_dotenv
