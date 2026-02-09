@@ -85,9 +85,9 @@ if __name__ == "__main__":
         embedding_col="embeddings_bge-m3"
     )
     
-    # Ingest LEGI (for law reference) - Optional if you want to skip 1.4M rows for now
-    # ingest_agent_public_dataset(
-    #     dataset_id="AgentPublic/legi",
-    #     collection_name="legi_legislation",
-    #     embedding_col="embeddings_bge-m3"
-    # )
+    # Ingest LEGI (for law reference)
+    ingest_agent_public_dataset(
+        dataset_id="AgentPublic/legi",
+        collection_name="legi_legislation",
+        embedding_col="embeddings_bge-m3"
+    )

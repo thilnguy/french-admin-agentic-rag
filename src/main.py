@@ -1,28 +1,40 @@
 import os
+import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File
 from src.agents.orchestrator import AdminOrchestrator
 from skills.polyglot_voice.main import speech_to_text, text_to_speech
 
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 
-app = FastAPI(title="French Administrative Agent API")
+app = FastAPI(title="Marianne AI - French Admin Agent API")
 orchestrator = AdminOrchestrator()
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "version": "1.0.0"}
 
 @app.get("/")
 def read_root():
     return {"status": "French Admin Agent is online"}
 
 @app.post("/chat")
-def chat(query: str, language: str = "fr"):
+def chat(query: str, language: str = "fr", session_id: str = "default"):
     """
     Standard text chat endpoint.
     """
-    answer = orchestrator.handle_query(query, language)
+    answer = orchestrator.handle_query(query, language, session_id)
     return {"answer": answer}
 
 @app.post("/voice_chat")
-async def voice_chat(audio: UploadFile = File(...), language: str = "fr"):
+async def voice_chat(audio: UploadFile = File(...), language: str = "fr", session_id: str = "default"):
     """
     Multimodal endpoint: Speech -> Text -> Agent -> Answer -> Speech.
     """
@@ -34,7 +46,7 @@ async def voice_chat(audio: UploadFile = File(...), language: str = "fr"):
     user_text = speech_to_text(audio_path=temp_path, language=language)
     
     # 2. Agent Logic
-    answer_text = orchestrator.handle_query(user_text, language)
+    answer_text = orchestrator.handle_query(user_text, language, session_id)
     
     # 3. TTS
     audio_response_path = text_to_speech(text=answer_text, language=language)
