@@ -3,10 +3,11 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from src.utils.logger import logger
+from src.config import settings
 
 class GuardrailManager:
     def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=settings.OPENAI_API_KEY)
 
     async def validate_topic(self, query: str, history: list = None) -> Tuple[bool, str]:
         """

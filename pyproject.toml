@@ -22,3 +22,8 @@ dependencies = [
     "sentence-transformers",
     "pydantic-settings>=2.11.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest-asyncio>=1.2.0",
+]

@@ -49,14 +49,14 @@ class AdminOrchestrator:
         
         # Retrieve history earlier to use in guardrails
         history = self.memory.get_session_history(session_id)
-        chat_history = await history.aget_messages() # Use async method if available, else standard
+        chat_history = history.messages # Sync property access
 
         # Guardrail 1: Topic Validation (Context-aware)
         is_valid, reason = await guardrail_manager.validate_topic(query, history=chat_history)
         if not is_valid:
             # We still might want to log the rejected query for context in next turn
-            await history.aadd_user_message(query)
-            await history.aadd_ai_message(f"Rejected: {reason}")
+            history.add_user_message(query)
+            history.add_ai_message(f"Rejected: {reason}")
             logger.warning(f"Query rejected: {reason}")
             return f"Xin lỗi, tôi không thể hỗ trợ yêu cầu này. Lý do: {reason}"
 
@@ -104,8 +104,8 @@ class AdminOrchestrator:
             logger.warning("Hallucination detected, using fallback response.")
 
         # Save the finalized (possibly safe-fallback) answer to history
-        await history.aadd_user_message(query)
-        await history.aadd_ai_message(french_answer)
+        history.add_user_message(query)
+        history.add_ai_message(french_answer)
 
         # Step 3: Polyglot Translation
         final_answer = french_answer

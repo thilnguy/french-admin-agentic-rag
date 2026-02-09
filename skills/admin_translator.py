@@ -1,6 +1,7 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from src.config import settings
 
 async def translate_admin_text(text: str, target_language: str):
     """
@@ -8,7 +9,7 @@ async def translate_admin_text(text: str, target_language: str):
     ensuring technical terms (e.g., Prefecture, Titre de séjour) are correctly contextually translated.
     target_language: 'English' or 'Vietnamese'
     """
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+    llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=settings.OPENAI_API_KEY)
     
     prompt = ChatPromptTemplate.from_messages([
         ("system", """You are a professional administrative translator. 
