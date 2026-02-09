@@ -1,0 +1,19 @@
+name: legal_retriever
+description: Retrieves French administrative procedures or legal articles from Service-Public.fr and LEGI.
+inputs:
+  query:
+    type: string
+    description: The user query in natural language (French, English, or Vietnamese).
+  domain:
+    type: string
+    description: Filter search to 'procedure' or 'legislation'.
+    default: general
+outputs:
+  results:
+    type: array
+    items:
+      type: object
+      properties:
+        source: {type: string}
+        content: {type: string}
+        metadata: {type: object}

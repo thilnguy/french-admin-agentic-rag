@@ -1,0 +1,32 @@
+# Antigravity Core Engine Configuration
+
+llm:
+  provider: openai
+  model: gpt-4o
+  temperature: 0.1
+  timeout: 30
+
+embedding:
+  provider: openai
+  model: text-embedding-3-small
+
+memory:
+  type: redis
+  url: "redis://localhost:6379/0"
+  retention_days: 30
+
+graph:
+  mode: default
+  definition_path: ".antigravity/graph_definition.yaml"
+
+prompts:
+  base_dir: ".antigravity/prompts"
+  planner: "planner.txt"
+  critic: "critic.txt"
+
+storage:
+  vector_db:
+    type: qdrant
+    host: "localhost"
+    port: 6333
+    collection: "french_admin_procedures"
