@@ -25,3 +25,10 @@ test-reports/
 .DS_Store
 .env
 local_data/
+artifacts/
+tmp/
+temp/
+*.swp
+.idea/
+.vscode/
+infrastructure/

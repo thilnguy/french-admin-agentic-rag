@@ -20,6 +20,7 @@ jobs:
       uses: astral-sh/setup-uv@v1
       with:
         version: "latest"
+        enable-cache: true
 
     - name: Set up Python ${{ matrix.python-version }}
       run: uv python install ${{ matrix.python-version }}
@@ -43,6 +44,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space@v1.3.1
+      with:
+        tool-cache: false
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: false
+
     - uses: actions/checkout@v4
 
     - name: Set up Docker Buildx

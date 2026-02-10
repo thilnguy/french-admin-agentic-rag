@@ -16,15 +16,15 @@ COPY pyproject.toml uv.lock ./
 # Install dependendencies without installing the project itself yet
 RUN uv sync --frozen --no-dev --no-install-project
 
+# Pre-download models to cache them
+# We activate the venv and run python to download the model
+# RUN . .venv/bin/activate && python -c "from langchain_huggingface import HuggingFaceEmbeddings; HuggingFaceEmbeddings(model_name='BAAI/bge-m3')"
+
 # Copy the rest of the application
 COPY . .
 
 # Install the project itself
 RUN uv sync --frozen --no-dev
-
-# Pre-download models to cache them
-# We activate the venv and run python to download the model
-RUN . .venv/bin/activate && python -c "from langchain_huggingface import HuggingFaceEmbeddings; HuggingFaceEmbeddings(model_name='BAAI/bge-m3')"
 
 # Stage 2: Runtime
 FROM python:3.13-slim-bookworm
@@ -43,7 +43,8 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 COPY --from=builder /app/.venv /app/.venv
 
 # Copy model cache
-COPY --from=builder /root/.cache/huggingface /home/appuser/.cache/huggingface
+# Copy model cache
+# COPY --from=builder /root/.cache/huggingface /home/appuser/.cache/huggingface
 
 # Copy application code
 COPY --from=builder /app /app
