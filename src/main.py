@@ -14,11 +14,17 @@ from skills.polyglot_voice.main import speech_to_text, text_to_speech
 from src.config import settings
 from src.utils.logger import logger
 from src.schemas import ChatRequest, ChatResponse, VoiceChatResponse
+from skills.legal_retriever.main import warmup as warmup_retriever
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting up — French Admin Agent ready.")
+    logger.info("Starting up — warming Qdrant client and embeddings model...")
+    try:
+        warmup_retriever()
+    except Exception as e:
+        logger.warning(f"Warmup failed (services may not be ready): {e}")
+    logger.info("French Admin Agent ready.")
     yield
     logger.info("Shutting down — closing connections...")
     try:
@@ -69,7 +75,35 @@ async def log_requests(request: Request, call_next):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "version": settings.APP_VERSION}
+    """Deep health check — verifies Redis and Qdrant connectivity."""
+    import redis
+    from qdrant_client import QdrantClient
+
+    # Check Redis
+    redis_ok = False
+    try:
+        r = redis.from_url(settings.REDIS_URL)
+        redis_ok = r.ping()
+    except Exception:
+        pass
+
+    # Check Qdrant
+    qdrant_ok = False
+    try:
+        q = QdrantClient(
+            host=settings.QDRANT_HOST, port=settings.QDRANT_PORT, timeout=3
+        )
+        q.get_collections()
+        qdrant_ok = True
+    except Exception:
+        pass
+
+    status = "healthy" if (redis_ok and qdrant_ok) else "degraded"
+    return {
+        "status": status,
+        "version": settings.APP_VERSION,
+        "dependencies": {"redis": redis_ok, "qdrant": qdrant_ok},
+    }
 
 
 @app.get("/")
