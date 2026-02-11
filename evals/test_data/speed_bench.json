@@ -1,0 +1,32 @@
+[
+    {
+        "question": "Comment renouveler mon passeport français ?",
+        "language": "fr",
+        "category": "simple",
+        "expected_latency_ms": 1500
+    },
+    {
+        "question": "Quelles sont les étapes complètes pour renouveler un titre de séjour, incluant tous les documents nécessaires et les délais de traitement ?",
+        "language": "fr",
+        "category": "complex",
+        "expected_latency_ms": 2500
+    },
+    {
+        "question": "How do I register for French healthcare (Sécurité Sociale)?",
+        "language": "en",
+        "category": "simple",
+        "expected_latency_ms": 1500
+    },
+    {
+        "question": "What are all the steps, required documents, fees, and processing times for obtaining French nationality through naturalization, including the language requirements and integration criteria?",
+        "language": "en",
+        "category": "complex",
+        "expected_latency_ms": 3000
+    },
+    {
+        "question": "Làm thế nào để lấy giấy phép lái xe ở Pháp?",
+        "language": "vi",
+        "category": "simple",
+        "expected_latency_ms": 1500
+    }
+]
