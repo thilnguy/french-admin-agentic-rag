@@ -1,11 +1,11 @@
-import os
-import redis
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from src.config import settings
+
 
 class MemoryManager:
     def __init__(self):
-        self.redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+        self.redis_url = settings.REDIS_URL
 
     def get_session_history(self, session_id: str):
         """
@@ -23,6 +23,7 @@ class MemoryManager:
             input_messages_key="query",
             history_messages_key="chat_history",
         )
+
 
 # Singleton instance
 memory_manager = MemoryManager()

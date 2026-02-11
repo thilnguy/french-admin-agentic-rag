@@ -1,20 +1,43 @@
+import os
+import tempfile
 import uvicorn
 import time
 from fastapi import FastAPI, UploadFile, File, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from src.agents.orchestrator import AdminOrchestrator
 from skills.polyglot_voice.main import speech_to_text, text_to_speech
 from src.config import settings
 from src.utils.logger import logger
 from src.schemas import ChatRequest, ChatResponse, VoiceChatResponse
 
-app = FastAPI(title=settings.APP_NAME, version=settings.APP_VERSION)
 
-# CORS Middleware
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting up — French Admin Agent ready.")
+    yield
+    logger.info("Shutting down — closing connections...")
+    try:
+        await orchestrator.cache.aclose()
+    except Exception:
+        pass
+
+
+app = FastAPI(title=settings.APP_NAME, version=settings.APP_VERSION, lifespan=lifespan)
+
+# Rate Limiting
+limiter = Limiter(key_func=get_remote_address, default_limits=[settings.RATE_LIMIT])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# CORS Middleware — restrict to configured origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict to frontend domain
+    allow_origins=[origin.strip() for origin in settings.ALLOWED_ORIGINS.split(",")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,74 +45,99 @@ app.add_middleware(
 
 orchestrator = AdminOrchestrator()
 
+
 # Global Exception Handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global Exception: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal Server Error. Please try again later."}
+        content={"detail": "Internal Server Error. Please try again later."},
     )
+
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
-    logger.info(f"{request.method} {request.url.path} - {response.status_code} - {process_time:.2f}s")
+    logger.info(
+        f"{request.method} {request.url.path} - {response.status_code} - {process_time:.2f}s"
+    )
     return response
+
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "version": settings.APP_VERSION}
 
+
 @app.get("/")
 async def read_root():
-    return {"status": "French Admin Agent is online", "mode": "Debug" if settings.DEBUG else "Production"}
+    return {
+        "status": "French Admin Agent is online",
+        "mode": "Debug" if settings.DEBUG else "Production",
+    }
+
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+@limiter.limit(settings.RATE_LIMIT)
+async def chat(request: Request, chat_request: ChatRequest):
     """
     Standard text chat endpoint.
     """
-    logger.info(f"Received chat request: {request.query} [{request.language}]")
+    logger.info(
+        f"Received chat request: {chat_request.query} [{chat_request.language}]"
+    )
     try:
-        answer = await orchestrator.handle_query(request.query, request.language, request.session_id)
+        answer = await orchestrator.handle_query(
+            chat_request.query, chat_request.language, chat_request.session_id
+        )
         return ChatResponse(answer=answer)
     except Exception as e:
         logger.error(f"Error in chat endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/voice_chat", response_model=VoiceChatResponse)
-async def voice_chat(audio: UploadFile = File(...), language: str = "fr", session_id: str = "default"):
+@limiter.limit(settings.RATE_LIMIT)
+async def voice_chat(
+    request: Request,
+    audio: UploadFile = File(...),
+    language: str = "fr",
+    session_id: str = "default",
+):
     """
     Multimodal endpoint: Speech -> Text -> Agent -> Answer -> Speech.
     """
     logger.info(f"Received voice chat request [{language}]")
+    temp_path = None
     try:
-        # 1. STT
-        temp_path = f"temp_{audio.filename}"
-        with open(temp_path, "wb") as f:
-            f.write(await audio.read())
-            
+        # 1. STT — Use secure temp file
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            tmp.write(await audio.read())
+            temp_path = tmp.name
+
         user_text = speech_to_text(audio_path=temp_path, language=language)
         logger.info(f"Transcribed audio: {user_text}")
-        
+
         # 2. Agent Logic
         answer_text = await orchestrator.handle_query(user_text, language, session_id)
-        
+
         # 3. TTS
         audio_response_path = text_to_speech(text=answer_text, language=language)
-        
+
         return VoiceChatResponse(
-            user_text=user_text,
-            answer_text=answer_text,
-            audio_url=audio_response_path
+            user_text=user_text, answer_text=answer_text, audio_url=audio_response_path
         )
     except Exception as e:
         logger.error(f"Error in voice_chat endpoint: {e}")
-        # Clean up temp file if needed
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        # Always clean up temp file
+        if temp_path and os.path.exists(temp_path):
+            os.unlink(temp_path)
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host=settings.HOST, port=settings.PORT)
