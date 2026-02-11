@@ -5,7 +5,11 @@ __pycache__/
 infrastructure/data/
 infrastructure/qdrant_storage/
 .DS_Store
-uv.lock
 # Large model files if any
 *.bin
 *.safetensors
+# Personal files
+cv_*.tex
+# Temp audio files
+output_voice.mp3
+/tmp/tts_*
