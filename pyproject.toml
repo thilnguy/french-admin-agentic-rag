@@ -23,6 +23,7 @@ dependencies = [
     "sentence-transformers>=2.7.0",
     "pydantic-settings>=2.2.1",
     "slowapi>=0.1.9",
+    "ragchecker>=0.1.9",
 ]
 
 [tool.uv.sources]

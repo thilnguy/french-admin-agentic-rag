@@ -20,6 +20,7 @@ class Settings(BaseSettings):
 
     # OpenAI
     OPENAI_API_KEY: str
+    OPENAI_MODEL: str = "gpt-4o-mini"
 
     # Redis
     REDIS_HOST: str = "localhost"
