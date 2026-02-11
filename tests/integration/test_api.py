@@ -1,44 +1,62 @@
 import pytest
+from unittest.mock import AsyncMock, patch
 from httpx import AsyncClient
+
 
 @pytest.mark.asyncio
 async def test_health_check(ac: AsyncClient):
-    response = await ac.get("/health")
-    assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+    """Health endpoint should return 200 with status and dependencies."""
+    with patch("redis.from_url") as mock_redis_from_url, patch(
+        "qdrant_client.QdrantClient"
+    ) as mock_qdrant_cls:
+        # Mock Redis ping
+        mock_r = mock_redis_from_url.return_value
+        mock_r.ping.return_value = True
+
+        # Mock Qdrant get_collections
+        mock_q = mock_qdrant_cls.return_value
+        mock_q.get_collections.return_value = []
+
+        response = await ac.get("/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert "status" in data
+        assert "dependencies" in data
+
 
 @pytest.mark.asyncio
 async def test_chat_endpoint_validation(ac: AsyncClient):
+    """Missing or invalid fields should return 422."""
     # Missing query
     response = await ac.post("/chat", json={"language": "fr"})
-    assert response.status_code == 422 # Validation Error
+    assert response.status_code == 422
 
     # Invalid language
     response = await ac.post("/chat", json={"query": "hello", "language": "xx"})
     assert response.status_code == 422
 
+
 @pytest.mark.asyncio
 async def test_chat_flow_mocked(ac: AsyncClient):
-    """
-    Test valid chat flow. We can mock the orchestrator inside the app 
-    or just rely on the fact that without dependent services (Redis/Qdrant) it might fail 
-    if we don't mock. For integration tests, we usually want real deps or dockerized deps.
-    Assuming deps are possibly down, we expect 500 or success if mocks employed.
-    Example: 500 if Redis connection fails.
-    """
-    # For this test environment, we haven't mocked the app.orchestrator dependency globally.
-    # So it will try to connect to real Redis/Qdrant.
-    # If they are not up, it returns 500.
-    # Integration tests usually assume infrastructure is up (docker-compose).
-    
-    # We will just assert that we get *some* response (200 or 500 validation of structure).
-    # But ideally we should mock for CI without services.
-    # Let's verify robust error handling (phase 2 goal).
-    
-    response = await ac.post("/chat", json={"query": "Test query", "language": "en"})
-    print(response.json())
-    assert response.status_code in [200, 500] 
-    if response.status_code == 200:
-        assert "answer" in response.json()
-    else:
-        assert "detail" in response.json()
+    """Chat endpoint should return 200 with answer when orchestrator is mocked."""
+    with patch("src.main.orchestrator") as mock_orch:
+        mock_orch.handle_query = AsyncMock(return_value="Mocked answer for testing")
+
+        response = await ac.post(
+            "/chat", json={"query": "Comment faire un passeport ?", "language": "fr"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "answer" in data
+        assert data["answer"] == "Mocked answer for testing"
+        mock_orch.handle_query.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_root_endpoint(ac: AsyncClient):
+    """Root endpoint should return online status."""
+    response = await ac.get("/")
+    assert response.status_code == 200
+    data = response.json()
+    assert "status" in data
+    assert "French Admin Agent" in data["status"]
