@@ -51,7 +51,10 @@ jobs:
       run: |
         # Remove pre-installed tools that consume ~30GB
         sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache
-        sudo rm -rf /usr/local/share/boost /usr/share/swift
+        sudo rm -rf /usr/local/share/boost /usr/share/swift /usr/local/lib/node_modules
+        sudo rm -rf /usr/local/share/powershell /usr/lib/google-cloud-sdk
+        sudo rm -rf /opt/google/chrome /opt/microsoft/msedge
+        sudo apt-get clean
         sudo docker image prune -af
         df -h /
 
