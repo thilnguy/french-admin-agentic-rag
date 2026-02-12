@@ -1,7 +1,7 @@
 import hashlib
 import redis.asyncio as redis  # Use async redis
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from skills.legal_retriever.main import retrieve_legal_info
 from skills.admin_translator import translate_admin_text
 from src.memory.manager import memory_manager
@@ -42,6 +42,7 @@ class AdminOrchestrator:
     ):
         """
         Main orchestration logic with Guardrails, Caching, and Query Translation.
+        Uses AgentState for structured context management.
         """
         # Cache Key based on query and language
         cache_key = f"agent_res:{hashlib.md5((query + user_lang).encode()).hexdigest()}"
@@ -57,19 +58,28 @@ class AdminOrchestrator:
                 logger.error(f"Redis cache error: {e}")
 
         from src.shared.guardrails import guardrail_manager
+        from src.agents.intent_classifier import intent_classifier
 
-        # Retrieve history earlier to use in guardrails
-        history = self.memory.get_session_history(session_id)
-        chat_history = history.messages  # Sync property access
+        # LOAD STATE (Structured State Management)
+        state = await self.memory.load_agent_state(session_id)
+        chat_history = state.messages
+
+        # CLASSIFY INTENT
+        # We classify early to inform future routing decisions
+        intent = await intent_classifier.classify(query)
+        state.intent = intent
+        logger.info(f"Query Intent Classified: {intent}")
 
         # Guardrail 1: Topic Validation (Context-aware)
         is_valid, reason = await guardrail_manager.validate_topic(
             query, history=chat_history
         )
         if not is_valid:
-            # We still might want to log the rejected query for context in next turn
-            history.add_user_message(query)
-            history.add_ai_message(f"Rejected: {reason}")
+            # Update state with rejection
+            state.messages.append(HumanMessage(content=query))
+            state.messages.append(AIMessage(content=f"Rejected: {reason}"))
+            await self.memory.save_agent_state(session_id, state)
+
             logger.warning(f"Query rejected: {reason}")
             rejection_messages = {
                 "fr": "Désolé, je ne peux pas traiter cette demande. Raison : {reason}",
@@ -116,6 +126,7 @@ class AdminOrchestrator:
         messages = [SystemMessage(content=system_prompt)]
 
         # Add history (last 5 turns to keep context window clean)
+        # We use strict list slicing on the state messages
         messages.extend(chat_history[-10:])
 
         messages.append(
@@ -140,9 +151,10 @@ class AdminOrchestrator:
             french_answer = fallback_messages.get(lang_key, fallback_messages["fr"])
             logger.warning("Hallucination detected, using fallback response.")
 
-        # Save the finalized (possibly safe-fallback) answer to history
-        history.add_user_message(query)
-        history.add_ai_message(french_answer)
+        # Save the finalized (possibly safe-fallback) answer to state
+        state.messages.append(HumanMessage(content=query))
+        state.messages.append(AIMessage(content=french_answer))
+        await self.memory.save_agent_state(session_id, state)
 
         # Step 3: Polyglot Translation
         final_answer = french_answer

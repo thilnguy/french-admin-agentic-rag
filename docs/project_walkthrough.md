@@ -386,3 +386,25 @@ Comprehensive evaluation pipeline implemented:
 The system is functionally complete and stable (Phase 1-3). The primary focus for production readiness (Phase 4) is now **improving RAG retrieval quality** (recall is low) and **hardening security** (API auth).
 
 See [production_roadmap.md](file:///Users/lananh/Workspace/code/MyAGWorkspace/french-admin-agentic-rag/docs/production_roadmap.md) for next steps.
+
+---
+
+## Phase 1 (Architecture Evolution): State Management & Intent Classification ✅
+**Status**: Complete
+**Date**: 2026-02-12
+
+### 1. Structured State Management
+- **Refactored**: Moved from simple message list to structured `AgentState` (Pydantic model) stored in Redis.
+- **File**: `src/agents/state.py`
+- **Impact**: Enables complex multi-turn workflows by tracking `user_profile`, `intent`, and `current_step`.
+
+### 2. Intent Classification
+- **Implemented**: `IntentClassifier` using `gpt-4o-mini`.
+- **Categorization**: `SIMPLE_QA`, `COMPLEX_PROCEDURE`, `FORM_FILLING`.
+- **File**: `src/agents/intent_classifier.py`
+- **Impact**: Foundation for "Router-First" hybrid architecture.
+
+### 3. Orchestrator Update
+- **Integrated**: `AdminOrchestrator` now uses `AgentState` and `IntentClassifier`.
+- **File**: `src/agents/orchestrator.py`
+- **Tests**: Added `tests/unit/test_state_management.py` and `tests/integration/test_orchestrator_flow.py`.

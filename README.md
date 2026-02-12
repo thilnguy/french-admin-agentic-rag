@@ -100,6 +100,9 @@ docker run -p 8000:8000 french-admin-agent
 ├── skills/           # Agent skills (Translator, Retriever)
 ├── src/
 │   ├── agents/       # Agent Orchestrator & Logic
+│   │   ├── orchestrator.py
+│   │   ├── state.py      # [NEW] AgentState Pydantic Model
+│   │   └── intent_classifier.py # [NEW] Intent Classification
 │   ├── memory/       # Redis Memory Management
 │   ├── shared/       # Shared Utilities (Guardrails)
 │   ├── utils/        # Logging & Helpers
