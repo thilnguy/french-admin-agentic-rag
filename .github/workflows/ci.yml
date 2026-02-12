@@ -54,6 +54,8 @@ jobs:
         sudo rm -rf /usr/local/share/boost /usr/share/swift /usr/local/lib/node_modules
         sudo rm -rf /usr/local/share/powershell /usr/lib/google-cloud-sdk
         sudo rm -rf /opt/google/chrome /opt/microsoft/msedge
+        sudo rm -rf /usr/lib/jvm /usr/local/graalvm /usr/local/.ghcup
+        sudo rm -rf /usr/local/share/chromium /usr/local/lib/heroku
         sudo apt-get clean
         sudo docker image prune -af
         df -h /
