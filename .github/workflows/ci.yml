@@ -38,8 +38,8 @@ jobs:
     - name: Lint
       run: uv run ruff check .
 
-    - name: Run Tests
-      run: uv run pytest tests/
+    - name: Test with Coverage
+      run: uv run pytest --cov=src --cov-fail-under=90
       env:
         OPENAI_API_KEY: sk-mock-key-for-ci
 
