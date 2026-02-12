@@ -25,6 +25,7 @@ dependencies = [
     "slowapi>=0.1.9",
     "ragchecker>=0.1.9",
     "langgraph>=0.0.10",
+    "tenacity>=8.3.0",
 ]
 
 [tool.uv.sources]

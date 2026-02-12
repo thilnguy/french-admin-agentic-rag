@@ -2,6 +2,12 @@ import hashlib
 import redis.asyncio as redis  # Use async redis
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from tenacity import (
+    retry,
+    wait_exponential,
+    stop_after_attempt,
+    retry_if_exception_type,
+)
 from skills.legal_retriever.main import retrieve_legal_info
 from skills.admin_translator import translate_admin_text
 from src.memory.manager import memory_manager
@@ -36,6 +42,15 @@ class AdminOrchestrator:
             "english": "English",
             "vietnamese": "Vietnamese",
         }
+
+    @retry(
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        stop=stop_after_attempt(3),
+        retry=retry_if_exception_type(Exception),
+    )
+    async def _call_llm(self, messages: list):
+        """Wrapper for LLM calls with retry logic."""
+        return await self.llm.ainvoke(messages)
 
     async def handle_query(
         self, query: str, user_lang: str = "fr", session_id: str = "default_session"
@@ -185,7 +200,7 @@ class AdminOrchestrator:
                 )
             )
 
-            french_answer_msg = await self.llm.ainvoke(messages)
+            french_answer_msg = await self._call_llm(messages)
             french_answer = french_answer_msg.content
 
             # Guardrail 2: Hallucination Check (Query + Context + History aware)

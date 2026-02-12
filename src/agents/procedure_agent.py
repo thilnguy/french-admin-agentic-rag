@@ -2,6 +2,12 @@ from typing import List, Dict
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from tenacity import (
+    retry,
+    wait_exponential,
+    stop_after_attempt,
+    retry_if_exception_type,
+)
 from src.config import settings
 from src.agents.state import AgentState
 from skills.legal_retriever.main import retrieve_legal_info
@@ -42,6 +48,15 @@ class ProcedureGuideAgent:
             Ask a polite, concise question in French to get this information."""
         )
 
+    @retry(
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        stop=stop_after_attempt(3),
+        retry=retry_if_exception_type(Exception),
+    )
+    async def _run_chain(self, chain, input_data):
+        """Wrapper for LCEL chain invocations with retry."""
+        return await chain.ainvoke(input_data)
+
     async def run(self, query: str, state: AgentState) -> str:
         logger.info(f"ProcedureGuideAgent started for query: {query}")
 
@@ -81,8 +96,8 @@ class ProcedureGuideAgent:
         self, query: str, user_profile: dict, history: str
     ) -> str:
         chain = self.step_analyzer_prompt | self.llm | StrOutputParser()
-        return await chain.ainvoke(
-            {"query": query, "user_profile": user_profile, "history": history}
+        return await self._run_chain(
+            chain, {"query": query, "user_profile": user_profile, "history": history}
         )
 
     async def _ask_clarification(self, query: str, state: AgentState) -> str:
@@ -96,8 +111,8 @@ class ProcedureGuideAgent:
             Ask for it in French."""
         )
         chain = prompt | self.llm | StrOutputParser()
-        return await chain.ainvoke(
-            {"query": query, "profile": state.user_profile.model_dump()}
+        return await self._run_chain(
+            chain, {"query": query, "profile": state.user_profile.model_dump()}
         )
 
     async def _explain_procedure(self, query: str, docs: List[Dict]) -> str:
@@ -119,7 +134,7 @@ class ProcedureGuideAgent:
             Response (in French):"""
         )
         chain = prompt | self.llm | StrOutputParser()
-        return await chain.ainvoke({"query": query, "context": context})
+        return await self._run_chain(chain, {"query": query, "context": context})
 
 
 # Singleton

@@ -18,7 +18,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 # Pre-download models to cache them
 # We activate the venv and run python to download the model
-# RUN . .venv/bin/activate && python -c "from langchain_huggingface import HuggingFaceEmbeddings; HuggingFaceEmbeddings(model_name='BAAI/bge-m3')"
+RUN . .venv/bin/activate && python -c "from langchain_huggingface import HuggingFaceEmbeddings; HuggingFaceEmbeddings(model_name='BAAI/bge-m3')"
 
 # Copy the rest of the application
 COPY . .
@@ -43,8 +43,7 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 COPY --from=builder /app/.venv /app/.venv
 
 # Copy model cache
-# Copy model cache
-# COPY --from=builder /root/.cache/huggingface /home/appuser/.cache/huggingface
+COPY --from=builder /root/.cache/huggingface /home/appuser/.cache/huggingface
 
 # Copy application code
 COPY --from=builder /app /app

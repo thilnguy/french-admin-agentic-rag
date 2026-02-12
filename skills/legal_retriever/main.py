@@ -46,10 +46,10 @@ async def retrieve_legal_info(query: str, domain: str = "general"):
     search_tasks = []
     if domain in ["procedure", "general"]:
         search_tasks.append(
-            search_collection("service_public_procedures", "service-public", 3)
+            search_collection("service_public_procedures", "service-public", 6)
         )
     if domain in ["legislation", "general"]:
-        search_tasks.append(search_collection("legi_legislation", "legi", 2))
+        search_tasks.append(search_collection("legi_legislation", "legi", 4))
 
     if not search_tasks:
         return []
