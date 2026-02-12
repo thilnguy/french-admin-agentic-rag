@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 from src.agents.orchestrator import AdminOrchestrator
 from langchain_core.messages import AIMessage
 from src.agents.intent_classifier import intent_classifier
@@ -40,7 +40,11 @@ async def test_orchestrator_full_flow_simple_qa():
     ) as mock_hallucination, patch(
         "src.shared.guardrails.guardrail_manager.add_disclaimer",
         side_effect=lambda x, y: x,
-    ):
+    ), patch("src.memory.manager.RedisChatMessageHistory") as mock_redis_history:
+        # Mock Legacy History
+        mock_history_instance = MagicMock()
+        mock_history_instance.messages = []
+        mock_redis_history.return_value = mock_history_instance
         mock_classify.return_value = "SIMPLE_QA"
         mock_validate.return_value = (True, "Valid")
         mock_hallucination.return_value = True  # No hallucination
