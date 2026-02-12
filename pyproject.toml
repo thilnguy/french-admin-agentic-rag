@@ -24,6 +24,7 @@ dependencies = [
     "pydantic-settings>=2.2.1",
     "slowapi>=0.1.9",
     "ragchecker>=0.1.9",
+    "langgraph>=0.0.10",
 ]
 
 [tool.uv.sources]
