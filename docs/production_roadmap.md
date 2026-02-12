@@ -29,7 +29,7 @@
 ### Weaknesses
 - **Missing retry/circuit breaker** for OpenAI API calls
 - **No queue system** for burst traffic
-- **Tight coupling** between orchestrator and skills
+- **Tight coupling** between orchestrator and skills. See [Architecture Evolution Plan](architecture_evolution.md).
 
 ---
 

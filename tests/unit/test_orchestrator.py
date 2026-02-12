@@ -45,6 +45,8 @@ async def test_handle_query_cache_hit():
 @pytest.mark.asyncio
 async def test_handle_query_flow():
     """Test the full flow with mocks."""
+    from src.agents.state import AgentState
+
     with patch("src.agents.orchestrator.redis.Redis") as mock_redis_cls, patch(
         "src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock
     ) as mock_retriever, patch(
@@ -56,16 +58,13 @@ async def test_handle_query_flow():
         new_callable=AsyncMock,
     ) as mock_hallucination, patch(
         "src.shared.guardrails.guardrail_manager.add_disclaimer",
-        return_value="Final Answer + Disclaimer",
-    ), patch(
-        "src.shared.guardrails.guardrail_manager.check_hallucination",
-        new_callable=AsyncMock,
-    ) as mock_hallucination, patch(
-        "src.shared.guardrails.guardrail_manager.add_disclaimer",
-        return_value="Final Answer + Disclaimer",
+        side_effect=lambda x, y: x,
     ), patch("src.config.settings.OPENAI_API_KEY", "sk-test-key-mock"), patch(
         "src.agents.orchestrator.memory_manager"
-    ) as mock_memory_manager:
+    ) as mock_memory_manager, patch(
+        "src.agents.intent_classifier.intent_classifier.classify",
+        new_callable=AsyncMock,
+    ) as mock_classify:
         # Setup Mocks
         mock_redis = AsyncMock()
         mock_redis.get.return_value = None  # Cache miss
@@ -78,12 +77,13 @@ async def test_handle_query_flow():
             return_value=MagicMock(content="Generated Answer")
         )
 
-        # Setup Mock Memory
-        mock_history = MagicMock()
-        mock_history.messages = []
-        mock_history.add_user_message = MagicMock()
-        mock_history.add_ai_message = MagicMock()
-        mock_memory_manager.get_session_history.return_value = mock_history
+        # Setup Mock Memory with AgentState
+        mock_state = AgentState(session_id="test_session", messages=[])
+        mock_memory_manager.load_agent_state = AsyncMock(return_value=mock_state)
+        mock_memory_manager.save_agent_state = AsyncMock()
+
+        # Setup Intent Classifier
+        mock_classify.return_value = "SIMPLE_QA"
 
         mock_validate.return_value = (True, "")
         mock_retriever.return_value = [
@@ -92,10 +92,16 @@ async def test_handle_query_flow():
         mock_hallucination.return_value = True
 
         # Execute
-        response = await orchestrator.handle_query("Valid query", "fr")
+        response = await orchestrator.handle_query(
+            "Valid query", session_id="test_session"
+        )
 
         # Verify
         mock_validate.assert_called_once()
         mock_retriever.assert_called_once()
         orchestrator.llm.ainvoke.assert_called_once()
-        assert response == "Final Answer + Disclaimer"
+        mock_classify.assert_called_once()
+        mock_memory_manager.load_agent_state.assert_called_once()
+        mock_memory_manager.save_agent_state.assert_called_once()
+
+        assert "Generated Answer" in response
