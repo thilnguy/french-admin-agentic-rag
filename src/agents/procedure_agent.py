@@ -12,6 +12,8 @@ from src.config import settings
 from src.agents.state import AgentState
 from skills.legal_retriever.main import retrieve_legal_info
 from src.utils.logger import logger
+from src.utils import metrics
+import time
 
 
 class ProcedureGuideAgent:
@@ -55,7 +57,11 @@ class ProcedureGuideAgent:
     )
     async def _run_chain(self, chain, input_data):
         """Wrapper for LCEL chain invocations with retry."""
-        return await chain.ainvoke(input_data)
+        start_time = time.time()
+        result = await chain.ainvoke(input_data)
+        duration = time.time() - start_time
+        metrics.LLM_REQUEST_DURATION.labels(model="gpt-4o").observe(duration)
+        return result
 
     async def run(self, query: str, state: AgentState) -> str:
         logger.info(f"ProcedureGuideAgent started for query: {query}")

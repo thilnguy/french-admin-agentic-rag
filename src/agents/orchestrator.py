@@ -13,6 +13,8 @@ from skills.admin_translator import translate_admin_text
 from src.memory.manager import memory_manager
 from src.config import settings
 from src.utils.logger import logger
+from src.utils import metrics
+import time
 
 
 class AdminOrchestrator:
@@ -50,7 +52,24 @@ class AdminOrchestrator:
     )
     async def _call_llm(self, messages: list):
         """Wrapper for LLM calls with retry logic."""
-        return await self.llm.ainvoke(messages)
+        start_time = time.time()
+        response = await self.llm.ainvoke(messages)
+        duration = time.time() - start_time
+
+        # Record Latency
+        metrics.LLM_REQUEST_DURATION.labels(model=self.llm.model_name).observe(duration)
+
+        # Record Tokens
+        if response.response_metadata and "token_usage" in response.response_metadata:
+            usage = response.response_metadata["token_usage"]
+            metrics.LLM_TOKEN_USAGE.labels(
+                model=self.llm.model_name, type="prompt"
+            ).inc(usage.get("prompt_tokens", 0))
+            metrics.LLM_TOKEN_USAGE.labels(
+                model=self.llm.model_name, type="completion"
+            ).inc(usage.get("completion_tokens", 0))
+
+        return response
 
     async def handle_query(
         self, query: str, user_lang: str = "fr", session_id: str = "default_session"

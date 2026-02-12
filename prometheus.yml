@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'french-admin-rag'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['french-admin-rag:8000']
