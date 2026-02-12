@@ -2,7 +2,8 @@ import os
 import tempfile
 import uvicorn
 import time
-from fastapi import FastAPI, UploadFile, File, Request, HTTPException
+from fastapi import FastAPI, UploadFile, File, Request, HTTPException, Security, Depends
+from fastapi.security import APIKeyHeader
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -62,6 +63,18 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
+# Security Dependency
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+async def get_api_key(api_key_header: str = Security(api_key_header)):
+    if settings.API_KEY:
+        if api_key_header == settings.API_KEY:
+            return api_key_header
+        raise HTTPException(status_code=403, detail="Could not validate credentials")
+    return None
+
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
@@ -114,7 +127,7 @@ async def read_root():
     }
 
 
-@app.post("/chat", response_model=ChatResponse)
+@app.post("/chat", response_model=ChatResponse, dependencies=[Depends(get_api_key)])
 @limiter.limit(settings.RATE_LIMIT)
 async def chat(request: Request, chat_request: ChatRequest):
     """
@@ -133,7 +146,9 @@ async def chat(request: Request, chat_request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/voice_chat", response_model=VoiceChatResponse)
+@app.post(
+    "/voice_chat", response_model=VoiceChatResponse, dependencies=[Depends(get_api_key)]
+)
 @limiter.limit(settings.RATE_LIMIT)
 async def voice_chat(
     request: Request,

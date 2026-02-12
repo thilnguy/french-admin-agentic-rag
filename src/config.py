@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     # Security
     ALLOWED_ORIGINS: str = "http://localhost:3000"
     RATE_LIMIT: str = "10/minute"
+    API_KEY: Optional[str] = None
 
     # Logging
     LOG_LEVEL: str = "INFO"

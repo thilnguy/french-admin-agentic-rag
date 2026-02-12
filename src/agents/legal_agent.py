@@ -2,6 +2,12 @@ from typing import List, Dict
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from tenacity import (
+    retry,
+    wait_exponential,
+    stop_after_attempt,
+    retry_if_exception_type,
+)
 from src.config import settings
 from src.agents.state import AgentState
 from skills.legal_retriever.main import retrieve_legal_info
@@ -54,6 +60,15 @@ class LegalResearchAgent:
             Answer (in French):"""
         )
 
+    @retry(
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        stop=stop_after_attempt(3),
+        retry=retry_if_exception_type(Exception),
+    )
+    async def _run_chain(self, chain, input_data):
+        """Wrapper for LCEL chain invocations with retry."""
+        return await chain.ainvoke(input_data)
+
     async def run(self, query: str, state: AgentState) -> str:
         logger.info(f"LegalResearchAgent started for query: {query}")
 
@@ -82,13 +97,13 @@ class LegalResearchAgent:
 
     async def _refine_query(self, query: str) -> str:
         chain = self.refiner_prompt | self.llm | StrOutputParser()
-        return await chain.ainvoke({"query": query})
+        return await self._run_chain(chain, {"query": query})
 
     async def _evaluate_context(self, query: str, context: str) -> bool:
         if not context:
             return False
         chain = self.evaluator_prompt | self.llm | StrOutputParser()
-        result = await chain.ainvoke({"query": query, "context": context})
+        result = await self._run_chain(chain, {"query": query, "context": context})
         return "YES" in result.strip().upper()
 
     async def _synthesize_answer(self, query: str, context: str) -> str:
@@ -96,7 +111,7 @@ class LegalResearchAgent:
             return "Je n'ai trouvé aucune information officielle correspondante dans ma base de données."
 
         chain = self.synthesis_prompt | self.llm | StrOutputParser()
-        return await chain.ainvoke({"query": query, "context": context})
+        return await self._run_chain(chain, {"query": query, "context": context})
 
     def _format_docs(self, docs: List[Dict]) -> str:
         return "\n\n".join(

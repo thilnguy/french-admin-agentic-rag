@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class ChatRequest(BaseModel):
-    query: str = Field(..., min_length=1, description="User's question")
+    query: str = Field(..., min_length=1, max_length=500, description="User's question")
     language: str = Field(
         "fr", pattern="^(fr|en|vi)$", description="Language code (fr, en, vi)"
     )

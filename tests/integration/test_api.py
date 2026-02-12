@@ -35,6 +35,39 @@ async def test_chat_endpoint_validation(ac: AsyncClient):
     response = await ac.post("/chat", json={"query": "hello", "language": "xx"})
     assert response.status_code == 422
 
+    # Query too long
+    long_query = "a" * 501
+    response = await ac.post("/chat", json={"query": long_query, "language": "fr"})
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_api_key_enforcement(ac: AsyncClient):
+    """API Key should be enforced if configured."""
+    # Patch settings.API_KEY to enable auth
+    with patch("src.main.settings.API_KEY", "test-secret"):
+        # 1. Missing Key -> 403
+        response = await ac.post("/chat", json={"query": "hello", "language": "fr"})
+        assert response.status_code == 403
+
+        # 2. Wrong Key -> 403
+        response = await ac.post(
+            "/chat",
+            json={"query": "hello", "language": "fr"},
+            headers={"X-API-Key": "wrong"},
+        )
+        assert response.status_code == 403
+
+        # 3. Correct Key -> 200 (Mocked Orchestrator)
+        with patch("src.main.orchestrator") as mock_orch:
+            mock_orch.handle_query = AsyncMock(return_value="Answer")
+            response = await ac.post(
+                "/chat",
+                json={"query": "hello", "language": "fr"},
+                headers={"X-API-Key": "test-secret"},
+            )
+            assert response.status_code == 200
+
 
 @pytest.mark.asyncio
 async def test_chat_flow_mocked(ac: AsyncClient):
