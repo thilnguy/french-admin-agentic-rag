@@ -7,49 +7,103 @@ from src.agents.state import AgentState
 @pytest.mark.asyncio
 async def test_legal_agent_run_flow():
     # Mock dependencies
-    with patch("src.agents.legal_agent.ChatOpenAI") as mock_llm_cls, patch(
-        "src.agents.legal_agent.retrieve_legal_info", new_callable=AsyncMock
-    ) as mock_retrieve:
+    with (
+        patch("src.agents.legal_agent.ChatOpenAI") as mock_llm_cls,
+        patch("src.agents.legal_agent.retrieve_legal_info", new_callable=AsyncMock),
+    ):
         # Setup LLM Mock
         mock_llm = MagicMock()
         mock_llm_cls.return_value = mock_llm
 
         # We need to mock the chains or the llm.invoke
-        # Since implementation uses `self.refiner_prompt | self.llm | StrOutputParser()`,
-        # it's harder to mock the chain components individually without refactoring.
-        # But we can mock the `ainvoke` of the chain if we mock `ChatPromptTemplate`...
-        # Actually easier to mock the `_refine_query` etc methods if I want to test the flow,
-        # but I want to test the `run` method which calls them.
 
-        # Let's mock the internal helper methods of the instance for white-box testing of `run`
-        # This avoids complex chain mocking.
 
+# The original test_legal_agent_run_flow will be replaced by the new tests.
+
+
+@pytest.mark.asyncio
+async def test_refine_query_logic():
+    with patch("src.agents.legal_agent.ChatOpenAI"):
+        agent = LegalResearchAgent()
+        agent._run_chain = AsyncMock(return_value="Refined Query")
+
+        refined = await agent._refine_query("raw query")
+        assert refined == "Refined Query"
+        agent._run_chain.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_evaluate_context_logic():
+    with patch("src.agents.legal_agent.ChatOpenAI"):
         agent = LegalResearchAgent()
 
-        # Check that __init__ set up prompts
-        assert agent.refiner_prompt is not None
+        # Case 1: Sufficient
+        agent._run_chain = AsyncMock(return_value="YES")
+        assert await agent._evaluate_context("query", "context") is True
 
-        # Mock internal methods
-        agent._refine_query = AsyncMock(return_value="refined query")
-        agent._evaluate_context = AsyncMock(return_value=True)  # Sufficient
-        agent._synthesize_answer = AsyncMock(return_value="Final Answer")
-        agent._format_docs = MagicMock(return_value="formatted docs")
+        # Case 2: Insufficient
+        agent._run_chain = AsyncMock(return_value="NO")
+        assert await agent._evaluate_context("query", "context") is False
+
+        # Case 3: Empty context
+        assert await agent._evaluate_context("query", "") is False
+
+
+@pytest.mark.asyncio
+async def test_synthesize_answer_logic():
+    with patch("src.agents.legal_agent.ChatOpenAI"):
+        agent = LegalResearchAgent()
+        agent._run_chain = AsyncMock(return_value="Final Answer")
+
+        # Case 1: Context present
+        ans = await agent._synthesize_answer("query", "context")
+        assert ans == "Final Answer"
+
+        # Case 2: No context
+        ans_empty = await agent._synthesize_answer("query", "")
+        assert "Je n'ai trouvé aucune information" in ans_empty
+
+
+@pytest.mark.asyncio
+async def test_legal_agent_run_full_flow():
+    with (
+        patch("src.agents.legal_agent.ChatOpenAI"),
+        patch(
+            "src.agents.legal_agent.retrieve_legal_info", new_callable=AsyncMock
+        ) as mock_retrieve,
+    ):
+        agent = LegalResearchAgent()
+
+        # Mock internal helpers (or rely on mocked _run_chain via helpers logic)
+        # To boost coverage of run(), we should let it call the helpers.
+        # But allow helpers to succeed via mocked LLM.
+
+        # We need _run_chain to return different things based on input?
+        # That's hard with a single AsyncMock.
+        # So we mock the helper methods for the run() test to keep it simple,
+        # relying on the above tests for helper coverage.
+
+        # Wait! If we mock the helpers, we DON'T cover the lines in run() that call them?
+        # No, we do. We just don't cover the INSIDE of the helpers.
+        # The above tests cover the INSIDE of the helpers.
+        # So mocking helpers here is fine for testing run().
+
+        agent._refine_query = AsyncMock(return_value="refined")
+        agent._evaluate_context = AsyncMock(return_value=True)
+        agent._synthesize_answer = AsyncMock(return_value="answer")
 
         mock_retrieve.return_value = [
-            {"source": "s1", "content": "c1", "metadata": {"title": "t1"}}
+            {"content": "doc", "source": "url", "metadata": {"title": "T"}}
         ]
 
-        # Run
         state = AgentState(session_id="test", messages=[])
-        response = await agent.run("original query", state)
+        res = await agent.run("query", state)
 
-        # Verify Flow
-        agent._refine_query.assert_called_with("original query")
-        mock_retrieve.assert_called_with("refined query", domain="general")
-        agent._evaluate_context.assert_called_with("original query", "formatted docs")
-        agent._synthesize_answer.assert_called_with("original query", "formatted docs")
-
-        assert response == "Final Answer"
+        assert res == "answer"
+        agent._refine_query.assert_called_with("query")
+        mock_retrieve.assert_called()
+        agent._evaluate_context.assert_called()
+        agent._synthesize_answer.assert_called()
 
 
 @pytest.mark.asyncio

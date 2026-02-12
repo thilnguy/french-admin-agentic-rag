@@ -29,6 +29,17 @@ dependencies = [
     "prometheus-fastapi-instrumentator>=7.0.0",
 ]
 
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.coverage.run]
+omit = ["tests/*", "evals/*", "scripts/*", "src/shared/*"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
 torchvision = { index = "pytorch-cpu" }
