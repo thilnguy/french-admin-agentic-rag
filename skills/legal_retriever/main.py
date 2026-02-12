@@ -5,6 +5,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from src.config import settings
 from src.utils.logger import logger
+from src.utils import metrics
+import time
 
 
 # Singleton clients — avoid re-creating expensive connections per request
@@ -54,7 +56,11 @@ async def retrieve_legal_info(query: str, domain: str = "general"):
     if not search_tasks:
         return []
 
+    start_time = time.time()
     batch_results = await asyncio.gather(*search_tasks)
+    duration = time.time() - start_time
+    metrics.RAG_RETRIEVAL_LATENCY.labels(domain=domain).observe(duration)
+
     results = []
     for batch in batch_results:
         results.extend(batch)

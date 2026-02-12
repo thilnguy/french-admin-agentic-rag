@@ -14,8 +14,10 @@ from src.agents.orchestrator import AdminOrchestrator
 from skills.polyglot_voice.main import speech_to_text, text_to_speech
 from src.config import settings
 from src.utils.logger import logger
-from src.schemas import ChatRequest, ChatResponse, VoiceChatResponse
+from src.schemas import ChatRequest, ChatResponse, VoiceChatResponse, FeedbackRequest
 from skills.legal_retriever.main import warmup as warmup_retriever
+from prometheus_fastapi_instrumentator import Instrumentator
+from src.utils import metrics
 
 
 @asynccontextmanager
@@ -35,6 +37,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=settings.APP_NAME, version=settings.APP_VERSION, lifespan=lifespan)
+
+# Instrument the app (exposes /metrics)
+Instrumentator().instrument(app).expose(app)
 
 # Rate Limiting
 limiter = Limiter(key_func=get_remote_address, default_limits=[settings.RATE_LIMIT])
@@ -186,6 +191,20 @@ async def voice_chat(
         # Always clean up temp file
         if temp_path and os.path.exists(temp_path):
             os.unlink(temp_path)
+
+
+@app.post("/feedback")
+async def submit_feedback(feedback: FeedbackRequest):
+    """
+    Submit user feedback for a chat interaction.
+    """
+    # Log to Prometheus metrics
+    metrics.USER_FEEDBACK.labels(score=feedback.score).inc()
+
+    logger.info(
+        f"Received feedback: {feedback.score} for session {feedback.session_id}"
+    )
+    return {"status": "received", "score": feedback.score}
 
 
 if __name__ == "__main__":

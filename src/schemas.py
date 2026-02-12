@@ -17,3 +17,9 @@ class VoiceChatResponse(BaseModel):
     user_text: str
     answer_text: str
     audio_url: str
+
+
+class FeedbackRequest(BaseModel):
+    session_id: str
+    score: str = Field(..., pattern="^(positive|negative)$")
+    comment: str | None = None
