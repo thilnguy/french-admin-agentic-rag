@@ -169,8 +169,37 @@ class AdminOrchestrator:
             last_message = final_messages[-1]
             french_answer = last_message.content
 
+            # SECURITY HARDENING: Apply Hallucination Guardrail (Slow Lane)
+            # We treat the last agent response as the "french_answer" to verify.
+            # We need to construct a context string from the agent's internal context if possible,
+            # but AgentGraph state doesn't explicitly expose "retrieved_docs".
+            # However, `LegalResearchAgent` puts sources in its answer.
+            # For now, we use a simplified check or rely on the agent's citation.
+            # Better: Pass the user query and history.
+
+            if not await guardrail_manager.check_hallucination(
+                context_text="",  # Context is implicit in the agent's answer (self-contained)
+                answer=french_answer,
+                query=query,
+                history=chat_history,
+            ):
+                logger.warning("AgentGraph Hallucination detected!")
+                rejection_messages = {
+                    "fr": "Attention: La réponse générée par l'agent expert n'a pas pu être validée par le protocole de sécurité. Veuillez vérifier les sources.",
+                    "en": "Warning: The expert agent's response could not be validated by security protocols. Please verify sources.",
+                    "vi": "Cảnh báo: Phản hồi từ chuyên gia không thể được xác minh. Vui lòng kiểm tra nguồn.",
+                }
+                lang_key = self.lang_map.get(user_lang.lower(), "French")[:2].lower()
+                french_answer = rejection_messages.get(
+                    lang_key, rejection_messages["fr"]
+                )
+
             # Update local state object to match graph result (for consistency if we use object elsewhere)
             state.messages = final_messages
+            # If we replaced the answer due to hallucination, we should update the last message content
+            if french_answer != last_message.content:
+                state.messages[-1].content = french_answer
+
             # Save state
             await self.memory.save_agent_state(session_id, state)
 

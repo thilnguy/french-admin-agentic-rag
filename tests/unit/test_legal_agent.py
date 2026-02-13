@@ -33,23 +33,6 @@ async def test_refine_query_logic():
 
 
 @pytest.mark.asyncio
-async def test_evaluate_context_logic():
-    with patch("src.agents.legal_agent.ChatOpenAI"):
-        agent = LegalResearchAgent()
-
-        # Case 1: Sufficient
-        agent._run_chain = AsyncMock(return_value="YES")
-        assert await agent._evaluate_context("query", "context") is True
-
-        # Case 2: Insufficient
-        agent._run_chain = AsyncMock(return_value="NO")
-        assert await agent._evaluate_context("query", "context") is False
-
-        # Case 3: Empty context
-        assert await agent._evaluate_context("query", "") is False
-
-
-@pytest.mark.asyncio
 async def test_synthesize_answer_logic():
     with patch("src.agents.legal_agent.ChatOpenAI"):
         agent = LegalResearchAgent()
@@ -89,7 +72,7 @@ async def test_legal_agent_run_full_flow():
         # So mocking helpers here is fine for testing run().
 
         agent._refine_query = AsyncMock(return_value="refined")
-        agent._evaluate_context = AsyncMock(return_value=True)
+        # agent._evaluate_context = AsyncMock(return_value=True) # Removed
         agent._synthesize_answer = AsyncMock(return_value="answer")
 
         mock_retrieve.return_value = [
@@ -102,7 +85,6 @@ async def test_legal_agent_run_full_flow():
         assert res == "answer"
         agent._refine_query.assert_called_with("query")
         mock_retrieve.assert_called()
-        agent._evaluate_context.assert_called()
         agent._synthesize_answer.assert_called()
 
 
@@ -114,7 +96,7 @@ async def test_legal_agent_insufficient_context():
 
         # Mock methods
         agent._refine_query = AsyncMock(return_value="refined")
-        agent._evaluate_context = AsyncMock(return_value=False)  # Insufficient
+        # agent._evaluate_context removed
         agent._synthesize_answer = AsyncMock(return_value="Fallback Answer")
         agent._format_docs = MagicMock(return_value="docs")
 
