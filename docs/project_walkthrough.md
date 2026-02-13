@@ -408,3 +408,58 @@ See [production_roadmap.md](file:///Users/lananh/Workspace/code/MyAGWorkspace/fr
 - **Integrated**: `AdminOrchestrator` now uses `AgentState` and `IntentClassifier`.
 - **File**: `src/agents/orchestrator.py`
 - **Tests**: Added `tests/unit/test_state_management.py` and `tests/integration/test_orchestrator_flow.py`.
+
+
+## Phase 3 (Architecture Evolution): Hybrid Router & AgentGraph ✅
+**Status**: Complete
+**Date**: 2026-02-12
+
+### 1. AgentGraph Implementation
+- **Implemented**: `src/agents/graph.py` defining a LangGraph `StateGraph`.
+- **Agents**: Orchestrates `LegalResearchAgent` and `ProcedureGuideAgent`.
+- **Routing**: `AgentState.intent` determines the path (`LEGAL_INQUIRY` -> Legal, `COMPLEX_PROCEDURE` -> Procedure).
+
+### 2. Hybrid Router in Orchestrator
+- **Updated**: `AdminOrchestrator` delegates complex tasks to `AgentGraph`.
+- **Fast Lane**: `SIMPLE_QA` remains on the optimized legacy RAG path.
+- **Slow Lane**: `COMPLEX_PROCEDURE`, `FORM_FILLING`, `LEGAL_INQUIRY` use the graph.
+- **Verification**: `tests/unit/test_router_integration.py` confirms correct routing logic.
+{{ ... }}
+
+### 2. Hybrid Router in Orchestrator
+- **Updated**: `AdminOrchestrator` delegates complex tasks to `AgentGraph`.
+- **Fast Lane**: `SIMPLE_QA` remains on the optimized legacy RAG path.
+- **Slow Lane**: `COMPLEX_PROCEDURE`, `FORM_FILLING`, `LEGAL_INQUIRY` use the graph.
+    - [x] Verification: `tests/unit/test_router_integration.py` confirms correct routing logic.
+
+## Phase 5 (Testing & Coverage) ✅
+**Status**: Complete
+**Date**: 2026-02-12
+
+### 1. Comprehensive Test Suite
+- **Goal**: >90% code coverage.
+- **Achieved**: **94%** coverage with 55 passing tests.
+- **Key Additions**:
+    - **Graph Testing**: `tests/unit/test_graph.py` (100% coverage).
+    - **Intent Classifier**: `tests/unit/test_intent_classifier.py` (100% coverage).
+    - **Orchestrator Exceptions**: Added tests for Redis failures, Guardrail rejections, and Pydantic model mocks.
+    - **Main API Exceptions**: `tests/unit/test_main_exceptions.py` covering global handlers.
+
+### 2. Validation Results
+All tests passed, including edge cases for error handling and fallback logic.
+
+### Phase 6: Optimization & Security Hardening (Post-Debate) ✅
+**Status**: Complete
+**Date**: 2026-02-13
+
+### 1. Cost & Latency Optimization
+- **Downgraded Models**: Switched `LegalResearchAgent` helper steps (`_refine_query`) to `gpt-4o-mini`.
+- **Merged Steps**: Removed explicit `_evaluate_context` call, merging it into `_synthesize_answer`.
+- **Impact**: Reduced LLM round-trips from 3 to 2 per query, significantly lowering latency and cost.
+
+### 2. Security Hardening
+- **Universal Guardrail**: Applied `check_hallucination` to `AgentGraph` output in `AdminOrchestrator`.
+- **Impact**: Ensures "Slow Lane" expert agents are subject to the same strict safety checks as the "Fast Lane".
+
+### 3. Verification
+- **Tests**: Updated `tests/unit/test_legal_agent.py` and `tests/unit/test_orchestrator.py` to verify new flows and security stops.

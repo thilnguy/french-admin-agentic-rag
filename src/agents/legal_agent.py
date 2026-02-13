@@ -19,6 +19,9 @@ class LegalResearchAgent:
         self.llm = ChatOpenAI(
             model="gpt-4o", temperature=0, api_key=settings.OPENAI_API_KEY
         )
+        self.llm_fast = ChatOpenAI(
+            model="gpt-4o-mini", temperature=0, api_key=settings.OPENAI_API_KEY
+        )
 
         # 1. Query Refiner: Optimizes user query for vector search
         self.refiner_prompt = ChatPromptTemplate.from_template(
@@ -31,26 +34,12 @@ class LegalResearchAgent:
             Refined Query:"""
         )
 
-        # 2. Evaluator: Checks if retrieved documents are sufficient
-        self.evaluator_prompt = ChatPromptTemplate.from_template(
-            """You are evaluating search results for a French administrative query.
-
-            User Query: {query}
-
-            Retrieved Documents:
-            {context}
-
-            Are these documents sufficient to answer the query?
-            Return ONLY 'YES' or 'NO'.
-            """
-        )
-
         # 3. Synthesizer: Generates the final answer
         self.synthesis_prompt = ChatPromptTemplate.from_template(
             """You are a rigorous French Administration Assistant.
             Answer the user's question using ONLY the provided context.
             Cite your sources (Service-Public or Legifrance).
-            If the context is insufficient, state clearly what is missing.
+            If the provided context does not contain the answer, strictly reply with: "INSUFFICIENT_CONTEXT".
 
             Context:
             {context}
@@ -80,38 +69,26 @@ class LegalResearchAgent:
         docs = await retrieve_legal_info(refined_query, domain="general")
         context = self._format_docs(docs)
 
-        # Step 3: Evaluate
-        sufficient = await self._evaluate_context(query, context)
-
-        if (
-            not sufficient and docs
-        ):  # Only refine if we found *something* but it wasn't enough?
-            # Or if we found nothing, maybe try synonyms?
-            # For iteration 1, let's just log. In advanced version, we loop.
-            logger.info("Context evaluated as insufficient. (Future: Search Loop)")
-            # Fallback: maintain current docs but maybe mark confidence low?
-            pass
-
-        # Step 4: Synthesize
+        # Step 3: Synthesize (with implicit evaluation)
         return await self._synthesize_answer(query, context)
 
     async def _refine_query(self, query: str) -> str:
-        chain = self.refiner_prompt | self.llm | StrOutputParser()
+        # Optimization: Use llm_fast (gpt-4o-mini)
+        chain = self.refiner_prompt | self.llm_fast | StrOutputParser()
         return await self._run_chain(chain, {"query": query})
-
-    async def _evaluate_context(self, query: str, context: str) -> bool:
-        if not context:
-            return False
-        chain = self.evaluator_prompt | self.llm | StrOutputParser()
-        result = await self._run_chain(chain, {"query": query, "context": context})
-        return "YES" in result.strip().upper()
 
     async def _synthesize_answer(self, query: str, context: str) -> str:
         if not context:
             return "Je n'ai trouvé aucune information officielle correspondante dans ma base de données."
 
         chain = self.synthesis_prompt | self.llm | StrOutputParser()
-        return await self._run_chain(chain, {"query": query, "context": context})
+        result = await self._run_chain(chain, {"query": query, "context": context})
+
+        if "INSUFFICIENT_CONTEXT" in result:
+            # Logic for fallback or search loop could go here
+            return "Désolé, les documents trouvés ne permettent pas de répondre avec certitude."
+
+        return result
 
     def _format_docs(self, docs: List[Dict]) -> str:
         return "\n\n".join(

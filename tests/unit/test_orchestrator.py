@@ -199,3 +199,70 @@ async def test_orchestrator_guardrail_rejections():
         res = await orchestrator.handle_query("bad query")
         assert "Désolé" in res
         assert "Off topic" in res
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_agent_graph_hallucination():
+    """Test that Orchestrator catches hallucinations from AgentGraph."""
+    from src.agents.state import AgentState
+    from src.agents.intent_classifier import Intent
+    from langchain_core.messages import AIMessage
+
+    with (
+        patch("src.agents.orchestrator.redis.Redis"),
+        patch(
+            "src.agents.intent_classifier.intent_classifier.classify",
+            new_callable=AsyncMock,
+        ) as mock_classify,
+        patch(
+            "src.shared.guardrails.guardrail_manager.validate_topic",
+            new_callable=AsyncMock,
+        ) as mock_validate,
+        patch(
+            "src.shared.guardrails.guardrail_manager.check_hallucination",
+            new_callable=AsyncMock,
+        ) as mock_hallucination,
+        patch(
+            "src.agents.orchestrator.memory_manager.load_agent_state",
+            new_callable=AsyncMock,
+        ) as mock_load,
+        patch(
+            "src.agents.orchestrator.memory_manager.save_agent_state",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "src.agents.graph.agent_graph.ainvoke", new_callable=AsyncMock
+        ) as mock_graph,
+        patch(
+            "src.agents.orchestrator.translate_admin_text",
+            side_effect=lambda text, target_language: text,
+        ),
+        patch(
+            "src.shared.guardrails.guardrail_manager.add_disclaimer",
+            side_effect=lambda x, y: x,
+        ),
+    ):
+        orchestrator = AdminOrchestrator()
+
+        # Setup State
+        state = AgentState(session_id="test", messages=[])
+        mock_load.return_value = state
+
+        # Setup Intent -> Complex to trigger Graph
+        mock_classify.return_value = Intent.LEGAL_INQUIRY
+        mock_validate.return_value = (True, "")
+
+        # Setup Graph Return
+        final_state = {"messages": [AIMessage(content="Hallucinated Answer")]}
+        mock_graph.return_value = final_state
+
+        # Setup Hallucination Check -> False (Hallucination Detected)
+        mock_hallucination.return_value = False
+
+        # Execute
+        res = await orchestrator.handle_query("complex query")
+
+        # Verify Fallback
+        assert "Attention" in res or "Warning" in res
+        mock_graph.assert_called()
+        mock_hallucination.assert_called()
