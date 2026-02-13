@@ -151,6 +151,37 @@ async def chat(request: Request, chat_request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/chat/stream", dependencies=[Depends(get_api_key)])
+@limiter.limit(settings.RATE_LIMIT)
+async def chat_stream(request: Request, chat_request: ChatRequest):
+    """
+    Streaming endpoint using Server-Sent Events (SSE).
+    Yields JSON events: {"type": "token"|"status"|"error", "content": "..."}
+    """
+    logger.info(
+        f"Received stream request: {chat_request.query} [{chat_request.language}]"
+    )
+
+    async def event_generator():
+        try:
+            async for event in orchestrator.stream_query(
+                chat_request.query, chat_request.language, chat_request.session_id
+            ):
+                # SSE format: data: <json>\n\n
+                import json
+
+                yield f"data: {json.dumps(event)}\n\n"
+        except Exception as e:
+            logger.error(f"Stream error: {e}")
+            yield f'data: {{"type": "error", "content": "{str(e)}"}}\n\n'
+        finally:
+            yield "data: [DONE]\n\n"
+
+    from fastapi.responses import StreamingResponse
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
 @app.post(
     "/voice_chat", response_model=VoiceChatResponse, dependencies=[Depends(get_api_key)]
 )

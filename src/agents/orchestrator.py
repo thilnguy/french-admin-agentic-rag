@@ -287,9 +287,141 @@ class AdminOrchestrator:
 
         return final_response
 
+    async def stream_query(
+        self, query: str, user_lang: str = "fr", session_id: str = "default_session"
+    ):
+        """
+        Streaming version of handle_query. yields JSON events:
+        {"type": "token", "content": "..."}
+        {"type": "status", "content": "..."}
+        {"type": "error", "content": "..."}
+        """
+        # Cache Key
+        cache_key = f"agent_res:{hashlib.md5((query + user_lang).encode()).hexdigest()}"
+
+        # 1. Check Cache
+        if not settings.DEBUG:
+            try:
+                cached_res = await self.cache.get(cache_key)
+                if cached_res:
+                    yield {"type": "status", "content": "Cache hit"}
+                    yield {"type": "token", "content": cached_res}
+                    return
+            except Exception:
+                pass
+
+        from src.shared.guardrails import guardrail_manager
+        from src.agents.intent_classifier import intent_classifier
+        from src.agents.intent_classifier import Intent
+
+        # 2. Load State
+        state = await self.memory.load_agent_state(session_id)
+        chat_history = state.messages
+
+        # 3. Classify
+        yield {"type": "status", "content": "Analysing request..."}
+        intent = await intent_classifier.classify(query)
+        state.intent = intent
+
+        # 4. Guardrail: Topic
+        is_valid, reason = await guardrail_manager.validate_topic(
+            query, history=chat_history
+        )
+        if not is_valid:
+            rejection_messages = {
+                "fr": "Désolé, je ne peux pas traiter cette demande. Raison : {reason}",
+                "en": "Sorry, I cannot process this request. Reason: {reason}",
+                "vi": "Xin lỗi, tôi không thể hỗ trợ yêu cầu này. Lý do: {reason}",
+            }
+            lang_key = self.lang_map.get(user_lang.lower(), "French")[:2].lower()
+            msg = rejection_messages.get(lang_key, rejection_messages["fr"]).format(
+                reason=reason
+            )
+            yield {"type": "token", "content": msg}
+            return
+
+        # 5. Routing
+        full_lang = self.lang_map.get(user_lang.lower(), user_lang)
+        final_answer = ""
+
+        if intent in [
+            Intent.COMPLEX_PROCEDURE,
+            Intent.FORM_FILLING,
+            Intent.LEGAL_INQUIRY,
+        ]:
+            # SLOW LANE (Agent Graph)
+            yield {"type": "status", "content": "Routing to Expert Agent..."}
+            from src.agents.graph import agent_graph
+
+            state.messages.append(HumanMessage(content=query))
+
+            # Stream events from Graph
+            # We want 'on_chat_model_stream' events for tokens
+            async for event in agent_graph.astream_events(state, version="v1"):
+                kind = event["event"]
+                if kind == "on_chat_model_stream":
+                    content = event["data"]["chunk"].content
+                    if content:
+                        final_answer += content
+                        yield {"type": "token", "content": content}
+                elif kind == "on_tool_start":
+                    yield {
+                        "type": "status",
+                        "content": f"Executing tool: {event['name']}...",
+                    }
+
+            # Update State with final answer (simplified for streaming)
+            # ideally we should get the final state from the graph, but astream_events doesn't yield it easily
+            # We assume the streamed content is the answer.
+            state.messages.append(AIMessage(content=final_answer))
+            await self.memory.save_agent_state(session_id, state)
+
+        else:
+            # FAST LANE
+            yield {"type": "status", "content": "Searching administrative database..."}
+
+            # Retrieval
+            retrieval_query = query
+            if full_lang != "French":
+                retrieval_query = await self.translator(
+                    text=f"Translate strictly to French: {query}",
+                    target_language="French",
+                )
+
+            context = await self.retriever(query=retrieval_query)
+            context_text = (
+                "\n".join([f"Source {d['source']}: {d['content']}" for d in context])
+                if context
+                else "No info found."
+            )
+
+            # Generate
+            system_prompt = """You are a French Administrative Expert. Answer based on CONTEXT and HISTORY."""
+            messages = [SystemMessage(content=system_prompt)]
+            messages.extend(chat_history[-5:])
+            messages.append(
+                HumanMessage(
+                    content=f"Context: {context_text}\n\nQuestion in {user_lang}: {query}"
+                )
+            )
+
+            # Stream tokens
+            async for chunk in self.llm.astream(messages):
+                content = chunk.content
+                if content:
+                    final_answer += content
+                    yield {"type": "token", "content": content}
+
+            # Save state
+            state.messages.append(HumanMessage(content=query))
+            state.messages.append(AIMessage(content=final_answer))
+            await self.memory.save_agent_state(session_id, state)
+
+        # 6. Cache (Fire and forget)
+        if final_answer:
+            await self.cache.setex(cache_key, 3600, final_answer)
+
 
 # Helper for non-async contexts if needed, but in production we should use async
 def run_agent(input_data: dict):
-    # This legacy wrapper might break in async context,
-    # so we should advise using the async method directly.
     pass
