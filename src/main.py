@@ -72,10 +72,16 @@ async def global_exception_handler(request: Request, exc: Exception):
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
-async def get_api_key(api_key_header: str = Security(api_key_header)):
+async def get_api_key(
+    request: Request,
+    api_key_header: str = Security(api_key_header),
+):
+    # Check Header first, then Query Param
+    key = api_key_header or request.query_params.get("api_key")
+    
     if settings.API_KEY:
-        if api_key_header == settings.API_KEY:
-            return api_key_header
+        if key == settings.API_KEY:
+            return key
         raise HTTPException(status_code=403, detail="Could not validate credentials")
     return None
 
@@ -151,22 +157,24 @@ async def chat(request: Request, chat_request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/chat/stream", dependencies=[Depends(get_api_key)])
+@app.get("/chat/stream")
 @limiter.limit(settings.RATE_LIMIT)
-async def chat_stream(request: Request, chat_request: ChatRequest):
+async def chat_stream(
+    request: Request,
+    query: str,
+    user_lang: str = "fr",
+    session_id: str = "default",
+    api_key: str = Depends(get_api_key),
+):
     """
     Streaming endpoint using Server-Sent Events (SSE).
-    Yields JSON events: {"type": "token"|"status"|"error", "content": "..."}
+    Accessible via GET for better compatibility with EventSource.
     """
-    logger.info(
-        f"Received stream request: {chat_request.query} [{chat_request.language}]"
-    )
+    logger.info(f"Received stream request: {query} [{user_lang}]")
 
     async def event_generator():
         try:
-            async for event in orchestrator.stream_query(
-                chat_request.query, chat_request.language, chat_request.session_id
-            ):
+            async for event in orchestrator.stream_query(query, user_lang, session_id):
                 # SSE format: data: <json>\n\n
                 import json
 
