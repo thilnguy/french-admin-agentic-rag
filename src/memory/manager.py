@@ -37,7 +37,7 @@ class MemoryManager:
     async def load_agent_state(self, session_id: str) -> AgentState:
         """
         Loads AgentState from Redis.
-        Migrates from legacy RedisChatMessageHistory if state is missing but items exist.
+        Handles schema migrations gracefully (e.g., new fields added to AgentState).
         """
         # 1. Try to load structured state
         data = await self.redis_client.get(f"agent_state:{session_id}")
@@ -46,7 +46,14 @@ class MemoryManager:
             # Deserialize messages
             if "messages" in state_dict:
                 state_dict["messages"] = messages_from_dict(state_dict["messages"])
-            return AgentState(**state_dict)
+            try:
+                return AgentState(**state_dict)
+            except Exception:
+                # Schema migration: state has old fields, create fresh state preserving messages
+                messages = state_dict.get("messages", [])
+                new_state = AgentState(session_id=session_id, messages=messages)
+                await self.save_agent_state(session_id, new_state)
+                return new_state
 
         # 2. Fallback: Check for legacy history
         # Note: accessing .messages on RedisChatMessageHistory is a sync call (blocking)

@@ -40,11 +40,8 @@ class GuardrailManager:
             RULES:
             1. If the query is about French procedures, law, public services, or ID documents, it is APPROVED.
             2. If the query is a conversational follow-up or meta-question (e.g., "Why?", "What is my name?"), and there is HISTORY showing a previous administrative discussion, it is APPROVED.
-            3. **CRITICAL**: If the user provides a STATEMENT (e.g., "France", "Le Cannet", "Married", "3000 euros") that answers a previous question in HISTORY, it is APPROVED.
-               - DO NOT REJECT informational answers even if they look like declarative sentences.
-               - Check the last Agent message in HISTORY. If it asked for this info, APPROVE.
-            4. NEW queries about unrelated topics (cooking, celebrities, non-French law) are REJECTED.
-            5. Personal introductions combined with admin questions are APPROVED.
+            3. NEW queries about unrelated topics (cooking, celebrities, non-French law) are REJECTED.
+            4. Personal introductions (e.g., "My name is...") combined with admin questions are APPROVED.
 
             Respond only with 'APPROVED' or 'REJECTED: [Short reason in Vietnamese]'.
 
@@ -90,9 +87,14 @@ class GuardrailManager:
             2. The conversation HISTORY.
             3. The current user QUERY (e.g., names or details the user just introduced).
             4. Common sense/AI identity (e.g., "I am an AI").
+            5. REASONABLE SYNTHESIS: A step-by-step summary or paraphrase of administrative procedures is SAFE, even if not word-for-word from the context, as long as no specific numbers (costs, deadlines, quotas) are invented.
+            6. CLARIFYING QUESTIONS: Responses that ask for missing information (nationality, residence status, visa type) are always SAFE.
 
-            An answer is a HALLUCINATION if it makes up new administrative rules or claims facts not in the context.
+            An answer is a HALLUCINATION ONLY if it:
+            - Invents specific numbers (costs, deadlines, quotas) NOT present in the context.
+            - Claims a specific rule applies to the user without any basis in context.
 
+            When in doubt, respond SAFE. False rejections are worse than false approvals for this system.
             Respond strictly with 'SAFE' or 'HALLUCINATION'.""",
                 ),
                 (

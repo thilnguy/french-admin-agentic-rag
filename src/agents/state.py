@@ -13,6 +13,9 @@ class UserProfile(BaseModel):
     residency_status: Optional[str] = (
         None  # e.g., "student", "worker", "tourist", "titre de séjour"
     )
+    has_legal_residency: Optional[bool] = (
+        None  # True if user stated they live legally in France
+    )
     visa_type: Optional[str] = None  # e.g., "VLS-TS", "Carte de résident"
     duration_of_stay: Optional[str] = None  # e.g., "2 ans", "moins de 3 mois"
     location: Optional[str] = None  # e.g., "Paris", "Antibes"
@@ -38,6 +41,7 @@ class AgentState(BaseModel):
     session_id: str
     intent: Optional[str] = None  # e.g., "SIMPLE_QA", "COMPLEX_PROCEDURE"
     current_step: Optional[str] = None  # e.g., "ASKING_DOCUMENTS"
+    core_goal: Optional[str] = None  # The user's primary objective, locked across turns
 
     # Metadata
     metadata: Dict[str, Any] = Field(default_factory=dict)

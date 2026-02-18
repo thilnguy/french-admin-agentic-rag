@@ -10,14 +10,16 @@ from langchain_core.messages import AIMessage
 # Node Functions
 async def legal_expert_node(state: AgentState):
     """Executes the Legal Research Agent."""
-    query = state.messages[-1].content
+    # Prefer the goal-anchored rewritten query over raw user message
+    query = state.metadata.get("current_query") or state.messages[-1].content
     response = await legal_agent.run(query, state)
     return {"messages": [AIMessage(content=response)]}
 
 
 async def procedure_expert_node(state: AgentState):
     """Executes the Procedure Guide Agent."""
-    query = state.messages[-1].content
+    # Prefer the goal-anchored rewritten query over raw user message
+    query = state.metadata.get("current_query") or state.messages[-1].content
     response = await procedure_agent.run(query, state)
     return {
         "messages": [AIMessage(content=response)],

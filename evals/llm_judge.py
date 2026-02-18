@@ -1,5 +1,6 @@
 import asyncio
 import json
+import redis
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import Literal
@@ -8,6 +9,30 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from src.agents.orchestrator import AdminOrchestrator
 from src.config import settings
+
+# Rate limiting config
+EVAL_DELAY_BETWEEN_CASES = 3.0  # seconds between test cases
+EVAL_DELAY_WITHIN_CASE = 2.0  # seconds between agent call and judge call
+EVAL_MAX_RETRIES = 3  # max retries on 429
+EVAL_RETRY_BASE_DELAY = 2.0  # base delay for exponential backoff
+
+
+async def with_rate_limit_retry(coro_fn, *args, **kwargs):
+    """Calls an async function with exponential backoff on 429 errors."""
+    for attempt in range(EVAL_MAX_RETRIES):
+        try:
+            return await coro_fn(*args, **kwargs)
+        except Exception as e:
+            if "429" in str(e) or "quota" in str(e).lower() or "rate" in str(e).lower():
+                wait = EVAL_RETRY_BASE_DELAY * (2**attempt)
+                print(
+                    f"   ⏳ Rate limit hit (attempt {attempt+1}/{EVAL_MAX_RETRIES}). Waiting {wait:.0f}s..."
+                )
+                await asyncio.sleep(wait)
+                if attempt == EVAL_MAX_RETRIES - 1:
+                    raise  # Re-raise on last attempt
+            else:
+                raise  # Non-rate-limit errors bubble up immediately
 
 
 # --- Output Schema for the Judge ---
@@ -111,6 +136,26 @@ async def run_eval():
     print("🚀 STARTING LLM-JUDGE EVALUATION")
     print("=" * 60)
 
+    # CRITICAL: Flush Redis before eval to prevent stale state from contaminating results.
+    # We flush TWO key namespaces:
+    # 1. agent_res:*   — cached final responses (prevents serving old answers)
+    # 2. agent_state:* — session state (prevents GoalExtractor reading stale core_goal
+    #                    from a previous test case's session)
+    # NOTE: GoalExtractor/QueryRewriter are KEPT — they are essential for production
+    # multi-turn conversations. The issue is eval isolation, not the components themselves.
+    try:
+        r = redis.Redis(host="localhost", port=6379, db=0)
+        res_keys = r.keys("agent_res:*") or []
+        state_keys = r.keys("agent_state:eval_case_*") or []
+        all_keys = res_keys + state_keys
+        if all_keys:
+            r.delete(*all_keys)
+        print(
+            f"🧹 Flushed {len(res_keys)} cached responses + {len(state_keys)} eval states from Redis."
+        )
+    except Exception as e:
+        print(f"⚠️  Could not flush Redis cache: {e} (continuing anyway)")
+
     # Load Enriched Data
     data_path = Path(__file__).parent / "test_data" / "golden_set_enriched.json"
     if not data_path.exists():
@@ -135,17 +180,49 @@ async def run_eval():
         print(f"🔹 Case {current_idx}: {case['question'][:60]}...")
 
         # 1. Get Agent Response
+        # CRITICAL: Use unique session_id per test case to prevent state contamination.
+        # GoalExtractor/QueryRewriter are KEPT for production multi-turn support.
+        # We isolate eval by: (a) unique session_id, (b) deleting the session state before each case.
+        test_session_id = f"eval_case_{current_idx}"
+
+        # Delete this session's state so GoalExtractor starts fresh (no stale core_goal)
         try:
-            response = await orchestrator.handle_query(
-                case["question"], case.get("language", "fr")
+            r.delete(f"agent_state:{test_session_id}")
+        except Exception:
+            pass
+
+        # --- Agent Call (with retry on 429) ---
+        try:
+            response = await with_rate_limit_retry(
+                orchestrator.handle_query,
+                case["question"],
+                case.get("language", "fr"),
+                session_id=test_session_id,
             )
         except Exception as e:
             response = f"SYSTEM_ERROR: {e}"
 
         print(f"   Agent: {response[:100].replace(chr(10), ' ')}...")
 
-        # 2. Judge It
-        verdict = await judge_response(judge_llm, case, response)
+        # Brief pause between agent call and judge call
+        await asyncio.sleep(EVAL_DELAY_WITHIN_CASE)
+
+        # --- Judge Call (with retry on 429) ---
+        try:
+            verdict = await with_rate_limit_retry(
+                judge_response, judge_llm, case, response
+            )
+        except Exception as e:
+            print(f"   Judge Error (after retries): {e}")
+            verdict = JudgeVerdict(
+                action_type="REFUSAL",
+                is_action_appropriate=False,
+                asked_for_missing_info=False,
+                hallucination_detected=False,
+                context_provided=False,
+                score=0,
+                reasoning=f"Judge Failed after retries: {e}",
+            )
 
         print(f"   👨‍⚖️ Verdict: Score {verdict.score}/10 | {verdict.action_type}")
         print(f"   Reason: {verdict.reasoning}\n")
@@ -154,6 +231,11 @@ async def run_eval():
             {"case": case, "response": response, "verdict": verdict.model_dump()}
         )
         current_idx += 1
+
+        # Delay between cases to respect OpenAI rate limits
+        if current_idx <= len(test_cases):
+            print(f"   ⏱️  Waiting {EVAL_DELAY_BETWEEN_CASES:.0f}s before next case...")
+            await asyncio.sleep(EVAL_DELAY_BETWEEN_CASES)
 
     # --- Metrics ---
     total_score = sum(r["verdict"]["score"] for r in results)
