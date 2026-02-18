@@ -9,8 +9,13 @@ class UserProfile(BaseModel):
     language: str = "fr"  # Default to French
     name: Optional[str] = None
     age: Optional[int] = None
-    residency_status: Optional[str] = None  # e.g., "student", "worker", "tourist"
-    location: Optional[str] = None  # e.g., "Paris"
+    nationality: Optional[str] = None # e.g., "Française", "Américaine"
+    residency_status: Optional[str] = None  # e.g., "student", "worker", "tourist", "titre de séjour"
+    visa_type: Optional[str] = None # e.g., "VLS-TS", "Carte de résident"
+    duration_of_stay: Optional[str] = None # e.g., "2 ans", "moins de 3 mois"
+    location: Optional[str] = None  # e.g., "Paris", "Antibes"
+    fiscal_residence: Optional[str] = None # e.g., "France", "Etranger"
+    income_source: Optional[str] = None # e.g., "France", "Etranger"
 
 
 class AgentState(BaseModel):

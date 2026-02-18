@@ -6,6 +6,7 @@ from langchain_qdrant import QdrantVectorStore
 from src.config import settings
 from src.utils.logger import logger
 from src.utils import metrics
+from src.shared.reranker import get_reranker
 import time
 
 
@@ -22,7 +23,7 @@ def _get_embeddings():
     return HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
 
 
-async def retrieve_legal_info(query: str, domain: str = "general"):
+async def retrieve_legal_info(query: str, domain: str = "general", user_profile=None):
     """
     Retrieves information about French administrative procedures or legislation.
     domain: 'procedure' (service-public) or 'legislation' (legi) or 'general' (both)
@@ -71,7 +72,13 @@ async def retrieve_legal_info(query: str, domain: str = "general"):
             f" - Found: {r['source']} | Title: {r['metadata'].get('title', 'N/A')}"
         )
 
-    return results
+    # Context-Aware Reranking (Layer 3)
+    reranker = get_reranker()
+    reranked_results = reranker.rerank(query, results, user_profile=user_profile)
+    
+    logger.debug(f"Reranked top {len(reranked_results)} results.")
+
+    return reranked_results
 
 
 def warmup():
