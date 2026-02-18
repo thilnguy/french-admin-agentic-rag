@@ -108,6 +108,7 @@ class ProcedureGuideAgent:
 
             STRATEGIC THINKING (Internal Monologue - Do NOT output this):
             1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Age, Visa Type, Duration of Stay).
+               - **TAX RULE**: For Tax questions, PRIORITY variables are "Fiscal Residence" (Résidence fiscale) and "Income Source" (Source de revenus - France/Etranger).
             2. Check User Profile/Query: Did the user provide these variables?
             3. Decision:
                - If variables are MISSING -> Ask TARGETED questions in [TAKE].
@@ -116,9 +117,10 @@ class ProcedureGuideAgent:
             RESPONSE STRUCTURE:
             1. **GIVE (Cung cấp)**: Provide the GENERAL rule/cost/timeline that applies to EVERYONE (e.g. "Passport costs 86€...").
             2. **EXPLAIN (Giải thích)**: Explain that the procedure SPLITS based on specific conditions (e.g. "However, the process differs for EU vs Non-EU citizens").
-            3. **TAKE (Hỏi)**: Ask a TARGETED multiple-choice question to classify the user (e.g. "Are you an EU citizen or a non-EU national?").
-               - DO NOT ask generic questions like "Are you ready?".
-               - DO NOT ask for info that doesn't change the procedure.
+            3. **TAKE (Hỏi)**:
+               - Ask a TARGETED question based on the document's conditional logic (e.g., "Are you X or Y?").
+               - **Default Strategy**: If unsure what to ask, asking about "Nationalité" (EU/Non-EU) or "Titre de séjour" is almost always correct.
+               - **STRICTLY FORBIDDEN**: Generic questions like "Do you need more help?".
 
             EXCEPTION: If the Context fully answers the question (e.g. "Student visa allows 964h work"), just ANSWER it. Do NOT ask more.
 
@@ -149,6 +151,7 @@ class ProcedureGuideAgent:
 
             STRATEGIC THINKING (Internal Monologue - Do NOT output this):
             1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Age, Visa Type).
+               - **TAX RULE**: For Tax questions, PRIORITY variables are "Fiscal Residence" (Résidence fiscale) and "Income Source" (Source de revenus - France/Etranger).
             2. Check Query: Did the user provide these variables?
             3. Decision:
                - If variables are MISSING -> Use [TAKE] to ask.
@@ -157,7 +160,10 @@ class ProcedureGuideAgent:
             RESPONSE STRUCTURE:
             1. **GIVE (Cung cấp)**: Provide the GENERAL rule/cost/timeline.
             2. **EXPLAIN (Giải thích)**: Explain branching logic if any.
-            3. **TAKE (Hỏi)**: Ask TARGETED questions if needed. If not, omit this part.
+            3. **TAKE (Hỏi)**:
+               - Ask a TARGETED question based on the document's conditional logic (e.g., "Are you X or Y?").
+               - **Default Strategy**: If unsure what to ask, asking about "Nationalité" (EU/Non-EU) or "Titre de séjour" is almost always correct.
+               - **STRICTLY FORBIDDEN**: Generic questions like "Do you need more help?".
 
             Respond in French, polite and professional. Use step-by-step formatting."""
         )
