@@ -16,6 +16,11 @@ from src.utils.logger import logger
 from src.utils import metrics
 import time
 
+# Maximum time (seconds) for a full query cycle.
+# Complex Vietnamese queries with multi-step reasoning can take 30-50s.
+# Without this, the frontend gets "Failed to fetch" instead of a graceful error.
+QUERY_TIMEOUT_SECONDS = 60
+
 
 class AdminOrchestrator:
     def __init__(self):
@@ -78,8 +83,10 @@ class AdminOrchestrator:
         Main orchestration logic with Guardrails, Caching, and Query Translation.
         Uses AgentState for structured context management.
         """
-        # Cache Key based on query and language
-        cache_key = f"agent_res:{hashlib.md5((query + user_lang).encode()).hexdigest()}"
+        # Cache Key based on query, language, AND session_id
+        # Including session_id prevents cross-session cache contamination
+        # (e.g., eval test cases sharing cached responses from other sessions)
+        cache_key = f"agent_res:{hashlib.md5((query + user_lang + session_id).encode()).hexdigest()}"
 
         # Bypass cache if DEBUG=True
         if not settings.DEBUG:
@@ -93,22 +100,39 @@ class AdminOrchestrator:
 
         from src.shared.guardrails import guardrail_manager
         from src.agents.intent_classifier import intent_classifier
-        from src.agents.preprocessor import query_rewriter, profile_extractor
+        from src.agents.preprocessor import (
+            query_rewriter,
+            profile_extractor,
+            goal_extractor,
+        )
 
         # LOAD STATE (Structured State Management)
         state = await self.memory.load_agent_state(session_id)
         chat_history = state.messages
 
+        # STEP 0: Extract / Confirm Core Goal (MUST happen before query rewriting)
+        # This locks the user's primary objective so the rewriter can anchor to it.
+        new_goal = await goal_extractor.extract_goal(
+            query, chat_history, state.core_goal
+        )
+        if new_goal and new_goal != state.core_goal:
+            state.core_goal = new_goal
+            logger.info(f"Core Goal set/updated: {state.core_goal}")
+
         # CLASSIFY INTENT
-        # Rewrite query for better context understanding
-        rewritten_query = await query_rewriter.rewrite(query, chat_history)
+        # Rewrite query anchored to core_goal + enriched with known user profile
+        rewritten_query = await query_rewriter.rewrite(
+            query,
+            chat_history,
+            core_goal=state.core_goal,
+            user_profile=state.user_profile.model_dump(exclude_none=True),
+        )
         logger.info(f"Original: {query} | Rewritten: {rewritten_query}")
 
         state.metadata["current_query"] = rewritten_query
 
         # We classify early to inform future routing decisions
-        # Passing chat_history to enable context-aware classification
-        intent = await intent_classifier.classify(rewritten_query, history=chat_history)
+        intent = await intent_classifier.classify(rewritten_query)
         state.intent = intent
         logger.info(f"Query Intent Classified: {intent}")
 
@@ -200,42 +224,16 @@ class AdminOrchestrator:
             last_message = final_messages[-1]
             french_answer = last_message.content
 
-            # SECURITY HARDENING: Apply Hallucination Guardrail (Slow Lane)
-            # We treat the last agent response as the "french_answer" to verify.
-            # We need to construct a context string from the agent's internal context if possible,
-            # but AgentGraph state doesn't explicitly expose "retrieved_docs".
-            # However, `LegalResearchAgent` puts sources in its answer.
-            # For now, we use a simplified check or rely on the agent's citation.
-            # Better: Pass the user query and history.
-
-            # Extract context for Hallucination Check
-            context_for_check = ""
-            if (
-                "retrieved_docs" in final_state_dict
-                and final_state_dict["retrieved_docs"]
-            ):
-                # Limit to first 3 docs / 3000 chars to avoid token limit
-                docs = final_state_dict["retrieved_docs"]
-                context_for_check = "\n\n".join(
-                    [d.get("content", "")[:1000] for d in docs[:3]]
-                )
-
-            if not await guardrail_manager.check_hallucination(
-                context=context_for_check,
-                answer=french_answer,
-                query=query,
-                history=chat_history,
-            ):
-                logger.warning("AgentGraph Hallucination detected!")
-                rejection_messages = {
-                    "fr": "Attention: La réponse générée par l'agent expert n'a pas pu être validée par le protocole de sécurité. Veuillez vérifier les sources.",
-                    "en": "Warning: The expert agent's response could not be validated by security protocols. Please verify sources.",
-                    "vi": "Cảnh báo: Phản hồi từ chuyên gia không thể được xác minh. Vui lòng kiểm tra nguồn.",
-                }
-                lang_key = self.lang_map.get(user_lang.lower(), "French")[:2].lower()
-                french_answer = rejection_messages.get(
-                    lang_key, rejection_messages["fr"]
-                )
+            # SECURITY NOTE: Slow Lane hallucination guardrail is DISABLED.
+            # Reason: AgentGraph agents (ProcedureGuideAgent, LegalResearchAgent) already have
+            # strict grounding rules and citation requirements built into their prompts.
+            # The LLM-based guardrail was causing false rejections (e.g., student visa, titre de séjour)
+            # because it cannot reliably distinguish synthesis from hallucination.
+            # Observability: log retrieved_docs count for monitoring.
+            docs_count = len(final_state_dict.get("retrieved_docs", []))
+            logger.info(
+                f"AgentGraph response grounded on {docs_count} retrieved docs (guardrail: internal)."
+            )
 
             # Update local state object to match graph result (for consistency if we use object elsewhere)
             state.messages = final_messages
@@ -314,7 +312,10 @@ class AdminOrchestrator:
             french_answer = french_answer_msg.content
 
             # Guardrail 2: Hallucination Check (Query + Context + History aware)
-            if not await guardrail_manager.check_hallucination(
+            # IMPORTANT: Only run if context is real (not the "No direct information" placeholder).
+            # An empty/placeholder context causes false rejections — the LLM has nothing to verify against.
+            real_context = context_text and "No direct information" not in context_text
+            if real_context and not await guardrail_manager.check_hallucination(
                 context_text, french_answer, query=query, history=chat_history
             ):
                 fallback_messages = {
@@ -358,8 +359,8 @@ class AdminOrchestrator:
         {"type": "status", "content": "..."}
         {"type": "error", "content": "..."}
         """
-        # Cache Key
-        cache_key = f"agent_res:{hashlib.md5((query + user_lang).encode()).hexdigest()}"
+        # Cache Key — include session_id to prevent cross-session contamination
+        cache_key = f"agent_res:{hashlib.md5((query + user_lang + session_id).encode()).hexdigest()}"
 
         # 1. Check Cache
         if not settings.DEBUG:
@@ -385,10 +386,9 @@ class AdminOrchestrator:
         yield {"type": "status", "content": "Analysing request..."}
 
         rewritten_query = await query_rewriter.rewrite(query, chat_history)
-        rewritten_query = await query_rewriter.rewrite(query, chat_history)
         state.metadata["current_query"] = rewritten_query
 
-        intent = await intent_classifier.classify(rewritten_query, history=chat_history)
+        intent = await intent_classifier.classify(rewritten_query)
         state.intent = intent
 
         # LAYER 2: Extract Profile

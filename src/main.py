@@ -72,16 +72,10 @@ async def global_exception_handler(request: Request, exc: Exception):
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
-async def get_api_key(
-    request: Request,
-    api_key_header: str = Security(api_key_header),
-):
-    # Check Header first, then Query Param
-    key = api_key_header or request.query_params.get("api_key")
-    
+async def get_api_key(api_key_header: str = Security(api_key_header)):
     if settings.API_KEY:
-        if key == settings.API_KEY:
-            return key
+        if api_key_header == settings.API_KEY:
+            return api_key_header
         raise HTTPException(status_code=403, detail="Could not validate credentials")
     return None
 
@@ -144,37 +138,50 @@ async def chat(request: Request, chat_request: ChatRequest):
     """
     Standard text chat endpoint.
     """
+    import asyncio
+
     logger.info(
         f"Received chat request: {chat_request.query} [{chat_request.language}]"
     )
     try:
-        answer = await orchestrator.handle_query(
-            chat_request.query, chat_request.language, chat_request.session_id
+        answer = await asyncio.wait_for(
+            orchestrator.handle_query(
+                chat_request.query, chat_request.language, chat_request.session_id
+            ),
+            timeout=60.0,  # 60s max — prevents 'Failed to fetch' on complex queries
         )
         return ChatResponse(answer=answer)
+    except asyncio.TimeoutError:
+        logger.error(f"Query timed out after 60s: {chat_request.query}")
+        timeout_messages = {
+            "fr": "Désolé, la requête a pris trop de temps. Veuillez réessayer avec une question plus courte.",
+            "en": "Sorry, the request timed out. Please try again with a shorter question.",
+            "vi": "Xin lỗi, yêu cầu mất quá nhiều thời gian. Vui lòng thử lại với câu hỏi ngắn hơn.",
+        }
+        lang_key = chat_request.language.lower()[:2]
+        msg = timeout_messages.get(lang_key, timeout_messages["fr"])
+        return ChatResponse(answer=msg)
     except Exception as e:
         logger.error(f"Error in chat endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/chat/stream")
+@app.post("/chat/stream", dependencies=[Depends(get_api_key)])
 @limiter.limit(settings.RATE_LIMIT)
-async def chat_stream(
-    request: Request,
-    query: str,
-    user_lang: str = "fr",
-    session_id: str = "default",
-    api_key: str = Depends(get_api_key),
-):
+async def chat_stream(request: Request, chat_request: ChatRequest):
     """
     Streaming endpoint using Server-Sent Events (SSE).
-    Accessible via GET for better compatibility with EventSource.
+    Yields JSON events: {"type": "token"|"status"|"error", "content": "..."}
     """
-    logger.info(f"Received stream request: {query} [{user_lang}]")
+    logger.info(
+        f"Received stream request: {chat_request.query} [{chat_request.language}]"
+    )
 
     async def event_generator():
         try:
-            async for event in orchestrator.stream_query(query, user_lang, session_id):
+            async for event in orchestrator.stream_query(
+                chat_request.query, chat_request.language, chat_request.session_id
+            ):
                 # SSE format: data: <json>\n\n
                 import json
 
