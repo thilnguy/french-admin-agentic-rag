@@ -35,7 +35,15 @@ class IntentClassifier:
         4. FORM_FILLING: Explicit requests to help fill out a specific form.
            (e.g., "Help me fill Cerfa 12345", "What do I put in box 3?")
 
-        Return ONLY the category name. Do not add any explanation."""
+        SPECIAL RULE FOR CONTEXT:
+        - If the user provides a STATEMENT (e.g., "I live in Paris", "I am American", "Married") that answers a previous question in the HISTORY:
+          - Classify it as **COMPLEX_PROCEDURE** (so the Procedure Agent can process the answer).
+          - Do NOT classify as UNKNOWN.
+
+        Return ONLY the category name. Do not add any explanation.
+
+        HISTORY:
+        {history}"""
 
         self.prompt = ChatPromptTemplate.from_messages(
             [("system", system_prompt), ("human", "{query}")]
@@ -43,9 +51,14 @@ class IntentClassifier:
 
         self.chain = self.prompt | self.llm
 
-    async def classify(self, query: str) -> str:
+    async def classify(self, query: str, history: list = None) -> str:
+        # Format history
+        history_text = "No history."
+        if history:
+            history_text = "\n".join([f"{getattr(m, 'type', 'msg')}: {m.content}" for m in history[-3:]])
+
         try:
-            response = await self.chain.ainvoke({"query": query})
+            response = await self.chain.ainvoke({"query": query, "history": history_text})
             intent = response.content.strip().upper()
             if intent in Intent.__members__:
                 return intent

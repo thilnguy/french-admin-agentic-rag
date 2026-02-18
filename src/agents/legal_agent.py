@@ -39,7 +39,7 @@ class LegalResearchAgent:
             """You are a rigorous French Administration Assistant.
             Answer the user's question using ONLY the provided context.
             Cite your sources (Service-Public or Legifrance).
-            
+
             **MANDATORY CITATION RULE**:
             - You MUST cite the source URL for every key fact provided.
             - Use the format: `[Source: service-public.fr/...]` at the end of the distinct section or sentence.

@@ -40,8 +40,11 @@ class GuardrailManager:
             RULES:
             1. If the query is about French procedures, law, public services, or ID documents, it is APPROVED.
             2. If the query is a conversational follow-up or meta-question (e.g., "Why?", "What is my name?"), and there is HISTORY showing a previous administrative discussion, it is APPROVED.
-            3. NEW queries about unrelated topics (cooking, celebrities, non-French law) are REJECTED.
-            4. Personal introductions (e.g., "My name is...") combined with admin questions are APPROVED.
+            3. **CRITICAL**: If the user provides a STATEMENT (e.g., "France", "Le Cannet", "Married", "3000 euros") that answers a previous question in HISTORY, it is APPROVED.
+               - DO NOT REJECT informational answers even if they look like declarative sentences.
+               - Check the last Agent message in HISTORY. If it asked for this info, APPROVE.
+            4. NEW queries about unrelated topics (cooking, celebrities, non-French law) are REJECTED.
+            5. Personal introductions combined with admin questions are APPROVED.
 
             Respond only with 'APPROVED' or 'REJECTED: [Short reason in Vietnamese]'.
 

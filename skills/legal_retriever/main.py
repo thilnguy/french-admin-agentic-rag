@@ -75,7 +75,7 @@ async def retrieve_legal_info(query: str, domain: str = "general", user_profile=
     # Context-Aware Reranking (Layer 3)
     reranker = get_reranker()
     reranked_results = reranker.rerank(query, results, user_profile=user_profile)
-    
+
     logger.debug(f"Reranked top {len(reranked_results)} results.")
 
     return reranked_results
