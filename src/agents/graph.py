@@ -19,7 +19,10 @@ async def procedure_expert_node(state: AgentState):
     """Executes the Procedure Guide Agent."""
     query = state.messages[-1].content
     response = await procedure_agent.run(query, state)
-    return {"messages": [AIMessage(content=response)]}
+    return {
+        "messages": [AIMessage(content=response)],
+        "retrieved_docs": state.retrieved_docs,
+    }
 
 
 # Router Logic

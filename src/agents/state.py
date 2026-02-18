@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any, Union
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 
@@ -19,8 +19,6 @@ class AgentState(BaseModel):
     Used to pass context between the Orchestrator and (future) Specialist Agents.
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
     # Conversation History
     messages: List[Union[HumanMessage, AIMessage, SystemMessage]] = Field(
         default_factory=list
@@ -36,3 +34,9 @@ class AgentState(BaseModel):
 
     # Metadata
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    retrieved_docs: List[Dict[str, Any]] = Field(
+        default_factory=list
+    )  # Stores docs for Hallucination Check
+
+    class Config:
+        arbitrary_types_allowed = True

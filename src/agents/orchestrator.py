@@ -177,8 +177,20 @@ class AdminOrchestrator:
             # For now, we use a simplified check or rely on the agent's citation.
             # Better: Pass the user query and history.
 
+            # Extract context for Hallucination Check
+            context_for_check = ""
+            if (
+                "retrieved_docs" in final_state_dict
+                and final_state_dict["retrieved_docs"]
+            ):
+                # Limit to first 3 docs / 3000 chars to avoid token limit
+                docs = final_state_dict["retrieved_docs"]
+                context_for_check = "\n\n".join(
+                    [d.get("content", "")[:1000] for d in docs[:3]]
+                )
+
             if not await guardrail_manager.check_hallucination(
-                context_text="",  # Context is implicit in the agent's answer (self-contained)
+                context=context_for_check,
                 answer=french_answer,
                 query=query,
                 history=chat_history,

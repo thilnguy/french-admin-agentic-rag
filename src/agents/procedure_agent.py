@@ -25,30 +25,26 @@ class ProcedureGuideAgent:
         # 1. Step Analyzer: Determines the current stage of the procedure
         self.step_analyzer_prompt = ChatPromptTemplate.from_template(
             """You are a French Administrative Procedure Guide.
-            Analyze the conversation history and the user's latest query to determine the next logical step.
+            Analyze the conversation to determine the next step.
 
-            Current known user profile: {user_profile}
-            Conversation History: {history}
+            User Query: {query}
+            Profile: {user_profile}
+            History: {history}
 
             Possible Steps:
-            1. CLARIFICATION: Essential information is missing (e.g., nationality, age, status) to identify the correct procedure.
-            2. RETRIEVAL: We have enough info to find the procedure.
-            3. EXPLANATION: We have the procedure content, need to explain the next step to the user.
-            4. COMPLETED: The procedure is finished.
+            1. CLARIFICATION: CRITICAL info is missing (e.g. asking for "visa" but didn't say which type).
+               - DO NOT use this if the question is general (e.g., "What is the cost of a passport?").
+               - DO NOT use this if the answer applies to 90% of cases.
+            2. RETRIEVAL: The user asks a general question or we have enough info.
+            3. EXPLANATION: We have the procedure content.
+            4. COMPLETED: Procedure finished.
 
-            Return ONLY the step name (CLARIFICATION, RETRIEVAL, EXPLANATION, or COMPLETED)."""
+            Return ONLY the step name."""
         )
 
         # 2. Clarification Generator
-        self.clarification_prompt = ChatPromptTemplate.from_template(
-            """You are helping a user with a French administrative procedure.
-            You need more information to identify the correct process.
-
-            User Query: {query}
-            Missing Info: {missing_info}
-
-            Ask a polite, concise question in French to get this information."""
-        )
+        # (This is now dynamic in _ask_clarification, but we keep this for legacy safety)
+        self.clarification_prompt = ChatPromptTemplate.from_template("...")
 
     @retry(
         wait=wait_exponential(multiplier=1, min=2, max=10),
@@ -65,37 +61,25 @@ class ProcedureGuideAgent:
 
     async def run(self, query: str, state: AgentState) -> str:
         logger.info(f"ProcedureGuideAgent started for query: {query}")
-
-        # Step 1: Analyze Current State/Step
-        # For MVP, we might simple-path this, but let's try to be smart.
-        # We need to construct a history string
         history_str = "\n".join([f"{m.type}: {m.content}" for m in state.messages[-5:]])
 
-        next_step = await self._determine_step(
+        # Parallelize Step Analysis and Retrieval
+        import asyncio
+
+        step_task = self._determine_step(
             query, state.user_profile.model_dump(), history_str
         )
-        logger.info(f"Determined next step: {next_step}")
+        docs_task = retrieve_legal_info(query, domain="procedure")
 
+        next_step, docs = await asyncio.gather(step_task, docs_task)
+        logger.info(f"Determined next step: {next_step}")
         state.current_step = next_step
+        state.retrieved_docs = docs  # Store docs for Hallucination Check
 
         if next_step == "CLARIFICATION":
-            return await self._ask_clarification(query, state)
+            return await self._ask_clarification(query, state, docs)
 
-        elif next_step == "RETRIEVAL":
-            # Retrieve docs -> Retrieve usually leads to Explanation
-            docs = await retrieve_legal_info(query, domain="procedure")
-            # Store docs in metadata or just use them immediately?
-            # For this agent, we might want to return the explanation directly.
-            # Let's simplify: Retrieval + Explanation in one go for now.
-            return await self._explain_procedure(query, docs)
-
-        elif next_step == "EXPLANATION":
-            # If we already have context?
-            # For MVP, let's treat Retrieval+Explanation as the main active path.
-            pass
-
-        # Default Logic (Legacy-style fallback if complex logic fails)
-        docs = await retrieve_legal_info(query, domain="procedure")
+        # For RETRIEVAL or EXPLANATION or default w/ docs
         return await self._explain_procedure(query, docs)
 
     async def _determine_step(
@@ -106,19 +90,48 @@ class ProcedureGuideAgent:
             chain, {"query": query, "user_profile": user_profile, "history": history}
         )
 
-    async def _ask_clarification(self, query: str, state: AgentState) -> str:
-        # In a real system, we'd identify WHAT is missing.
-        # Here we let the LLM generate the question based on the context.
+    async def _ask_clarification(
+        self, query: str, state: AgentState, docs: List[Dict]
+    ) -> str:
+        context_summary = ""
+        if docs:
+            context_summary = "\n".join([d["content"][:800] for d in docs[:3]])
+
         prompt = ChatPromptTemplate.from_template(
-            """User asks: {query}
-            We need to Identify the correct administrative procedure.
-            Based on: {profile}
-            What 1 key piece of info is missing? (e.g. nationality, age?).
-            Ask for it in French."""
+            """User Query: {query}
+            Context from Docs:
+            {context}
+
+            User Profile: {profile}
+
+            ROLE: You are an Expert Administrative Guide. Providing public procedures is SAFE and LEGAL.
+
+            STRATEGIC THINKING (Internal Monologue - Do NOT output this):
+            1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Age, Visa Type, Duration of Stay).
+            2. Check User Profile/Query: Did the user provide these variables?
+            3. Decision:
+               - If variables are MISSING -> Ask TARGETED questions in [TAKE].
+               - If variables are PRESENT -> Just Answer.
+
+            RESPONSE STRUCTURE:
+            1. **GIVE (Cung cấp)**: Provide the GENERAL rule/cost/timeline that applies to EVERYONE (e.g. "Passport costs 86€...").
+            2. **EXPLAIN (Giải thích)**: Explain that the procedure SPLITS based on specific conditions (e.g. "However, the process differs for EU vs Non-EU citizens").
+            3. **TAKE (Hỏi)**: Ask a TARGETED multiple-choice question to classify the user (e.g. "Are you an EU citizen or a non-EU national?").
+               - DO NOT ask generic questions like "Are you ready?".
+               - DO NOT ask for info that doesn't change the procedure.
+
+            EXCEPTION: If the Context fully answers the question (e.g. "Student visa allows 964h work"), just ANSWER it. Do NOT ask more.
+
+            Respond in French, polite and professional."""
         )
         chain = prompt | self.llm | StrOutputParser()
         return await self._run_chain(
-            chain, {"query": query, "profile": state.user_profile.model_dump()}
+            chain,
+            {
+                "query": query,
+                "profile": state.user_profile.model_dump(),
+                "context": context_summary,
+            },
         )
 
     async def _explain_procedure(self, query: str, docs: List[Dict]) -> str:
@@ -128,16 +141,25 @@ class ProcedureGuideAgent:
         context = "\n\n".join([d["content"][:2000] for d in docs])
 
         prompt = ChatPromptTemplate.from_template(
-            """You are a Guide for French Administration.
-            Explain the procedure clearly based on the provided context.
-            Use step-by-step formatting (1., 2., 3.).
-
-            Context:
+            """User Query: {query}
+            Context from Docs:
             {context}
 
-            User Question: {query}
+            ROLE: You are an Expert Administrative Guide. Providing public procedures is SAFE and LEGAL.
 
-            Response (in French):"""
+            STRATEGIC THINKING (Internal Monologue - Do NOT output this):
+            1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Age, Visa Type).
+            2. Check Query: Did the user provide these variables?
+            3. Decision:
+               - If variables are MISSING -> Use [TAKE] to ask.
+               - If variables are PRESENT -> Just Answer.
+
+            RESPONSE STRUCTURE:
+            1. **GIVE (Cung cấp)**: Provide the GENERAL rule/cost/timeline.
+            2. **EXPLAIN (Giải thích)**: Explain branching logic if any.
+            3. **TAKE (Hỏi)**: Ask TARGETED questions if needed. If not, omit this part.
+
+            Respond in French, polite and professional. Use step-by-step formatting."""
         )
         chain = prompt | self.llm | StrOutputParser()
         return await self._run_chain(chain, {"query": query, "context": context})

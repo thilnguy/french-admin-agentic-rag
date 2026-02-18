@@ -1,0 +1,153 @@
+[
+    {
+        "question": "Comment obtenir un passeport français ?",
+        "ground_truth": "Pour obtenir un passeport, vous devez vous rendre dans une mairie équipée d'une station d'enregistrement avec les pièces justificatives (photo d'identité, justificatif de domicile, acte de naissance). Le coût est de 86€ pour un adulte.",
+        "context_keywords": [
+            "passeport",
+            "mairie",
+            "station d'enregistrement",
+            "86€"
+        ],
+        "language": "fr",
+        "expected_behavior": "HYBRID",
+        "critical_missing_info": [
+            "nationality",
+            "current residence"
+        ]
+    },
+    {
+        "question": "Quelles sont les étapes pour renouveler un titre de séjour ?",
+        "ground_truth": "Le renouvellement du titre de séjour doit être demandé dans les 2 mois précédant l'expiration. Il faut prendre rendez-vous à la préfecture, fournir les justificatifs requis (titre actuel, justificatif de domicile, ressources), et payer la taxe de 225€.",
+        "context_keywords": [
+            "titre de séjour",
+            "préfecture",
+            "2 mois",
+            "225€"
+        ],
+        "language": "fr",
+        "expected_behavior": "HYBRID",
+        "critical_missing_info": [
+            "type_of_residence_permit",
+            "current_status",
+            "nationality"
+        ]
+    },
+    {
+        "question": "How do I register for French healthcare (Sécurité Sociale)?",
+        "ground_truth": "To register for French healthcare, you need to be a legal resident. Apply through CPAM (Caisse Primaire d'Assurance Maladie) with your residence permit, proof of address, and employment contract if applicable. You'll receive a carte vitale within 2-3 weeks.",
+        "context_keywords": [
+            "Sécurité Sociale",
+            "CPAM",
+            "carte vitale",
+            "resident"
+        ],
+        "language": "en",
+        "expected_behavior": "HYBRID",
+        "critical_missing_info": [
+            "residence_status",
+            "employment_status"
+        ]
+    },
+    {
+        "question": "Làm thế nào để lấy giấy phép lái xe Pháp?",
+        "ground_truth": "Để lấy giấy phép lái xe Pháp, bạn cần: 1) Đăng ký trường lái xe (auto-école), 2) Vượt qua kỳ thi lý thuyết (code de la route), 3) Vượt qua kỳ thi thực hành. Chi phí trung bình là 1500€. Nếu có bằng lái nước ngoài, có thể đổi trong vòng 1 năm.",
+        "context_keywords": [
+            "permis de conduire",
+            "auto-école",
+            "code de la route",
+            "1500€"
+        ],
+        "language": "vi",
+        "expected_behavior": "HYBRID",
+        "critical_missing_info": [
+            "current_license_status",
+            "residency_status"
+        ]
+    },
+    {
+        "question": "Quel est le délai de traitement pour une demande de naturalisation ?",
+        "ground_truth": "Le délai de traitement d'une demande de naturalisation française est généralement de 18 à 24 mois. Les conditions incluent: résidence en France depuis 5 ans, intégration, absence de condamnations pénales, et niveau B1 en français.",
+        "context_keywords": [
+            "naturalisation",
+            "18 mois",
+            "5 ans",
+            "B1"
+        ],
+        "language": "fr",
+        "expected_behavior": "DIRECT",
+        "critical_missing_info": []
+    },
+    {
+        "question": "Comment déclarer mes impôts en France pour la première fois ?",
+        "ground_truth": "Pour déclarer vos impôts en France, créez un compte sur impots.gouv.fr. La déclaration se fait en ligne entre avril et juin. Vous devez déclarer tous vos revenus mondiaux si vous êtes résident fiscal français. Le prélèvement à la source s'applique depuis 2019.",
+        "context_keywords": [
+            "impots.gouv.fr",
+            "avril",
+            "juin",
+            "prélèvement à la source"
+        ],
+        "language": "fr",
+        "expected_behavior": "HYBRID",
+        "critical_missing_info": [
+            "residence_status",
+            "income_sources"
+        ]
+    },
+    {
+        "question": "Can I work in France with a student visa?",
+        "ground_truth": "Yes, international students with a valid student visa can work up to 964 hours per year (60% of full-time). No additional work permit is needed. During summer holidays (June-September), you can work full-time.",
+        "context_keywords": [
+            "student visa",
+            "964 hours",
+            "60%",
+            "work permit"
+        ],
+        "language": "en",
+        "expected_behavior": "DIRECT",
+        "critical_missing_info": []
+    },
+    {
+        "question": "Quelle est la procédure pour le regroupement familial ?",
+        "ground_truth": "Le regroupement familial permet de faire venir sa famille en France. Conditions: être en France depuis 18 mois, avoir des ressources stables (SMIC minimum), logement adapté. Déposer le dossier à l'OFII. Délai: 6 à 12 mois.",
+        "context_keywords": [
+            "regroupement familial",
+            "OFII",
+            "18 mois",
+            "SMIC"
+        ],
+        "language": "fr",
+        "expected_behavior": "HYBRID",
+        "critical_missing_info": [
+            "nationality",
+            "current_residence_status"
+        ]
+    },
+    {
+        "question": "How much does a French carte de séjour cost?",
+        "ground_truth": "The cost of a carte de séjour (residence permit) varies: first issuance is 225€, renewal is 225€, carte de résident (10 years) is 225€. Payment is usually by fiscal stamps (timbres fiscaux).",
+        "context_keywords": [
+            "carte de séjour",
+            "225€",
+            "timbres fiscaux"
+        ],
+        "language": "en",
+        "expected_behavior": "DIRECT",
+        "critical_missing_info": []
+    },
+    {
+        "question": "Cách đăng ký kết hôn tại Pháp?",
+        "ground_truth": "Để kết hôn tại Pháp: 1) Xuất trình giấy tờ tại mairie (hộ chiếu, giấy khai sinh dưới 3 tháng, chứng minh nơi ở), 2) Đợi công bố hôn nhân 10 ngày, 3) Tổ chức lễ cưới tại mairie. Ít nhất 1 người phải cư trú tại commune đó.",
+        "context_keywords": [
+            "mariage",
+            "mairie",
+            "10 jours",
+            "acte de naissance"
+        ],
+        "language": "vi",
+        "expected_behavior": "HYBRID",
+        "critical_missing_info": [
+            "nationality",
+            "residence_status"
+        ]
+    }
+]
