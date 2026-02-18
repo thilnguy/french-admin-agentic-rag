@@ -80,7 +80,9 @@ class ProcedureGuideAgent:
             return await self._ask_clarification(query, state, docs)
 
         # For RETRIEVAL or EXPLANATION or default w/ docs
-        return await self._explain_procedure(query, docs, state.user_profile.model_dump())
+        return await self._explain_procedure(
+            query, docs, state.user_profile.model_dump()
+        )
 
     async def _determine_step(
         self, query: str, user_profile: dict, history: str
@@ -138,7 +140,9 @@ class ProcedureGuideAgent:
             },
         )
 
-    async def _explain_procedure(self, query: str, docs: List[Dict], user_profile: dict) -> str:
+    async def _explain_procedure(
+        self, query: str, docs: List[Dict], user_profile: dict
+    ) -> str:
         if not docs:
             return "Je ne trouve pas de procédure correspondant exactement à votre demande sur service-public.fr."
 
@@ -166,7 +170,7 @@ class ProcedureGuideAgent:
             1. **GIVE (Cung cấp)**: Provide the GENERAL rule/cost/timeline.
             2. **EXPLAIN (Giải thích)**: Explain branching logic if any.
             3. **TAKE (Hỏi)**: Ask TARGETED questions if needed.
-            
+
             **MANDATORY CITATION RULE**:
             - You MUST cite the source URL for every key fact provided.
             - Use the format: `[Source: service-public.fr/particuliers/vosdroits/F1234]` at the end of the distinct section or sentence.

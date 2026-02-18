@@ -6,6 +6,7 @@ from src.config import settings
 
 from src.utils.logger import logger
 
+
 class QueryRewriter:
     def __init__(self):
         self.llm = ChatOpenAI(
@@ -13,43 +14,44 @@ class QueryRewriter:
             temperature=0,
             api_key=settings.OPENAI_API_KEY,
         )
-        
+
         self.prompt = ChatPromptTemplate.from_template(
             """You are a Query De-contextualizer for a French Administration Bot.
             Your task is to rewrite the CURRENT QUERY to be standalone, based on the CONVERSATION HISTORY.
-            
+
             Rules:
             1. Replace pronouns (it, they, this) with specific entities from history.
             2. If the query is already standalone, return it exactly as is.
             3. Do NOT answer the question. Only rewrite it.
             4. Keep the language of the CURRENT QUERY.
-            
+
             History:
             {history}
-            
+
             Current Query: {query}
-            
+
             Standalone Query:"""
         )
-        
+
         self.chain = self.prompt | self.llm | StrOutputParser()
 
     async def rewrite(self, query: str, history: list) -> str:
         """
-        Rewrites valid conversational queries. 
+        Rewrites valid conversational queries.
         If history is empty, returns query as is.
         """
         if not history:
             return query
-            
+
         # Format history for prompt
         history_str = "\n".join([f"{msg.type}: {msg.content}" for msg in history[-5:]])
-        
+
         try:
             return await self.chain.ainvoke({"history": history_str, "query": query})
         except Exception as e:
             logger.error(f"Query rewrite failed: {e}")
             return query
+
 
 # Singleton
 query_rewriter = QueryRewriter()
@@ -64,11 +66,11 @@ class ProfileExtractor:
         )
         # We use JsonOutputParser with the Pydantic model
         self.parser = JsonOutputParser(pydantic_object=UserProfile)
-        
+
         self.prompt = ChatPromptTemplate.from_template(
             """You are a Profile Extractor for a French Administration Bot.
             Extract relevant user information from the conversation history and the latest query.
-            
+
             Target Fields:
             - language (fr, en, vi)
             - name
@@ -85,15 +87,15 @@ class ProfileExtractor:
             1. Extract ONLY information clearly stated or implied by the user.
             2. If a field is not mentioned, do NOT include it in the JSON (or set to null).
             3. Return a JSON object matching the schema.
-            
+
             Conversation History:
             {history}
-            
+
             Latest Query: {query}
-            
+
             JSON Output:"""
         )
-        
+
         self.chain = self.prompt | self.llm | self.parser
 
     async def extract(self, query: str, history: list) -> dict:
@@ -102,15 +104,16 @@ class ProfileExtractor:
         """
         if not history and not query:
             return {}
-            
+
         # Format history
         history_str = "\n".join([f"{msg.type}: {msg.content}" for msg in history[-10:]])
-        
+
         try:
-             # Run extraction
+            # Run extraction
             return await self.chain.ainvoke({"history": history_str, "query": query})
         except Exception as e:
             logger.error(f"Profile extraction failed: {e}")
             return {}
+
 
 profile_extractor = ProfileExtractor()
