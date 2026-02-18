@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     QDRANT_API_KEY: Optional[str] = None
 
     # Security
-    ALLOWED_ORIGINS: str = "http://localhost:3000"
+    ALLOWED_ORIGINS: str = "*"
     RATE_LIMIT: str = "10/minute"
     API_KEY: Optional[str] = None
 
