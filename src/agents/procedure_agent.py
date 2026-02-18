@@ -80,12 +80,14 @@ class ProcedureGuideAgent:
             return await self._ask_clarification(query, state, docs)
 
         # For RETRIEVAL or EXPLANATION or default w/ docs
-        return await self._explain_procedure(query, docs)
+        return await self._explain_procedure(query, docs, state.user_profile.model_dump())
 
     async def _determine_step(
         self, query: str, user_profile: dict, history: str
     ) -> str:
-        chain = self.step_analyzer_prompt | self.llm | StrOutputParser()
+        chain = (self.step_analyzer_prompt | self.llm | StrOutputParser()).with_config(
+            {"tags": ["internal"]}
+        )
         return await self._run_chain(
             chain, {"query": query, "user_profile": user_profile, "history": history}
         )
@@ -136,7 +138,7 @@ class ProcedureGuideAgent:
             },
         )
 
-    async def _explain_procedure(self, query: str, docs: List[Dict]) -> str:
+    async def _explain_procedure(self, query: str, docs: List[Dict], user_profile: dict) -> str:
         if not docs:
             return "Je ne trouve pas de procédure correspondant exactement à votre demande sur service-public.fr."
 
@@ -149,26 +151,34 @@ class ProcedureGuideAgent:
 
             ROLE: You are an Expert Administrative Guide. Providing public procedures is SAFE and LEGAL.
 
+            User Profile: {user_profile}
+
             STRATEGIC THINKING (Internal Monologue - Do NOT output this):
             1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Age, Visa Type).
                - **TAX RULE**: For Tax questions, PRIORITY variables are "Fiscal Residence" (Résidence fiscale) and "Income Source" (Source de revenus - France/Etranger).
-            2. Check Query: Did the user provide these variables?
+            2. Check User Profile:
+               - If variables are MISSING in Profile -> Use [TAKE] to ask.
+               - If variables are PRESENT in Profile -> Use them to filter the answer & Just Answer.
             3. Decision:
-               - If variables are MISSING -> Use [TAKE] to ask.
-               - If variables are PRESENT -> Just Answer.
+               - Do not ask for info already in User Profile.
 
-            RESPONSE STRUCTURE:
+            RESPONSE STRUCTURE (Use Markdown):
             1. **GIVE (Cung cấp)**: Provide the GENERAL rule/cost/timeline.
             2. **EXPLAIN (Giải thích)**: Explain branching logic if any.
-            3. **TAKE (Hỏi)**:
-               - Ask a TARGETED question based on the document's conditional logic (e.g., "Are you X or Y?").
-               - **Default Strategy**: If unsure what to ask, asking about "Nationalité" (EU/Non-EU) or "Titre de séjour" is almost always correct.
-               - **STRICTLY FORBIDDEN**: Generic questions like "Do you need more help?".
+            3. **TAKE (Hỏi)**: Ask TARGETED questions if needed.
+            
+            **MANDATORY CITATION RULE**:
+            - You MUST cite the source URL for every key fact provided.
+            - Use the format: `[Source: service-public.fr/particuliers/vosdroits/F1234]` at the end of the distinct section or sentence.
+            - Use ONLY sources provided in the Context. If no source supports a fact, do not state it.
 
             Respond in French, polite and professional. Use step-by-step formatting."""
         )
         chain = prompt | self.llm | StrOutputParser()
-        return await self._run_chain(chain, {"query": query, "context": context})
+        return await self._run_chain(
+            chain,
+            {"query": query, "context": context, "user_profile": user_profile},
+        )
 
 
 # Singleton
