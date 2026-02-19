@@ -39,11 +39,12 @@ async def test_synthesize_answer_logic():
         agent._run_chain = AsyncMock(return_value="Final Answer")
 
         # Case 1: Context present
-        ans = await agent._synthesize_answer("query", "context")
+        # Updated signature: query, context, user_lang
+        ans = await agent._synthesize_answer("query", "context", "fr")
         assert ans == "Final Answer"
 
         # Case 2: No context
-        ans_empty = await agent._synthesize_answer("query", "")
+        ans_empty = await agent._synthesize_answer("query", "", "fr")
         assert "Je n'ai trouvé aucune information" in ans_empty
 
 
@@ -57,20 +58,6 @@ async def test_legal_agent_run_full_flow():
     ):
         agent = LegalResearchAgent()
 
-        # Mock internal helpers (or rely on mocked _run_chain via helpers logic)
-        # To boost coverage of run(), we should let it call the helpers.
-        # But allow helpers to succeed via mocked LLM.
-
-        # We need _run_chain to return different things based on input?
-        # That's hard with a single AsyncMock.
-        # So we mock the helper methods for the run() test to keep it simple,
-        # relying on the above tests for helper coverage.
-
-        # Wait! If we mock the helpers, we DON'T cover the lines in run() that call them?
-        # No, we do. We just don't cover the INSIDE of the helpers.
-        # The above tests cover the INSIDE of the helpers.
-        # So mocking helpers here is fine for testing run().
-
         agent._refine_query = AsyncMock(return_value="refined")
         # agent._evaluate_context = AsyncMock(return_value=True) # Removed
         agent._synthesize_answer = AsyncMock(return_value="answer")
@@ -79,7 +66,11 @@ async def test_legal_agent_run_full_flow():
             {"content": "doc", "source": "url", "metadata": {"title": "T"}}
         ]
 
-        state = AgentState(session_id="test", messages=[])
+        from src.agents.state import UserProfile
+
+        state = AgentState(
+            session_id="test", messages=[], user_profile=UserProfile(language="fr")
+        )
         res = await agent.run("query", state)
 
         assert res == "answer"
@@ -105,7 +96,12 @@ async def test_legal_agent_insufficient_context():
         ) as mock_retrieve:
             mock_retrieve.return_value = [{"content": "weak info"}]
 
-            response = await agent.run("query", None)
+            from src.agents.state import UserProfile
+
+            state = AgentState(
+                session_id="test", messages=[], user_profile=UserProfile(language="fr")
+            )
+            response = await agent.run("query", state)
 
             # Should still synthesize (fallback logic in code)
             agent._synthesize_answer.assert_called()

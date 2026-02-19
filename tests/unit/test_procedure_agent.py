@@ -23,7 +23,8 @@ async def test_ask_clarification_logic():
         agent._run_chain = AsyncMock(return_value="Quelle est votre nationalité ?")
 
         state = AgentState(session_id="test", messages=[], user_profile=UserProfile())
-        question = await agent._ask_clarification("query", state)
+        # Updated signature: query, state, docs
+        question = await agent._ask_clarification("query", state, [])
         assert question == "Quelle est votre nationalité ?"
 
 
@@ -33,12 +34,15 @@ async def test_explain_procedure_logic():
         agent = ProcedureGuideAgent()
         agent._run_chain = AsyncMock(return_value="Step 1: Do this.")
 
+        state = AgentState(session_id="test", messages=[], user_profile=UserProfile())
+
         # Case 1: Docs provided
-        response = await agent._explain_procedure("query", [{"content": "doc1"}])
+        # Updated signature: query, state, docs
+        response = await agent._explain_procedure("query", state, [{"content": "doc1"}])
         assert response == "Step 1: Do this."
 
         # Case 2: No docs
-        response_empty = await agent._explain_procedure("query", [])
+        response_empty = await agent._explain_procedure("query", state, [])
         assert "Je ne trouve pas de procédure" in response_empty
 
 
