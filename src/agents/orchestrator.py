@@ -445,79 +445,50 @@ class AdminOrchestrator:
                 pass
 
         from src.shared.guardrails import guardrail_manager
-        from src.agents.intent_classifier import intent_classifier
         from src.agents.intent_classifier import Intent
-        from src.agents.preprocessor import query_rewriter, profile_extractor
+        from src.shared.query_pipeline import get_query_pipeline
+        from src.shared.language_resolver import language_resolver
 
         # 2. Load State
         state = await self.memory.load_agent_state(session_id)
         chat_history = state.messages
 
-        # Delay syncing frontend language to allow detection to win
-
-        # 3. Classify & Rewrite
+        # 3. Preprocess: goal + rewrite + intent + profile (via QueryPipeline)
         yield {"type": "status", "content": "Analysing request..."}
 
-        rewritten_query = await query_rewriter.rewrite(query, chat_history)
-        state.metadata["current_query"] = rewritten_query
+        pipeline = get_query_pipeline()
+        pr = await pipeline.run(
+            query=query,
+            chat_history=chat_history,
+            current_goal=state.core_goal,
+            user_profile_dict=state.user_profile.model_dump(exclude_none=True),
+        )
 
-        intent = await intent_classifier.classify(rewritten_query)
-        state.intent = intent
+        # Update state from pipeline results
+        if pr.new_core_goal and pr.new_core_goal != state.core_goal:
+            state.core_goal = pr.new_core_goal
+        state.metadata["current_query"] = pr.rewritten_query
+        state.intent = pr.intent
 
-        # LAYER 2: Extract Profile
-        # Use original 'query' for extraction to get clean language signal
-        extracted_data = await profile_extractor.extract(query, chat_history)
-        if extracted_data:
-            logger.info(f"Extracted Profile: {extracted_data}")
-
-            # Resolve Language first
-            detected_lang = extracted_data.get("language")
-            if detected_lang:
-                normalized_lang = self.lang_map.get(
-                    detected_lang.lower(), detected_lang
-                )
-
-                # Rule: Update if Turn is non-FR OR if we are switching from default
-                can_update = True
-
-                # Manual Override protection: If user specifically chose English/Vietnamese on frontend
-                if user_lang and user_lang.lower() not in ["fr", "french"]:
-                    if normalized_lang != self.lang_map.get(user_lang.lower()):
-                        logger.info(
-                            f"Blocking detection {normalized_lang} due to frontend manual choice {user_lang}"
-                        )
-                        can_update = False
-
-                # Defensive check: if detected is 'fr' but we are already in 'English'/'Vietnamese'
-                if detected_lang == "fr" and state.user_profile.language in [
-                    "English",
-                    "Vietnamese",
-                ]:
-                    logger.info(
-                        f"Ignoring 'fr' hallucination. Staying in {state.user_profile.language}"
-                    )
-                    can_update = False
-
-                if can_update:
-                    logger.info(
-                        f"SETTING LANGUAGE: {state.user_profile.language} -> {normalized_lang}"
-                    )
-                    state.user_profile.language = normalized_lang
-
-            # Update other fields
-            for key, val in extracted_data.items():
-                if (
-                    val is not None
-                    and key not in ["language", "_reasoning"]
-                    and hasattr(state.user_profile, key)
-                ):
-                    setattr(state.user_profile, key, val)
-
+        # LAYER 2: Apply profile + resolve language (via LanguageResolver)
+        if pr.extracted_data:
+            logger.info(f"Extracted Profile: {pr.extracted_data}")
+            has_history = len(chat_history) > 0
+            language_resolver.apply_to_state(
+                extracted_data=pr.extracted_data,
+                user_lang=user_lang,
+                state_profile=state.user_profile,
+                has_history=has_history,
+            )
             logger.info(f"Updated Profile: {state.user_profile}")
 
         # Final Resolution
         full_lang = state.user_profile.language or "French"
         effective_lang = full_lang
+
+        # Local aliases for routing code below (from PipelineResult)
+        intent = pr.intent
+        rewritten_query = pr.rewritten_query
 
         # 4. Guardrail: Topic
         is_valid, reason = await guardrail_manager.validate_topic(
