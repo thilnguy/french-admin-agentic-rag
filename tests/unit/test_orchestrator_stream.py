@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from src.agents.orchestrator import AdminOrchestrator
 from src.agents.intent_classifier import Intent
 from src.agents.state import AgentState
+from src.shared.query_pipeline import PipelineResult
 
 
 @pytest.mark.asyncio
@@ -10,10 +11,7 @@ async def test_stream_query_fast_lane():
     """Test streaming for SIMPLE_QA (Fast Lane)."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
-        patch(
-            "src.agents.intent_classifier.intent_classifier.classify",
-            new_callable=AsyncMock,
-        ) as mock_classify,
+        patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock
         ) as mock_retriever,
@@ -22,11 +20,23 @@ async def test_stream_query_fast_lane():
             new_callable=AsyncMock,
         ) as mock_validate,
         patch("src.agents.orchestrator.memory_manager") as mock_memory,
+        patch("src.config.settings.DEBUG", False),
     ):
         # Setup
         orchestrator = AdminOrchestrator()
-        orchestrator.cache = AsyncMock()  # Fix: Cache must be async
-        orchestrator.cache.get.return_value = None  # Fix: Default to cache miss
+        orchestrator.cache = AsyncMock()
+        orchestrator.cache.get.return_value = None
+
+        # Mock Pipeline
+        mock_pipeline_instance = AsyncMock()
+        mock_get_pipeline.return_value = mock_pipeline_instance
+        mock_pipeline_instance.run.return_value = PipelineResult(
+            rewritten_query="Rewritten Hello",
+            intent=Intent.SIMPLE_QA,
+            extracted_data={},
+            new_core_goal=None,
+        )
+
         orchestrator.llm = MagicMock()
 
         # Mock LLM streaming
@@ -36,7 +46,6 @@ async def test_stream_query_fast_lane():
 
         orchestrator.llm.astream = mock_astream
 
-        mock_classify.return_value = Intent.SIMPLE_QA
         mock_validate.return_value = (True, "")
         mock_retriever.return_value = [{"source": "doc", "content": "info"}]
 
@@ -66,26 +75,33 @@ async def test_stream_query_slow_lane():
     """Test streaming for COMPLEX_PROCEDURE (Slow Lane/AgentGraph)."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
-        patch(
-            "src.agents.intent_classifier.intent_classifier.classify",
-            new_callable=AsyncMock,
-        ) as mock_classify,
+        patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.shared.guardrails.guardrail_manager.validate_topic",
             new_callable=AsyncMock,
         ) as mock_validate,
         patch(
             "src.agents.graph.agent_graph.astream_events",
-            new_callable=MagicMock,  # astream_events is an async generator method
+            new_callable=MagicMock,
         ) as mock_graph_stream,
         patch("src.agents.orchestrator.memory_manager") as mock_memory,
+        patch("src.config.settings.DEBUG", False),
     ):
         # Setup
         orchestrator = AdminOrchestrator()
-        orchestrator.cache = AsyncMock()  # Fix: Cache must be async
-        orchestrator.cache.get.return_value = None  # Fix: Default to cache miss
+        orchestrator.cache = AsyncMock()
+        orchestrator.cache.get.return_value = None
 
-        mock_classify.return_value = Intent.COMPLEX_PROCEDURE
+        # Mock Pipeline
+        mock_pipeline_instance = AsyncMock()
+        mock_get_pipeline.return_value = mock_pipeline_instance
+        mock_pipeline_instance.run.return_value = PipelineResult(
+            rewritten_query="Rewritten Complex",
+            intent=Intent.COMPLEX_PROCEDURE,
+            extracted_data={},
+            new_core_goal=None,
+        )
+
         mock_validate.return_value = (True, "")
 
         state = AgentState(session_id="test", messages=[])
@@ -124,7 +140,10 @@ async def test_stream_query_slow_lane():
 @pytest.mark.asyncio
 async def test_stream_query_cache_hit():
     """Test streaming returns cached response."""
-    with patch("src.agents.orchestrator.redis.Redis"):
+    with (
+        patch("src.agents.orchestrator.redis.Redis"),
+        patch("src.config.settings.DEBUG", False),
+    ):
         orchestrator = AdminOrchestrator()
         orchestrator.cache = AsyncMock()
         orchestrator.cache.get.return_value = "Cached Answer"
