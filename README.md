@@ -5,8 +5,9 @@ A production-ready RAG agent designed to assist with French administrative proce
 ## 🚀 Features
 
 - **Asynchronous Core**: Built with `asyncio` for high-conformance concurrent request handling.
-- **RAG Architecture**: Uses Qdrant for vector search and Redis for conversation history/caching.
-- **Robustness**: Global exception handling, Pydantic validation, and comprehensive test suite.
+- **Hybrid Search**: Combines BM25 and Vector Search (Qdrant) with RRF Fusion for superior retrieval.
+- **Agentic Workflows**: Deployment of specialized agents (`ProcedureGuide`, `LegalResearch`) orchestrated by an intelligent router.
+- **Robustness**: Global exception handling, Pydantic validation, and comprehensive test suite (91% coverage).
 - **Multi-language Support**: Handles queries in French, English, and Vietnamese (with internal processing in French).
 - **Production Ready**: Dockerized, CI/CD with GitHub Actions, and structured JSON logging.
 
@@ -101,10 +102,17 @@ docker run -p 8000:8000 french-admin-agent
 ├── src/
 │   ├── agents/       # Agent Orchestrator & Logic
 │   │   ├── orchestrator.py
-│   │   ├── state.py      # [NEW] AgentState Pydantic Model
-│   │   └── intent_classifier.py # [NEW] Intent Classification
+│   │   ├── procedure_agent.py # [NEW] Specialized Procedure Agent
+│   │   ├── legal_agent.py     # [NEW] Legal Research Agent
+│   │   ├── graph.py           # [NEW] LangGraph Workflow
+│   │   ├── state.py           # AgentState Pydantic Model
+│   │   └── intent_classifier.py
 │   ├── memory/       # Redis Memory Management
-│   ├── shared/       # Shared Utilities (Guardrails)
+│   ├── shared/       # Shared Utilities
+│   │   ├── query_pipeline.py    # [NEW] Query Preprocessing
+│   │   ├── language_resolver.py # [NEW] Language Handling
+│   │   ├── hybrid_retriever.py  # [NEW] BM25 + Vector Search
+│   │   └── guardrails.py        # Safety Checks
 │   ├── utils/        # Logging & Helpers
 │   ├── config.py     # Pydantic Settings
 │   ├── main.py       # FastAPI Entrypoint

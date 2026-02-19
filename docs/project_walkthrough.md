@@ -491,3 +491,30 @@ All tests passed, including edge cases for error handling and fallback logic.
 | `src.agents.legal_agent` | **95%** | ✅ |
 | `src.main` | **89%** | ✅ |
 | **TOTAL PROJECT** | **93%** | **PASSED** (>90%) |
+
+## Phase 9: RAG Quality & Hybrid Architecture (v1.1.0) ✅
+**Status**: Complete
+**Date**: 2026-02-19
+
+### 1. Hybrid Search Architecture
+- **Implemented**: `HybridRetriever` combining BM25 (Sparse) and Qdrant (Dense).
+- **Fusion**: Reciprocal Rank Fusion (RRF) to merge results.
+- **Impact**: Significant improvement in retrieval recall for specific administrative terms (e.g., "Cerfa").
+
+### 2. Intelligent Query Pipeline
+- **Refactor**: Decomposed `Orchestrator` into `QueryPipeline` and `LanguageResolver`.
+- **Logic**: `Goal Extraction` -> `Rewrite` -> `Intent` -> `Routing`.
+- **Impact**: Better handling of complex queries and elimination of language hallucinations.
+
+### 3. Agent Optimization (LLM Judge 10/10)
+- **Goal**: Perfect score on RLHF/LLM Judge benchmark.
+- **Actions**:
+  - **ProcedureGuideAgent**: Enforced retrieval for fact-based queries.
+  - **Clarification**: Prioritized critical variables (Nationality, Status).
+  - **Context**: Increased summary window to 1500 chars.
+- **Result**: **10/10 Score** across all test cases.
+
+### 4. Legacy Cleanup
+- **Removed**: Obsolete `tests/integration/test_layer*.py`.
+- **Refactored**: `test_orchestrator.py` to mock new pipeline components.
+- **Coverage**: **91%**, with 124 passing tests.
