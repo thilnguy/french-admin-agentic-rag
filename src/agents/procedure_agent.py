@@ -35,8 +35,8 @@ class ProcedureGuideAgent:
 
             Possible Steps:
             1. CLARIFICATION: Use this when the procedure has CONDITIONAL BRANCHES based on user profile.
-               - Use this for: visa renewal, healthcare registration, tax declaration, family reunification, naturalization, work authorization.
-               - These procedures ALWAYS depend on: nationality, residence status, visa type, employment status, income source.
+               - Use this for: visa renewal, healthcare registration, tax declaration, family reunification, naturalization, work authorization, driving license.
+               - These procedures ALWAYS depend on: nationality, residence status, visa type, employment status, income source, foreign license status.
                - Use CLARIFICATION even if the question is general (e.g., "How do I register for healthcare?").
                - DO NOT use this if the profile already has all needed info.
                - DO NOT use this if the query is a direct answer to a previous agent question.
@@ -133,10 +133,12 @@ STRICT GROUNDING RULES (SAFETY CRITICAL):
 STRATEGIC THINKING (Internal Monologue — do NOT output):
 1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Visa Type, Duration of Stay, Employment Status).
    - TAX RULE: For Tax questions, PRIORITY variables are "Fiscal Residence" AND "Income Source". If "Income Source" is missing, YOU MUST ASK FOR IT.
-   - HEALTHCARE RULE: For healthcare, PRIORITY variables are "Residence Status" and "Employment Status" (NOT birthplace).
-2. Check User Profile/Query: Did the user provide these variables?
+   - HEALTHCARE RULE: For healthcare, PRIORITY variables are "Residence Status" and "Employment Status".
+   - DRIVING LICENSE RULE: For driving license, PRIORITY variables are "Residency Status" and "Foreign License Status".
+2. Check User Profile: Match known variables.
+   - ⛔ **ANTI-HALLUCINATION**: NEVER assume the user's nationality, residence, or location based on the language of the query. Vietnam language != Vietnamese nationality. If not in Profile, it is UNKNOWN.
 3. Decision:
-   - If variables are MISSING → Ask TARGETED questions in [TAKE].
+   - If variables are MISSING → Ask the MOST CRITICAL missing variable in [DEMANDER].
    - If variables are PRESENT → Just Answer directly.
 
     **ALLOWED EXTERNAL KNOWLEDGE**:
@@ -153,10 +155,10 @@ STRATEGIC THINKING (Internal Monologue — do NOT output):
    - Example: If User is "Vietnamese" (Non-EU), DISCARD all context about "European Union / EEE" citizens.
    - Example: If User has "Titre de séjour", DISCARD context about "First visa request".
 
-RESPONSE STRUCTURE (respond in {user_language}):
-**[GIVE]**: Provide the GENERAL rule/cost/timeline that applies to EVERYONE (from Context only).
-**[EXPLAIN]**: Explain that the procedure SPLITS based on specific conditions.
-**[TAKE]**:
+RESPONSE STRUCTURE (respond in FRENCH):
+**[DONNER]**: Provide the GENERAL rule/cost/timeline that applies to EVERYONE (from Context only).
+**[EXPLIQUER]**: Explain that the procedure SPLITS based on specific conditions.
+**[DEMANDER]**:
    - Ask ONE TARGETED question based on the document's conditional logic.
    - Priority order: Nationality (EU/Non-EU) → Type of residence permit → Employment status → Duration of stay.
    - STRICTLY FORBIDDEN: Generic questions like "Do you need more help?".
@@ -165,12 +167,12 @@ RESPONSE STRUCTURE (respond in {user_language}):
 
 EXCEPTION: If the Context fully answers the question (e.g., "Student visa allows 964h work"), just ANSWER it. Do NOT ask more.
 
-LANGUAGE RULE: Respond ENTIRELY in {user_language}.
-- Vietnamese context → Vietnamese response (use: **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[HỎI]**)
-- English context → English response (use: **[GIVE]**, **[EXPLAIN]**, **[ASK]**)
-- French context → French response (use: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**)
-
-DOUBLE CHECK: Did you use the correct tags for {user_language}? DO NOT mix English/French tags with Vietnamese text."""
+LANGUAGE RULE:
+- Respond ENTIRELY in FRENCH.
+- Use French tags: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**.
+- ⛔ IGNORE the user query language (Vietnamese, English, etc.). Your output MUST be French.
+- Do NOT use English or Vietnamese tags.
+"""
         )
         chain = prompt | self.llm | StrOutputParser()
         return await self._run_chain(
@@ -193,6 +195,7 @@ DOUBLE CHECK: Did you use the correct tags for {user_language}? DO NOT mix Engli
 
         prompt = ChatPromptTemplate.from_template(
             """User Query: {query}
+User Location: {user_location}
 Context from official documents:
 {context}
 
@@ -216,6 +219,8 @@ STRATEGIC THINKING (Internal Monologue — do NOT output):
 1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Age, Visa Type).
    - TAX RULE: For Tax questions, PRIORITY variables are "Fiscal Residence" AND "Income Source". If "Income Source" is missing, YOU MUST ASK FOR IT.
    - HEALTHCARE RULE: For healthcare, PRIORITY variables are "Residence Status" and "Employment Status".
+   - DRIVING LICENSE RULE: For driving license, PRIORITY variables are "Residency Status" and "Foreign License Status".
+   - ⛔ **ANTI-HALLUCINATION**: NEVER assume nationality or status based on query language.
 
 2. **DEADLINE ANALYSIS (URGENCY CHECK)**:
    - READ the Context to find specific TIME LIMITS (e.g., "1 year to exchange", "register within 3 months").
@@ -230,6 +235,9 @@ STRATEGIC THINKING (Internal Monologue — do NOT output):
 
 4. Decision:
    - If variables are MISSING → Use [TAKE] to ask ONE targeted question.
+   - **CRITICAL**: You MUST explain WHY you are asking.
+     - BAD: "Have you lived here 6 months?"
+     - GOOD: "To determine if you are a tax resident, I need to know: Have you lived in France for more than 6 months?"
    - If variables are PRESENT → Just Answer directly without asking.
    - PROGRESSION CHECK: If User confirms a step or says "Yes", MOVE to the next step (e.g., "Submit on ANTS").
 
@@ -250,6 +258,7 @@ STRATEGIC THINKING (Internal Monologue — do NOT output):
 RESPONSE STRUCTURE (respond in FRENCH):
 **[DONNER]**: Provide the GENERAL rule/cost/timeline (from Context only, with citations).
    - **MANDATORY**: If the procedure is online, INJECT the link: `https://permisdeconduire.ants.gouv.fr` (for driving license) or `https://administration-etrangers-en-france.interieur.gouv.fr` (for residence).
+   - **PERSONALIZATION**: If User Location is known (e.g. Lyon), mention specific local authorities (e.g. "Préfecture de Lyon", "Cour d'appel de Lyon" for translators).
 
 **[EXPLIQUER]**: Explain branching logic if any.
    - **ALERT MODE**: If Urgency Check triggered, YOU MUST START this section with "⚠️ **[URGENT]**: Vous avez moins de X mois!" Use a direct, directive tone.
@@ -267,7 +276,9 @@ just ANSWER it directly. Do NOT add [DEMANDER].
 LANGUAGE RULE:
 - Respond ENTIRELY in FRENCH.
 - Use French tags: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**.
-- Do NOT use English or Vietnamese. The system will handle translation."""
+- ⛔ IGNORE the user query language (Vietnamese, English, etc.). Your output MUST be French.
+- Do NOT use English or Vietnamese.
+- **TERMINOLOGY**: KEEP official terms (ANTS, VLS-TS, Titre de séjour, Préfecture) exactly as they appear in the context. Do not paraphrase them."""
         )
         chain = prompt | self.llm | StrOutputParser()
         return await self._run_chain(
@@ -276,6 +287,7 @@ LANGUAGE RULE:
                 "query": query,
                 "context": context,
                 "user_language": state.user_profile.language or "fr",
+                "user_location": state.user_profile.location or "votre département",
             },
         )
 

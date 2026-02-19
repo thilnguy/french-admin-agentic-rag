@@ -174,7 +174,7 @@ class AdminOrchestrator:
         logger.info(f"Query Intent Classified: {intent}")
 
         # LAYER 2: Extract User Profile (Entity Memory)
-        extracted_data = await profile_extractor.extract(rewritten_query, chat_history)
+        extracted_data = await profile_extractor.extract(query, chat_history)
         if extracted_data:
             logger.info(f"Extracted Profile Data: {extracted_data}")
             # Update state.user_profile

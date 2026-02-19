@@ -99,18 +99,21 @@ class ProfileExtractor:
             Extract relevant user information from the conversation history and the latest query.
 
             Target Fields:
-            - language (fr, en, vi). Detect based on the User's Query language.
-              - "Tôi là..." -> vi
-              - "I am..." -> en
-              - "Je suis..." -> fr
+            - _reasoning: Brief explanation of why you detected the language and location.
+            - language (fr, en, vi).
+              - **Language Detection Rule**: Detect based on the User's phrasing/grammar.
+              - "Tôi là", "của tôi", "người Việt", "cho hỏi" -> ALWAYS 'vi' (Vietnamese).
+              - "I am", "my", "how to" -> ALWAYS 'en' (English).
+              - "Je suis", "mon", "comment" -> 'fr' (French).
+              - *Note*: If user says "I live in Lyon", "Lyon" is a French city, but the sentence is English. Do NOT let the city name bias the language detection to 'fr'.
             - name
             - age
             - nationality (Specific nationality, e.g., Française, Américaine, Vietnamienne)
             - residency_status (e.g., Student, Worker, Retiree)
-            - has_legal_residency (boolean: true if user says they live "legally", "régulièrement", "hợp pháp" in France, or has a valid titre de séjour / carte de séjour)
+            - has_legal_residency (boolean: true if user says they live "legally", "régulièrement", "hợp pháp" in France, or has a valid titre de séjour / carte de séjour / visa)
             - visa_type (e.g., VLS-TS, Carte de Résident)
             - duration_of_stay
-            - location (City or Region in France)
+            - location (City or Region in France. e.g., "Lyon", "Paris")
             - fiscal_residence (France, Etranger)
             - income_source (France, Etranger, Mixte)
 

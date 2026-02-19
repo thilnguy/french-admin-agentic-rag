@@ -1,0 +1,159 @@
+W0218 20:16:28.212000 66511 .venv/lib/python3.13/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+============================================================
+🚀 STARTING LLM-JUDGE EVALUATION
+============================================================
+🧹 Flushed 0 cached responses + 0 eval states from Redis.
+
+Evaluating 10 cases...
+
+🔹 Case 1: Comment obtenir un passeport français ?...
+{"timestamp": "2026-02-18T19:16:29.418125+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Core Goal set/updated: Obtenir un passeport fran\u00e7ais"}
+{"timestamp": "2026-02-18T19:16:30.225237+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: Comment obtenir un passeport fran\u00e7ais ? | Rewritten: Proc\u00e9dure pour obtenir un passeport fran\u00e7ais en tant que citoyen fran\u00e7ais."}
+{"timestamp": "2026-02-18T19:16:31.207076+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:16:33.140721+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': 'fr', 'name': None, 'age': None, 'nationality': 'Fran\u00e7aise', 'residency_status': None, 'has_legal_residency': None, 'visa_type': None, 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:16:33.141025+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Updated User Profile: language='fr' name=None age=None nationality='Fran\u00e7aise' residency_status=None has_legal_residency=None visa_type=None duration_of_stay=None location=None fiscal_residence=None income_source=None"}
+{"timestamp": "2026-02-18T19:16:33.581946+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to AgentGraph for intent: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:16:33.638358+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureGuideAgent started for query: Proc\u00e9dure pour obtenir un passeport fran\u00e7ais en tant que citoyen fran\u00e7ais."}
+{"timestamp": "2026-02-18T19:16:33.638388+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureAgent retrieval anchored to: Obtenir un passeport fran\u00e7ais"}
+{"timestamp": "2026-02-18T19:16:33.638608+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Initializing Qdrant client..."}
+{"timestamp": "2026-02-18T19:16:33.656887+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Loading HuggingFace embeddings model (BAAI/bge-m3)..."}
+{"timestamp": "2026-02-18T19:16:39.046281+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Initializing Reranker with model: cross-encoder/ms-marco-MiniLM-L-6-v2"}
+{"timestamp": "2026-02-18T19:16:40.923419+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Determined next step: EXPLANATION"}
+{"timestamp": "2026-02-18T19:16:45.686482+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "AgentGraph response grounded on 5 retrieved docs (guardrail: internal)."}
+   Agent: **[DONNER]**: Pour obtenir un passeport français en tant que citoyen français, vous devez prouver vo...
+   👨‍⚖️ Verdict: Score 10/10 | HYBRID
+   Reason: The agent provided a comprehensive overview of the process to obtain a French passport, including necessary documents and potential variations in procedure based on the applicant's situation. It also appropriately asked for critical missing information regarding the user's current residence and the validity of their identification documents, which aligns perfectly with the expected HYBRID behavior. No hallucinations were detected, and the context provided was accurate and relevant.
+
+   ⏱️  Waiting 3s before next case...
+🔹 Case 2: Quelles sont les étapes pour renouveler un titre de séjour ?...
+{"timestamp": "2026-02-18T19:16:54.176359+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Core Goal set/updated: Renouveler un titre de s\u00e9jour"}
+{"timestamp": "2026-02-18T19:16:54.802234+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: Quelles sont les \u00e9tapes pour renouveler un titre de s\u00e9jour ? | Rewritten: \u00c9tapes pour renouveler un titre de s\u00e9jour en France."}
+{"timestamp": "2026-02-18T19:16:55.438854+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:16:58.249583+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': 'fr', 'name': None, 'age': None, 'nationality': None, 'residency_status': None, 'has_legal_residency': None, 'visa_type': None, 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:16:58.783068+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to AgentGraph for intent: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:16:58.783833+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureGuideAgent started for query: \u00c9tapes pour renouveler un titre de s\u00e9jour en France."}
+{"timestamp": "2026-02-18T19:16:58.783855+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureAgent retrieval anchored to: Renouveler un titre de s\u00e9jour"}
+{"timestamp": "2026-02-18T19:16:59.390777+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Determined next step: CLARIFICATION"}
+{"timestamp": "2026-02-18T19:17:07.486396+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "AgentGraph response grounded on 5 retrieved docs (guardrail: internal)."}
+   Agent: **[DONNER]**: Pour renouveler un titre de séjour en France, la demande doit être faite dans les deux...
+   👨‍⚖️ Verdict: Score 10/10 | HYBRID
+   Reason: The agent provided a general overview of the renewal process, including the timing and cost, which aligns with the expected behavior for a hybrid response. It also asked for critical missing information about the type of residence permit, which is necessary to provide more specific guidance. There was no hallucination detected as the information given was general and accurate. Therefore, the response was appropriate and complete, deserving a perfect score.
+
+   ⏱️  Waiting 3s before next case...
+🔹 Case 3: How do I register for French healthcare (Sécurité Sociale)?...
+{"timestamp": "2026-02-18T19:17:15.353435+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: How do I register for French healthcare (S\u00e9curit\u00e9 Sociale)? | Rewritten: How do I register for French healthcare (S\u00e9curit\u00e9 Sociale)?"}
+{"timestamp": "2026-02-18T19:17:16.202505+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:17:18.048488+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': None, 'name': None, 'age': None, 'nationality': None, 'residency_status': None, 'has_legal_residency': None, 'visa_type': None, 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:17:18.559730+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to AgentGraph for intent: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:17:18.561630+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureGuideAgent started for query: How do I register for French healthcare (S\u00e9curit\u00e9 Sociale)?"}
+{"timestamp": "2026-02-18T19:17:18.561712+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureAgent retrieval anchored to: How do I register for French healthcare (S\u00e9curit\u00e9 Sociale)?"}
+{"timestamp": "2026-02-18T19:17:19.173959+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Determined next step: CLARIFICATION"}
+{"timestamp": "2026-02-18T19:17:24.902529+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "AgentGraph response grounded on 5 retrieved docs (guardrail: internal)."}
+   Agent: **[GIVE]**: To register for Social Security in France, the process depends on your personal situatio...
+   👨‍⚖️ Verdict: Score 10/10 | HYBRID
+   Reason: The agent provided a general context about the registration process for French healthcare, mentioning the importance of nationality and residency status. It also asked for clarification on the user's nationality, which is relevant to the critical information needed (residence_status and employment_status). The response did not include any hallucinated details and aligned well with the expected hybrid behavior.
+
+   ⏱️  Waiting 3s before next case...
+🔹 Case 4: Làm thế nào để lấy giấy phép lái xe Pháp?...
+{"timestamp": "2026-02-18T19:17:34.453482+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Core Goal set/updated: Obtenir un permis de conduire"}
+{"timestamp": "2026-02-18T19:17:34.954827+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: L\u00e0m th\u1ebf n\u00e0o \u0111\u1ec3 l\u1ea5y gi\u1ea5y ph\u00e9p l\u00e1i xe Ph\u00e1p? | Rewritten: Comment obtenir un permis de conduire en France?"}
+{"timestamp": "2026-02-18T19:17:35.964897+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:17:37.546583+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': 'fr', 'name': None, 'age': None, 'nationality': None, 'residency_status': None, 'has_legal_residency': None, 'visa_type': None, 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:17:37.915349+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to AgentGraph for intent: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:17:37.917661+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureGuideAgent started for query: Comment obtenir un permis de conduire en France?"}
+{"timestamp": "2026-02-18T19:17:37.917748+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureAgent retrieval anchored to: Obtenir un permis de conduire"}
+{"timestamp": "2026-02-18T19:17:38.937196+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Determined next step: CLARIFICATION"}
+{"timestamp": "2026-02-18T19:17:41.802967+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "AgentGraph response grounded on 5 retrieved docs (guardrail: internal)."}
+   Agent: **[DONNER]**: Để có được giấy phép lái xe tại Pháp, nếu đây là giấy phép đầu tiên của bạn, bạn cần k...
+   👨‍⚖️ Verdict: Score 10/10 | HYBRID
+   Reason: The agent provided a general overview of the process to obtain a French driving license, which is useful context. It also asked a relevant clarifying question about whether this is the user's first license or an addition to an existing one, which aligns with the critical information needed regarding the user's current license status. There was no hallucination detected as the agent did not invent any specific details. This response is a perfect example of a hybrid approach, providing both context and seeking necessary clarification.
+
+   ⏱️  Waiting 3s before next case...
+🔹 Case 5: Quel est le délai de traitement pour une demande de naturali...
+{"timestamp": "2026-02-18T19:17:52.862440+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: Quel est le d\u00e9lai de traitement pour une demande de naturalisation ? | Rewritten: Quel est le d\u00e9lai de traitement pour une demande de naturalisation ?"}
+{"timestamp": "2026-02-18T19:17:53.580380+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: SIMPLE_QA"}
+{"timestamp": "2026-02-18T19:17:55.345430+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': 'fr', 'name': None, 'age': None, 'nationality': None, 'residency_status': None, 'has_legal_residency': None, 'visa_type': None, 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:17:55.832999+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to Fast Lane (Legacy RAG) for intent: SIMPLE_QA"}
+   Agent: Le délai de traitement pour une demande de naturalisation est de 18 mois au maximum à partir de la d...
+   👨‍⚖️ Verdict: Score 10/10 | DIRECT_ANSWER
+   Reason: The agent provided a direct answer to the question about the processing time for a naturalization request, which aligns with the expected behavior of a DIRECT response. The information given is accurate and does not include any hallucinated details. Additionally, the agent provided general context about potential variations in processing time based on residency duration, which is useful and relevant. Therefore, the response is appropriate and complete, earning a perfect score.
+
+   ⏱️  Waiting 3s before next case...
+🔹 Case 6: Comment déclarer mes impôts en France pour la première fois ...
+{"timestamp": "2026-02-18T19:18:06.589474+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Core Goal set/updated: D\u00e9clarer ses imp\u00f4ts en France pour la premi\u00e8re fois"}
+{"timestamp": "2026-02-18T19:18:08.539063+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: Comment d\u00e9clarer mes imp\u00f4ts en France pour la premi\u00e8re fois ? | Rewritten: Comment d\u00e9clarer ses imp\u00f4ts en France pour la premi\u00e8re fois ?"}
+{"timestamp": "2026-02-18T19:18:09.144388+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:18:10.701487+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': 'fr', 'name': None, 'age': None, 'nationality': None, 'residency_status': None, 'has_legal_residency': None, 'visa_type': None, 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:18:11.127990+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to AgentGraph for intent: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:18:11.130116+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureGuideAgent started for query: Comment d\u00e9clarer ses imp\u00f4ts en France pour la premi\u00e8re fois ?"}
+{"timestamp": "2026-02-18T19:18:11.130162+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureAgent retrieval anchored to: D\u00e9clarer ses imp\u00f4ts en France pour la premi\u00e8re fois"}
+{"timestamp": "2026-02-18T19:18:11.671709+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Determined next step: CLARIFICATION"}
+{"timestamp": "2026-02-18T19:18:15.506028+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "AgentGraph response grounded on 5 retrieved docs (guardrail: internal)."}
+   Agent: **[DONNER]**: Pour déclarer vos impôts en France pour la première fois, vous pouvez utiliser une déc...
+   👨‍⚖️ Verdict: Score 10/10 | HYBRID
+   Reason: The agent provided a general context about how to declare taxes in France, mentioning the use of paper forms and online resources. It also asked for critical missing information regarding the user's income sources and residence status, which are necessary to provide more specific guidance. There was no hallucination detected as the information given was general and accurate. This response aligns perfectly with the expected hybrid behavior.
+
+   ⏱️  Waiting 3s before next case...
+🔹 Case 7: Can I work in France with a student visa?...
+{"timestamp": "2026-02-18T19:18:24.606317+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: Can I work in France with a student visa? | Rewritten: Can I work in France with a student visa?"}
+{"timestamp": "2026-02-18T19:18:25.305807+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:18:27.184283+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': 'en', 'name': None, 'age': None, 'nationality': None, 'residency_status': 'Student', 'has_legal_residency': None, 'visa_type': 'Student visa', 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:18:27.184573+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Updated User Profile: language='en' name=None age=None nationality=None residency_status='Student' has_legal_residency=None visa_type='Student visa' duration_of_stay=None location=None fiscal_residence=None income_source=None"}
+{"timestamp": "2026-02-18T19:18:27.575612+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to AgentGraph for intent: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:18:27.577595+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureGuideAgent started for query: Can I work in France with a student visa?"}
+{"timestamp": "2026-02-18T19:18:27.577651+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureAgent retrieval anchored to: Can I work in France with a student visa?"}
+{"timestamp": "2026-02-18T19:18:28.054105+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Determined next step: CLARIFICATION"}
+{"timestamp": "2026-02-18T19:18:30.241302+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "AgentGraph response grounded on 5 retrieved docs (guardrail: internal)."}
+   Agent: Yes, you can work in France with a student visa. If you have a long-stay student visa (VLS-TS) or a ...
+   👨‍⚖️ Verdict: Score 10/10 | DIRECT_ANSWER
+   Reason: The agent provided a direct answer to the question, which was the expected behavior. It correctly stated that one can work in France with a student visa and mentioned the types of visas that allow this. There was no hallucination as the response did not invent any specific details. The agent did not ask for missing information, but that was not necessary for a direct answer. The response was appropriate and accurate, hence a perfect score.
+
+   ⏱️  Waiting 3s before next case...
+🔹 Case 8: Quelle est la procédure pour le regroupement familial ?...
+{"timestamp": "2026-02-18T19:18:39.187620+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Core Goal set/updated: Regroupement familial"}
+{"timestamp": "2026-02-18T19:18:39.968433+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: Quelle est la proc\u00e9dure pour le regroupement familial ? | Rewritten: Proc\u00e9dure de regroupement familial en France pour un r\u00e9sident l\u00e9gal."}
+{"timestamp": "2026-02-18T19:18:40.581888+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:18:42.353126+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': 'fr', 'name': None, 'age': None, 'nationality': None, 'residency_status': 'legal resident', 'has_legal_residency': True, 'visa_type': None, 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:18:42.353312+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Updated User Profile: language='fr' name=None age=None nationality=None residency_status='legal resident' has_legal_residency=True visa_type=None duration_of_stay=None location=None fiscal_residence=None income_source=None"}
+{"timestamp": "2026-02-18T19:18:42.837698+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to AgentGraph for intent: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:18:42.839443+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureGuideAgent started for query: Proc\u00e9dure de regroupement familial en France pour un r\u00e9sident l\u00e9gal."}
+{"timestamp": "2026-02-18T19:18:42.839516+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureAgent retrieval anchored to: Regroupement familial"}
+{"timestamp": "2026-02-18T19:18:43.359855+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Determined next step: CLARIFICATION"}
+{"timestamp": "2026-02-18T19:18:49.066715+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "AgentGraph response grounded on 5 retrieved docs (guardrail: internal)."}
+   Agent: **[DONNER]**: La procédure de regroupement familial en France permet à un résident légal de faire ve...
+   👨‍⚖️ Verdict: Score 10/10 | HYBRID
+   Reason: The agent provided a general overview of the regroupement familial process, including the types of documents required and the potential variations in procedure. It also asked a relevant clarifying question about the current residence status of the family, which is one of the critical pieces of information needed. There was no hallucination detected as the agent did not invent any specific details. The response aligns perfectly with the expected hybrid behavior.
+
+   ⏱️  Waiting 3s before next case...
+🔹 Case 9: How much does a French carte de séjour cost?...
+{"timestamp": "2026-02-18T19:18:57.176033+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: How much does a French carte de s\u00e9jour cost? | Rewritten: How much does a French carte de s\u00e9jour cost?"}
+{"timestamp": "2026-02-18T19:18:58.522686+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: SIMPLE_QA"}
+{"timestamp": "2026-02-18T19:19:00.267452+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': None, 'name': None, 'age': None, 'nationality': None, 'residency_status': None, 'has_legal_residency': None, 'visa_type': None, 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:19:00.755172+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to Fast Lane (Legacy RAG) for intent: SIMPLE_QA"}
+   Agent: The cost of a residence permit (carte de séjour) in France depends on the situation. Generally, you ...
+   👨‍⚖️ Verdict: Score 10/10 | DIRECT_ANSWER
+   Reason: The agent provided a direct answer to the question about the cost of a French carte de séjour, which aligns with the expected behavior. It included the general cost and mentioned a specific case for minors, which is accurate and relevant. The agent did not invent any details and provided useful context about the payment method and the need for proof of payment. Therefore, the response is appropriate and complete, earning a perfect score.
+
+   ⏱️  Waiting 3s before next case...
+🔹 Case 10: Cách đăng ký kết hôn tại Pháp?...
+{"timestamp": "2026-02-18T19:19:15.705877+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Original: C\u00e1ch \u0111\u0103ng k\u00fd k\u1ebft h\u00f4n t\u1ea1i Ph\u00e1p? | Rewritten: C\u00e1ch \u0111\u0103ng k\u00fd k\u1ebft h\u00f4n t\u1ea1i Ph\u00e1p?"}
+{"timestamp": "2026-02-18T19:19:16.397336+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Query Intent Classified: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:19:18.211366+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Extracted Profile Data: {'language': 'vi', 'name': None, 'age': None, 'nationality': None, 'residency_status': None, 'has_legal_residency': None, 'visa_type': None, 'duration_of_stay': None, 'location': None, 'fiscal_residence': None, 'income_source': None}"}
+{"timestamp": "2026-02-18T19:19:18.211758+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Updated User Profile: language='vi' name=None age=None nationality=None residency_status=None has_legal_residency=None visa_type=None duration_of_stay=None location=None fiscal_residence=None income_source=None"}
+{"timestamp": "2026-02-18T19:19:18.676892+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Routing to AgentGraph for intent: COMPLEX_PROCEDURE"}
+{"timestamp": "2026-02-18T19:19:18.679126+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureGuideAgent started for query: C\u00e1ch \u0111\u0103ng k\u00fd k\u1ebft h\u00f4n t\u1ea1i Ph\u00e1p?"}
+{"timestamp": "2026-02-18T19:19:18.679183+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "ProcedureAgent retrieval anchored to: C\u00e1ch \u0111\u0103ng k\u00fd k\u1ebft h\u00f4n t\u1ea1i Ph\u00e1p?"}
+{"timestamp": "2026-02-18T19:19:19.902850+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "Determined next step: CLARIFICATION"}
+{"timestamp": "2026-02-18T19:19:24.358691+00:00", "level": "INFO", "logger": "french_admin_agent", "message": "AgentGraph response grounded on 5 retrieved docs (guardrail: internal)."}
+   Agent: **[CUNG CẤP]**: Pour vous marier en France, vous devez préparer les documents suivants :  1. **Formu...
+   👨‍⚖️ Verdict: Score 10/10 | HYBRID
+   Reason: The agent provided a general overview of the marriage registration process in France, which is useful context. It also asked a relevant clarifying question about the user's nationality, which is one of the critical pieces of information needed to provide a more tailored response. There was no hallucination detected as the agent did not invent any specific details. This is a perfect example of a hybrid response.
+
+============================================================
+📊 FINAL METRICS
+============================================================
+Average Score:          10.0/10
+Success Rate (Score>=7): 100.0%
+Clarification Accuracy:  100.0% (Correctly asked when needed)
+============================================================
+📝 Full results saved to /Users/lananh/Workspace/code/MyAGWorkspace/french-admin-agentic-rag/evals/llm_judge_results.json
