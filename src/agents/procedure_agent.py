@@ -97,7 +97,7 @@ class ProcedureGuideAgent:
             return await self._ask_clarification(query, state, docs)
 
         # For RETRIEVAL or EXPLANATION or default w/ docs
-        return await self._explain_procedure(query, docs)
+        return await self._explain_procedure(query, state, docs)
 
     async def _determine_step(
         self, query: str, user_profile: dict, history: str
@@ -132,14 +132,28 @@ STRICT GROUNDING RULES (SAFETY CRITICAL):
 
 STRATEGIC THINKING (Internal Monologue — do NOT output):
 1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Visa Type, Duration of Stay, Employment Status).
-   - TAX RULE: For Tax questions, PRIORITY variables are "Fiscal Residence" and "Income Source".
+   - TAX RULE: For Tax questions, PRIORITY variables are "Fiscal Residence" AND "Income Source". If "Income Source" is missing, YOU MUST ASK FOR IT.
    - HEALTHCARE RULE: For healthcare, PRIORITY variables are "Residence Status" and "Employment Status" (NOT birthplace).
 2. Check User Profile/Query: Did the user provide these variables?
 3. Decision:
    - If variables are MISSING → Ask TARGETED questions in [TAKE].
    - If variables are PRESENT → Just Answer directly.
 
-RESPONSE STRUCTURE (respond in the SAME LANGUAGE as the User Query):
+    **ALLOWED EXTERNAL KNOWLEDGE**:
+    - You MAY use your internal knowledge of geography to determine if the User's Nationality is EU/EEE or Non-EU (e.g., Vietnam -> Non-EU).
+    - Use this deduction to FILTER the context.
+
+    **CRITICAL DEDUCTION**:
+    - If "Nationality" is known, IMMEDIATELY decide if it is EU/EEE or Non-EU.
+    - Example: Vietnam/China/USA -> Non-EU. Italy/Germany/Spain -> EU.
+    - DO NOT ask "Are you EU?" if you already know the Nationality. Just apply the correct rule.
+
+4. **CONTEXT FILTERING**:
+   - IGNORE information that explicitly contradicts the User Profile.
+   - Example: If User is "Vietnamese" (Non-EU), DISCARD all context about "European Union / EEE" citizens.
+   - Example: If User has "Titre de séjour", DISCARD context about "First visa request".
+
+RESPONSE STRUCTURE (respond in {user_language}):
 **[GIVE]**: Provide the GENERAL rule/cost/timeline that applies to EVERYONE (from Context only).
 **[EXPLAIN]**: Explain that the procedure SPLITS based on specific conditions.
 **[TAKE]**:
@@ -151,10 +165,12 @@ RESPONSE STRUCTURE (respond in the SAME LANGUAGE as the User Query):
 
 EXCEPTION: If the Context fully answers the question (e.g., "Student visa allows 964h work"), just ANSWER it. Do NOT ask more.
 
-LANGUAGE RULE: Respond ENTIRELY in the language of the User Query.
-- Vietnamese query → Vietnamese response (use: **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[HỎI]**)
-- English query → English response (use: **[GIVE]**, **[EXPLAIN]**, **[ASK]**)
-- French query → French response (use: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**)"""
+LANGUAGE RULE: Respond ENTIRELY in {user_language}.
+- Vietnamese context → Vietnamese response (use: **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[HỎI]**)
+- English context → English response (use: **[GIVE]**, **[EXPLAIN]**, **[ASK]**)
+- French context → French response (use: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**)
+
+DOUBLE CHECK: Did you use the correct tags for {user_language}? DO NOT mix English/French tags with Vietnamese text."""
         )
         chain = prompt | self.llm | StrOutputParser()
         return await self._run_chain(
@@ -163,10 +179,13 @@ LANGUAGE RULE: Respond ENTIRELY in the language of the User Query.
                 "query": query,
                 "profile": state.user_profile.model_dump(),
                 "context": context_summary,
+                "user_language": state.user_profile.language or "fr",
             },
         )
 
-    async def _explain_procedure(self, query: str, docs: List[Dict]) -> str:
+    async def _explain_procedure(
+        self, query: str, state: AgentState, docs: List[Dict]
+    ) -> str:
         if not docs:
             return "Je ne trouve pas de procédure correspondant exactement à votre demande sur service-public.fr."
 
@@ -179,6 +198,13 @@ Context from official documents:
 
 ROLE: You are an Expert French Administrative Guide. Providing public procedures is SAFE and LEGAL.
 
+CRITICAL LANGUAGE RULE:
+You MUST respond ENTIRELY in {user_language}.
+- If {user_language} is Vietnamese -> Respond in VIETNAMESE.
+- If {user_language} is English -> Respond in ENGLISH.
+- If {user_language} is French -> Respond in FRENCH.
+- Do NOT mix languages. Do NOT use French tags like [DONNER] if the user language is Vietnamese.
+
 STRICT GROUNDING RULES (SAFETY CRITICAL):
 ⛔ NEVER invent specific numbers (costs, income thresholds, timelines, form numbers) not present in the Context above.
 ⛔ If the Context does not mention a specific figure, say "le montant exact dépend de votre situation" and cite service-public.fr.
@@ -188,35 +214,70 @@ STRICT GROUNDING RULES (SAFETY CRITICAL):
 
 STRATEGIC THINKING (Internal Monologue — do NOT output):
 1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Age, Visa Type).
-   - TAX RULE: For Tax questions, PRIORITY variables are "Fiscal Residence" and "Income Source".
+   - TAX RULE: For Tax questions, PRIORITY variables are "Fiscal Residence" AND "Income Source". If "Income Source" is missing, YOU MUST ASK FOR IT.
    - HEALTHCARE RULE: For healthcare, PRIORITY variables are "Residence Status" and "Employment Status".
-2. Check Query: Did the user provide these variables?
-3. Decision:
+
+2. **DEADLINE ANALYSIS (URGENCY CHECK)**:
+   - READ the Context to find specific TIME LIMITS (e.g., "1 year to exchange", "register within 3 months").
+   - COMPARE with User Profile "Duration of Stay".
+   - **MATH & LOGIC**:
+     - Convert both to Months (e.g., 1 year = 12 months).
+     - Calculate: Remaining Time = Deadline - Duration of Stay.
+     - IF Remaining Time < 3 months: YOU MUST TRIGGER **ALERT MODE**.
+   - IF User is OVER the deadline: TRIGGER EXPIRED WARNING.
+
+3. Check Query: Did the user provide these variables?
+
+4. Decision:
    - If variables are MISSING → Use [TAKE] to ask ONE targeted question.
    - If variables are PRESENT → Just Answer directly without asking.
+   - PROGRESSION CHECK: If User confirms a step or says "Yes", MOVE to the next step (e.g., "Submit on ANTS").
 
-RESPONSE STRUCTURE (respond in the SAME LANGUAGE as the User Query):
-**[GIVE]**: Provide the GENERAL rule/cost/timeline (from Context only, with citations).
-**[EXPLAIN]**: Explain branching logic if any.
-**[TAKE]**:
+    **ALLOWED EXTERNAL KNOWLEDGE**:
+    - You MAY use your internal knowledge of geography to determine if the User's Nationality is EU/EEE or Non-EU (e.g., Vietnam -> Non-EU).
+    - Use this deduction to FILTER the context.
+
+    **CRITICAL DEDUCTION**:
+    - If "Nationality" is known, IMMEDIATELY decide if it is EU/EEE or Non-EU.
+    - Example: Vietnam/China/USA -> Non-EU. Italy/Germany/Spain -> EU.
+    - DO NOT ask "Are you EU?" if you already know the Nationality. Just apply the correct rule.
+
+4. **CONTEXT FILTERING**:
+   - IGNORE information that explicitly contradicts the User Profile.
+   - Example: If User is "Vietnamese" (Non-EU), DISCARD all context about "European Union / EEE" citizens.
+   - Example: If User has "Titre de séjour", DISCARD context about "First visa request".
+
+RESPONSE STRUCTURE (respond in FRENCH):
+**[DONNER]**: Provide the GENERAL rule/cost/timeline (from Context only, with citations).
+   - **MANDATORY**: If the procedure is online, INJECT the link: `https://permisdeconduire.ants.gouv.fr` (for driving license) or `https://administration-etrangers-en-france.interieur.gouv.fr` (for residence).
+
+**[EXPLIQUER]**: Explain branching logic if any.
+   - **ALERT MODE**: If Urgency Check triggered, YOU MUST START this section with "⚠️ **[URGENT]**: Vous avez moins de X mois!" Use a direct, directive tone.
+
+**[DEMANDER]**:
    - Ask ONE TARGETED question based on the document's conditional logic.
    - Priority order: Nationality (EU/Non-EU) → Type of residence permit → Employment status.
-   - STRICTLY FORBIDDEN: Generic questions like "Do you need more help?".
-   - STRICTLY FORBIDDEN: Asking about birthplace when residency/employment is the decision variable.
+   - **STRICTLY FORBIDDEN**: Generic questions like "Do you need more help?".
+   - **MANDATORY**: Always ask the NEXT STEP question (e.g., "Avez-vous préparé la traduction ?", "Avez-vous créé un compte ANTS ?").
+   - STRICTLY FORBIDDEN: Asking for info already in the profile.
 
 EXCEPTION: If the Context fully and directly answers the question (fact-based: specific number, timeline, rule),
-just ANSWER it directly. Do NOT add [TAKE]. Examples of direct questions:
-- "How many hours can a student work?" → Direct answer: 964h/year
-- "How long does naturalization take?" → Direct answer: 18 months max
-- "How much does a passport cost?" → Direct answer: cite the price from Context
+just ANSWER it directly. Do NOT add [DEMANDER].
 
-LANGUAGE RULE: Respond ENTIRELY in the language of the User Query.
-- Vietnamese query → Vietnamese response (use: **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[HỎI]**)
-- English query → English response (use: **[GIVE]**, **[EXPLAIN]**, **[ASK]**)
-- French query → French response (use: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**)"""
+LANGUAGE RULE:
+- Respond ENTIRELY in FRENCH.
+- Use French tags: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**.
+- Do NOT use English or Vietnamese. The system will handle translation."""
         )
         chain = prompt | self.llm | StrOutputParser()
-        return await self._run_chain(chain, {"query": query, "context": context})
+        return await self._run_chain(
+            chain,
+            {
+                "query": query,
+                "context": context,
+                "user_language": state.user_profile.language or "fr",
+            },
+        )
 
 
 # Singleton

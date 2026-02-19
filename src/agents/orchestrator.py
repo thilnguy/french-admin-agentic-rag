@@ -77,7 +77,7 @@ class AdminOrchestrator:
         return response
 
     async def handle_query(
-        self, query: str, user_lang: str = "fr", session_id: str = "default_session"
+        self, query: str, user_lang: str = None, session_id: str = "default_session"
     ):
         """
         Main orchestration logic with Guardrails, Caching, and Query Translation.
@@ -86,18 +86,6 @@ class AdminOrchestrator:
         # Cache Key based on query, language, AND session_id
         # Including session_id prevents cross-session cache contamination
         # (e.g., eval test cases sharing cached responses from other sessions)
-        cache_key = f"agent_res:{hashlib.md5((query + user_lang + session_id).encode()).hexdigest()}"
-
-        # Bypass cache if DEBUG=True
-        if not settings.DEBUG:
-            try:
-                cached_res = await self.cache.get(cache_key)
-                if cached_res:
-                    logger.info(f"Cache hit for query: {query}")
-                    return cached_res
-            except Exception as e:
-                logger.error(f"Redis cache error: {e}")
-
         from src.shared.guardrails import guardrail_manager
         from src.agents.intent_classifier import intent_classifier
         from src.agents.preprocessor import (
@@ -109,6 +97,33 @@ class AdminOrchestrator:
         # LOAD STATE (Structured State Management)
         state = await self.memory.load_agent_state(session_id)
         chat_history = state.messages
+
+        # SYNC FRONTEND LANGUAGE:
+        if user_lang:
+            # Normalize code to full name (e.g., "vi" -> "Vietnamese") for better LLM adherence
+            # We assume lang_map values are capitalized full names
+            full_name = self.lang_map.get(user_lang.lower(), user_lang)
+            state.user_profile.language = full_name
+
+        # Resolve effective language for processing
+        effective_lang = user_lang or state.user_profile.language or "fr"
+
+        # Ensure profile has it if it was empty
+        if not state.user_profile.language:
+            state.user_profile.language = effective_lang
+
+        # Cache Key based on query, language, AND session_id
+        cache_key = f"agent_res:{hashlib.md5((query + effective_lang + session_id).encode()).hexdigest()}"
+
+        # Bypass cache if DEBUG=True
+        if not settings.DEBUG:
+            try:
+                cached_res = await self.cache.get(cache_key)
+                if cached_res:
+                    logger.info(f"Cache hit for query: {query}")
+                    return cached_res
+            except Exception as e:
+                logger.error(f"Redis cache error: {e}")
 
         # STEP 0: Extract / Confirm Core Goal (MUST happen before query rewriting)
         # This locks the user's primary objective so the rewriter can anchor to it.
@@ -132,13 +147,33 @@ class AdminOrchestrator:
         state.metadata["current_query"] = rewritten_query
 
         # We classify early to inform future routing decisions
-        intent = await intent_classifier.classify(rewritten_query)
+        # SHORT-CIRCUIT ("The 'Yes' Trap" Fix):
+        # If we are in an active procedure (CLARIFICATION step) and user gives a short answer,
+        # it is almost certainly a response to the agent's question. Force routing to AgentGraph.
+        is_short_answer = len(query.split()) <= 5
+        # Check if last agent message ended with a question mark or [HỎI]/[ASK]/[DEMANDER]
+        last_msg_is_question = (
+            chat_history
+            and chat_history[-1].type == "ai"
+            and "?" in chat_history[-1].content
+        )
+
+        is_contextual_continuation = (
+            state.current_step == "CLARIFICATION" or last_msg_is_question
+        ) and is_short_answer
+
+        if is_contextual_continuation:
+            logger.info(
+                "Short-Circuit: Routing short answer directly to AgentGraph (Contextual Continuation)"
+            )
+            intent = "COMPLEX_PROCEDURE"
+        else:
+            intent = await intent_classifier.classify(rewritten_query)
+
         state.intent = intent
         logger.info(f"Query Intent Classified: {intent}")
 
         # LAYER 2: Extract User Profile (Entity Memory)
-        # We extract from the ORIGINAL query + History (or Rewritten? Rewritten is better for pronouns, but Original might have tone)
-        # Using Rewritten seems safer for entity resolution.
         extracted_data = await profile_extractor.extract(rewritten_query, chat_history)
         if extracted_data:
             logger.info(f"Extracted Profile Data: {extracted_data}")
@@ -148,6 +183,19 @@ class AdminOrchestrator:
             updated = False
             for key, value in extracted_data.items():
                 if value is not None and key in current_profile_dict:
+                    # BLOCKER: Do not overwrite language if it was explicitly provided by frontend OR already set
+                    if key == "language":
+                        current_lang = state.user_profile.language
+                        # If we have a specific language set (not None, not 'fr', not 'French'), PROTECT IT.
+                        if current_lang and current_lang.lower() not in [
+                            "fr",
+                            "french",
+                        ]:
+                            continue
+                        # If user_lang passed in this turn, also protect
+                        if user_lang and user_lang != "fr":
+                            continue
+
                     # Logic: Overwrite or Merge?
                     # For now, Overwrite if new value is found.
                     # Exception: Maybe accumulation? But simplistic overwrite is standard for "I am now living in Paris"
@@ -159,9 +207,15 @@ class AdminOrchestrator:
                 logger.info(f"Updated User Profile: {state.user_profile}")
 
         # Guardrail 1: Topic Validation (Context-aware)
-        is_valid, reason = await guardrail_manager.validate_topic(
-            query, history=chat_history
-        )
+        # BYPASS if Contextual Continuation (User answering a question)
+        if is_contextual_continuation:
+            is_valid = True
+            reason = "Contextual Continuation"
+        else:
+            is_valid, reason = await guardrail_manager.validate_topic(
+                query, history=chat_history
+            )
+
         if not is_valid:
             # Update state with rejection
             state.messages.append(HumanMessage(content=query))
@@ -174,13 +228,13 @@ class AdminOrchestrator:
                 "en": "Sorry, I cannot process this request. Reason: {reason}",
                 "vi": "Xin lỗi, tôi không thể hỗ trợ yêu cầu này. Lý do: {reason}",
             }
-            lang_key = self.lang_map.get(user_lang.lower(), "French")[:2].lower()
+            lang_key = self.lang_map.get(effective_lang.lower(), "French")[:2].lower()
             return rejection_messages.get(lang_key, rejection_messages["fr"]).format(
                 reason=reason
             )
 
         # Language normalization
-        full_lang = self.lang_map.get(user_lang.lower(), user_lang)
+        full_lang = self.lang_map.get(effective_lang.lower(), effective_lang)
 
         # ROUTER LOGIC: Fast Lane vs Slow Lane
         # If intent is complex, delegate to AgentGraph
@@ -304,7 +358,7 @@ class AdminOrchestrator:
 
             messages.append(
                 HumanMessage(
-                    content=f"Context: {context_text}\n\nQuestion in {user_lang}: {query}"
+                    content=f"Context: {context_text}\n\nQuestion in {effective_lang}: {query}"
                 )
             )
 
@@ -323,7 +377,9 @@ class AdminOrchestrator:
                     "en": "Sorry, I could not find reliable enough information to answer this question safely.",
                     "vi": "Xin lỗi, tôi không tìm thấy thông tin đủ tin cậy để trả lời câu hỏi này một cách an toàn.",
                 }
-                lang_key = self.lang_map.get(user_lang.lower(), "French")[:2].lower()
+                lang_key = self.lang_map.get(effective_lang.lower(), "French")[
+                    :2
+                ].lower()
                 french_answer = fallback_messages.get(lang_key, fallback_messages["fr"])
                 logger.warning("Hallucination detected, using fallback response.")
 
@@ -340,7 +396,7 @@ class AdminOrchestrator:
             )
 
         # Guardrail 3: Add Disclaimer
-        final_response = guardrail_manager.add_disclaimer(final_answer, user_lang)
+        final_response = guardrail_manager.add_disclaimer(final_answer, effective_lang)
 
         # Save to cache (TTL 1 hour)
         try:

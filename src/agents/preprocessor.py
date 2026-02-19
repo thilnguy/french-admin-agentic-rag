@@ -29,6 +29,9 @@ class QueryRewriter:
             4. STANDALONE: The rewritten query must be self-contained for a vector database search.
             5. LANGUAGE: Keep the language of the CURRENT QUERY.
             6. NO ANSWERS: Do NOT answer the question. Only rewrite it.
+            7. CONVERSATIONAL CONTINUATION: If the user says "Yes", "No", "Done", "Roger", "Ok", or "Rồi" (Vietnamese for Done/Yes) to a previous question, rewrite it as a statement summarizing the confirmation + the next logical step.
+               - Example: Agent asked "Do you have a visa?", User said "Yes". Rewrite: "User confirms having a visa. What is the next step?"
+               - Example: Agent asked "Are you a student?", User said "Non". Rewrite: "User confirms they are NOT a student."
 
             Core Goal (if known): {core_goal}
 
@@ -96,7 +99,10 @@ class ProfileExtractor:
             Extract relevant user information from the conversation history and the latest query.
 
             Target Fields:
-            - language (fr, en, vi)
+            - language (fr, en, vi). Detect based on the User's Query language.
+              - "Tôi là..." -> vi
+              - "I am..." -> en
+              - "Je suis..." -> fr
             - name
             - age
             - nationality (Specific nationality, e.g., Française, Américaine, Vietnamienne)
