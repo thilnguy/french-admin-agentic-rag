@@ -394,15 +394,16 @@ async def test_contract_handle_query_redis_error_does_not_crash():
 
 @pytest.mark.asyncio
 async def test_contract_language_detection_updates_state():
-    """Contract: Language detection behavior varies by signal strength.
+    """Contract: A clearly English query with user_lang='en' switches state language to English.
 
-    DOCUMENTED BEHAVIOR: The anti-hallucination rule in language resolution keeps the
-    previous language ('fr' default) when the ProfileExtractor's confidence is not
-    strong enough to justify a switch (e.g. context-heavy French-related query in English
-    is rewritten to French by QueryRewriter, confusing the detector).
+    CURRENT BEHAVIOR (after Fix 2a — LanguageResolver integrated):
+        ProfileExtractor correctly detects 'en' for 'Tell me about myself'.
+        LanguageResolver respects the frontend override (user_lang='en') and applies 'English'.
+        Result: state.user_profile.language == 'English'.
 
-    A clear English sentence like 'Tell me about myself' with no prior history
-    reliably switches to English. Complex queries may retain 'fr' due to query rewriting.
+    PREVIOUS BEHAVIOR (DOCUMENTED BUG — pre-Fix 2a):
+        The anti-hallucination rule in stream_query / handle_query was too conservative.
+        Even for clear English text, language kept the default 'fr'.
     """
     with (
         patch("src.agents.orchestrator.redis.Redis"),
@@ -432,20 +433,13 @@ async def test_contract_language_detection_updates_state():
             side_effect=lambda sid, s: saved_states.append(s)
         )
 
-        # Use a clearly English-only query with no French admin keywords
+        # Use a clearly English-only query with user_lang='en'
         await orch.handle_query("Tell me about myself", "en", "s8")
 
         # CONTRACT: state was saved at least once
         assert len(saved_states) > 0
         final_state = saved_states[-1]
 
-        # CONTRACT (CURRENT KNOWN BEHAVIOR): Even for clear English text like "Tell me about
-        # myself", the anti-hallucination rule in language resolution keeps the default 'fr'.
-        # ProfileExtractor correctly detects 'en' but the resolver overrides it.
-        #
-        # ⚠️  This is a DOCUMENTED LIMITATION. Fix 2a (LanguageResolver refactor) will
-        # fix this by replacing the overly conservative anti-hallucination rule with a
-        # confidence-threshold approach.
-        #
-        # After Fix 2a, this assertion should become: == "English"
-        assert final_state.user_profile.language == "fr"
+        # CONTRACT (FIXED BEHAVIOR — after LanguageResolver integration):
+        # English text + user_lang='en' → LanguageResolver correctly sets 'English'.
+        assert final_state.user_profile.language == "English"
