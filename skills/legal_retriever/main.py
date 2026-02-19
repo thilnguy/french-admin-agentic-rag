@@ -72,6 +72,14 @@ async def retrieve_legal_info(query: str, domain: str = "general", user_profile=
             f" - Found: {r['source']} | Title: {r['metadata'].get('title', 'N/A')}"
         )
 
+    # BM25 Hybrid Fusion (Layer 2.5): RRF-merge semantic + lexical rankings
+    from src.shared.hybrid_retriever import hybrid_rerank
+
+    results = hybrid_rerank(results, query, top_n=len(results))
+    logger.debug(
+        f"Hybrid RRF fusion applied. Top result: {results[0].get('source', '?') if results else 'none'}"
+    )
+
     # Context-Aware Reranking (Layer 3)
     reranker = get_reranker()
     reranked_results = reranker.rerank(query, results, user_profile=user_profile)
