@@ -155,10 +155,10 @@ STRATEGIC THINKING (Internal Monologue — do NOT output):
    - Example: If User is "Vietnamese" (Non-EU), DISCARD all context about "European Union / EEE" citizens.
    - Example: If User has "Titre de séjour", DISCARD context about "First visa request".
 
-RESPONSE STRUCTURE (respond in FRENCH):
-**[DONNER]**: Provide the GENERAL rule/cost/timeline that applies to EVERYONE (from Context only).
-**[EXPLIQUER]**: Explain that the procedure SPLITS based on specific conditions.
-**[DEMANDER]**:
+RESPONSE STRUCTURE (respond in {user_language}):
+**[DONNER]** (or equivalent: [GIVE] in English, [CUNG CẤP] in Vietnamese): Provide the GENERAL rule/cost/timeline that applies to EVERYONE (from Context only).
+**[EXPLIQUER]** (or equivalent: [EXPLAIN] in English, [GIẢI THÍCH] in Vietnamese): Explain that the procedure SPLITS based on specific conditions.
+**[DEMANDER]** (or equivalent: [ASK] in English, [YÊU CẦU] in Vietnamese):
    - Ask ONE TARGETED question based on the document's conditional logic.
    - Priority order: Nationality (EU/Non-EU) → Type of residence permit → Employment status → Duration of stay.
    - STRICTLY FORBIDDEN: Generic questions like "Do you need more help?".
@@ -168,10 +168,12 @@ RESPONSE STRUCTURE (respond in FRENCH):
 EXCEPTION: If the Context fully answers the question (e.g., "Student visa allows 964h work"), just ANSWER it. Do NOT ask more.
 
 LANGUAGE RULE:
-- Respond ENTIRELY in FRENCH.
-- Use French tags: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**.
-- ⛔ IGNORE the user query language (Vietnamese, English, etc.). Your output MUST be French.
-- Do NOT use English or Vietnamese tags.
+- Respond ENTIRELY in {user_language}.
+- Use localized tags corresponding to: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**.
+- Example for Vietnamese: Use **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[YÊU CẦU]**.
+- Example for English: Use **[GIVE]**, **[EXPLAIN]**, **[ASK]**.
+- ⛔ DO NOT mix languages.
+- **TERMINOLOGY**: KEEP official French terms (ANTS, VLS-TS, Titre de séjour, Préfecture) exactly as they appear in the context. Do not translate these.
 """
         )
         chain = prompt | self.llm | StrOutputParser()
@@ -255,30 +257,32 @@ STRATEGIC THINKING (Internal Monologue — do NOT output):
    - Example: If User is "Vietnamese" (Non-EU), DISCARD all context about "European Union / EEE" citizens.
    - Example: If User has "Titre de séjour", DISCARD context about "First visa request".
 
-RESPONSE STRUCTURE (respond in FRENCH):
-**[DONNER]**: Provide the GENERAL rule/cost/timeline (from Context only, with citations).
+RESPONSE STRUCTURE (respond in {user_language}):
+**[DONNER]** (or equivalent: [GIVE] in English, [CUNG CẤP] in Vietnamese): Provide the GENERAL rule/cost/timeline (from Context only, with citations).
    - **MANDATORY**: If the procedure is online, INJECT the link: `https://permisdeconduire.ants.gouv.fr` (for driving license) or `https://administration-etrangers-en-france.interieur.gouv.fr` (for residence).
    - **PERSONALIZATION**: If User Location is known (e.g. Lyon), mention specific local authorities (e.g. "Préfecture de Lyon", "Cour d'appel de Lyon" for translators).
 
-**[EXPLIQUER]**: Explain branching logic if any.
-   - **ALERT MODE**: If Urgency Check triggered, YOU MUST START this section with "⚠️ **[URGENT]**: Vous avez moins de X mois!" Use a direct, directive tone.
+**[EXPLIQUER]** (or equivalent: [EXPLAIN] in English, [GIẢI THÍCH] in Vietnamese): Explain branching logic if any.
+   - **ALERT MODE**: If Urgency Check triggered, YOU MUST START this section with "⚠️ **[URGENT]**: Vous avez moins de X mois!" (translated to {user_language}). Use a direct, directive tone.
 
-**[DEMANDER]**:
+**[DEMANDER]** (or equivalent: [ASK] in English, [YÊU CẦU] in Vietnamese):
    - Ask ONE TARGETED question based on the document's conditional logic.
    - Priority order: Nationality (EU/Non-EU) → Type of residence permit → Employment status.
    - **STRICTLY FORBIDDEN**: Generic questions like "Do you need more help?".
-   - **MANDATORY**: Always ask the NEXT STEP question (e.g., "Avez-vous préparé la traduction ?", "Avez-vous créé un compte ANTS ?").
+   - **MANDATORY**: Always ask the NEXT STEP question (e.g., "Avez-vous chuẩn bị bản dịch chưa?", "Avez-vous créé un hồ sơ trên ANTS chưa?").
    - STRICTLY FORBIDDEN: Asking for info already in the profile.
 
 EXCEPTION: If the Context fully and directly answers the question (fact-based: specific number, timeline, rule),
 just ANSWER it directly. Do NOT add [DEMANDER].
 
 LANGUAGE RULE:
-- Respond ENTIRELY in FRENCH.
-- Use French tags: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**.
-- ⛔ IGNORE the user query language (Vietnamese, English, etc.). Your output MUST be French.
-- Do NOT use English or Vietnamese.
-- **TERMINOLOGY**: KEEP official terms (ANTS, VLS-TS, Titre de séjour, Préfecture) exactly as they appear in the context. Do not paraphrase them."""
+- Respond ENTIRELY in {user_language}.
+- Use localized tags corresponding to: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**.
+- Example for Vietnamese: Use **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[YÊU CẦU]**.
+- Example for English: Use **[GIVE]**, **[EXPLAIN]**, **[ASK]**.
+- ⛔ DO NOT mix languages.
+- **TERMINOLOGY**: KEEP official French terms (ANTS, VLS-TS, Titre de séjour, Préfecture) exactly as they appear in the context. Do not translate these.
+"""
         )
         chain = prompt | self.llm | StrOutputParser()
         return await self._run_chain(

@@ -44,7 +44,7 @@ class GuardrailManager:
             4. Personal introductions (e.g., "My name is...") combined with admin questions are APPROVED.
             5. Procedural confirmations or next-step requests (e.g., "What do I do next?", "I have it", "Yes", "Next step") are APPROVED if they relate to the context.
 
-            Respond only with 'APPROVED' or 'REJECTED: [Short reason in Vietnamese]'.
+            Respond only with 'APPROVED' or 'REJECTED: [Short reason in English]'.
 
             HISTORY:
             {history}""",
@@ -59,7 +59,9 @@ class GuardrailManager:
 
         if "APPROVED" in response:
             return True, ""
-        return False, response.replace("REJECTED:", "").strip()
+        # Extract English reason
+        reason = response.replace("REJECTED:", "").strip()
+        return False, reason
 
     async def check_hallucination(
         self, context: str, answer: str, query: str = "", history: list = None

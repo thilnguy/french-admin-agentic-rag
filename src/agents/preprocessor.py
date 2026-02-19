@@ -27,7 +27,7 @@ class QueryRewriter:
             2. PRONOUN RESOLUTION: Replace pronouns (it, they, this) with specific entities from history.
             3. ENTITY ENRICHMENT: Enrich the query with known user profile facts (nationality, residency).
             4. STANDALONE: The rewritten query must be self-contained for a vector database search.
-            5. LANGUAGE: Keep the language of the CURRENT QUERY.
+            5. LANGUAGE: Keep the language of the CURRENT QUERY. DO NOT translate to French.
             6. NO ANSWERS: Do NOT answer the question. Only rewrite it.
             7. CONVERSATIONAL CONTINUATION: If the user says "Yes", "No", "Done", "Roger", "Ok", or "Rồi" (Vietnamese for Done/Yes) to a previous question, rewrite it as a statement summarizing the confirmation + the next logical step.
                - Example: Agent asked "Do you have a visa?", User said "Yes". Rewrite: "User confirms having a visa. What is the next step?"
@@ -101,10 +101,11 @@ class ProfileExtractor:
             Target Fields:
             - _reasoning: Brief explanation of why you detected the language and location.
             - language (fr, en, vi).
-              - **Language Detection Rule**: Detect based on the User's phrasing/grammar.
-              - "Tôi là", "của tôi", "người Việt", "cho hỏi" -> ALWAYS 'vi' (Vietnamese).
-              - "I am", "my", "how to" -> ALWAYS 'en' (English).
-              - "Je suis", "mon", "comment" -> 'fr' (French).
+              - **NO BIAS RULE**: The topic of French administration or legal procedures MUST NOT bias language detection. "I am in France" is English. "Tôi ở Pháp" is Vietnamese.
+              - **English Detection**: If query structure/words are English -> ALWAYS 'en'.
+              - **Vietnamese Detection**: If query structure/words are Vietnamese -> ALWAYS 'vi'.
+              - **French Detection**: If query structure/words are French -> ALWAYS 'fr'.
+              - **STRICT FALLBACK**: If detection is ambiguous, use the HISTORY's language. DO NOT default to 'fr' unless query is French.
               - *Note*: If user says "I live in Lyon", "Lyon" is a French city, but the sentence is English. Do NOT let the city name bias the language detection to 'fr'.
             - name
             - age
@@ -127,6 +128,12 @@ class ProfileExtractor:
             2. If a field is not mentioned, do NOT include it in the JSON (or set to null).
             3. Return a JSON object matching the schema.
 
+            **EXAMPLES**:
+            - Human: "Tìm hiểu về thẻ cư trú" -> language: 'vi'
+            - Human: "I am American" -> language: 'en', nationality: 'Américaine'
+            - Human: "Je veux un visa student" -> language: 'fr'
+            - Human: "I live in Paris for 1 year" -> language: 'en', has_legal_residency: true, location: 'Paris'
+
             Conversation History:
             {history}
 
@@ -144,12 +151,31 @@ class ProfileExtractor:
         if not history and not query:
             return {}
 
-        # Format history
-        history_str = "\n".join([f"{msg.type}: {msg.content}" for msg in history[-10:]])
+        # Format history (last 5 turns to reduce language bias)
+        history_str = "\n".join([f"{msg.type}: {msg.content}" for msg in history[-5:]])
 
         try:
             # Run extraction
-            return await self.chain.ainvoke({"history": history_str, "query": query})
+            data = await self.chain.ainvoke({"history": history_str, "query": query})
+
+            # Defensive fix: If detection is 'fr' but query is clearly English keywords, force 'en'
+            if data and data.get("language") == "fr":
+                english_keywords = [
+                    " i am",
+                    "how to",
+                    " i have",
+                    " i live",
+                    "american",
+                    "usa",
+                    "english",
+                ]
+                if any(kw in query.lower() for kw in english_keywords):
+                    logger.info(
+                        f"Corrected 'fr' detection to 'en' for English query: {query}"
+                    )
+                    data["language"] = "en"
+
+            return data
         except Exception as e:
             logger.error(f"Profile extraction failed: {e}")
             return {}
