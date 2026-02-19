@@ -2,7 +2,16 @@ import os
 import tempfile
 import uvicorn
 import time
-from fastapi import FastAPI, UploadFile, File, Request, HTTPException, Security, Depends
+from fastapi import (
+    FastAPI,
+    UploadFile,
+    File,
+    Request,
+    HTTPException,
+    Security,
+    Depends,
+    Query,
+)
 from fastapi.security import APIKeyHeader
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -175,9 +184,15 @@ async def chat(request: Request, chat_request: ChatRequest):
 @limiter.limit(settings.RATE_LIMIT)
 async def chat_stream(
     request: Request,
-    query: str,
-    language: str = "fr",
-    session_id: str = "default",
+    query: str = Query(
+        ..., min_length=1, max_length=500, description="User query (1-500 chars)"
+    ),
+    language: str = Query(
+        "fr", pattern="^(fr|en|vi)$", description="Response language: fr, en, or vi"
+    ),
+    session_id: str = Query(
+        "default", min_length=1, max_length=100, description="Session identifier"
+    ),
     api_key: str = None,  # Captured by Depends(get_api_key) but needed in signature for OpenAPI
 ):
     """
