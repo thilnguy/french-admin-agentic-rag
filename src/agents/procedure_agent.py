@@ -35,20 +35,21 @@ class ProcedureGuideAgent:
 
             Possible Steps:
             1. CLARIFICATION: Use this when the procedure has CONDITIONAL BRANCHES based on user profile.
-               - Use this for: visa renewal, healthcare registration, tax declaration, family reunification, naturalization, work authorization, driving license.
+               - Use this for: visa renewal, healthcare registration, tax declaration, family reunification, naturalization, DRIVING LICENSE EXCHANGE.
                - These procedures ALWAYS depend on: nationality, residence status, visa type, employment status, income source, foreign license status.
                - Use CLARIFICATION even if the question is general (e.g., "How do I register for healthcare?").
                - DO NOT use this if the profile already has all needed info.
                - DO NOT use this if the query is a direct answer to a previous agent question.
 
-            2. RETRIEVAL: Use ONLY for truly fact-based questions with a SINGLE universal answer.
+            2. RETRIEVAL: Use ONLY for truly fact-based questions with a SINGLE universal answer (or very minor variations).
                - Examples: "How much does a passport cost?", "How long does naturalization take?", "Can a student work in France?"
-               - These have ONE answer that applies to everyone, no branching.
+               - RULES FOR STUDENTS: "Can I work with a student visa?" is ALWAYS RETRIEVAL (Answer: Yes, 964 hours).
+               - RULES FOR COSTS: "How much is X?" is ALWAYS RETRIEVAL.
 
             3. EXPLANATION: We have the procedure content and profile is complete.
             4. COMPLETED: Procedure finished.
 
-            CRITICAL RULE: When in doubt between CLARIFICATION and RETRIEVAL, choose CLARIFICATION.
+            CRITICAL RULE: When in doubt between CLARIFICATION and RETRIEVAL, choose CLARIFICATION, UNLESS it is about Student Work Rights or Costs.
             A HYBRID response (context + clarifying question) is always better than a pure answer.
 
             Return ONLY the step name."""
@@ -114,7 +115,8 @@ class ProcedureGuideAgent:
     ) -> str:
         context_summary = ""
         if docs:
-            context_summary = "\n".join([d["content"][:800] for d in docs[:3]])
+            # Increased to 1500 to ensure enough context for the summary
+            context_summary = "\n".join([d["content"][:1500] for d in docs[:3]])
 
         prompt = ChatPromptTemplate.from_template(
             """User Query: {query}
@@ -132,48 +134,35 @@ STRICT GROUNDING RULES (SAFETY CRITICAL):
 
 STRATEGIC THINKING (Internal Monologue — do NOT output):
 1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Visa Type, Duration of Stay, Employment Status).
-   - TAX RULE: For Tax questions, PRIORITY variables are "Fiscal Residence" AND "Income Source". If "Income Source" is missing, YOU MUST ASK FOR IT.
-   - HEALTHCARE RULE: For healthcare, PRIORITY variables are "Residence Status" and "Employment Status".
-   - DRIVING LICENSE RULE: For driving license, PRIORITY variables are "Residency Status" and "Foreign License Status".
+   - FAMILY REUNIFICATION RULE: PRIORITY variables are "Nationality" (EU vs Non-EU) AND "Residence Status" (18 months rule). ASK THESE FIRST.
+   - TAX RULE: For Tax, PRIORITY is "Fiscal Residence" implies "Income Source".
+   - HEALTHCARE RULE: For healthcare, PRIORITY is "Residence Status" (legal resident > 3 months) and "Employment Status".
+   - DRIVING LICENSE: PRIORITY is "Residency Status" and "Foreign License Status".
+
 2. Check User Profile: Match known variables.
-   - ⛔ **ANTI-HALLUCINATION**: NEVER assume the user's nationality, residence, or location based on the language of the query. Vietnam language != Vietnamese nationality. If not in Profile, it is UNKNOWN.
+   - ⛔ **ANTI-HALLUCINATION**: NEVER assume nationality or status based on language. Vietnam language != Vietnamese nationality.
+
 3. Decision:
    - If variables are MISSING → Ask the MOST CRITICAL missing variable in [DEMANDER].
    - If variables are PRESENT → Just Answer directly.
 
-    **ALLOWED EXTERNAL KNOWLEDGE**:
-    - You MAY use your internal knowledge of geography to determine if the User's Nationality is EU/EEE or Non-EU (e.g., Vietnam -> Non-EU).
-    - Use this deduction to FILTER the context.
-
-    **CRITICAL DEDUCTION**:
-    - If "Nationality" is known, IMMEDIATELY decide if it is EU/EEE or Non-EU.
-    - Example: Vietnam/China/USA -> Non-EU. Italy/Germany/Spain -> EU.
-    - DO NOT ask "Are you EU?" if you already know the Nationality. Just apply the correct rule.
-
-4. **CONTEXT FILTERING**:
-   - IGNORE information that explicitly contradicts the User Profile.
-   - Example: If User is "Vietnamese" (Non-EU), DISCARD all context about "European Union / EEE" citizens.
-   - Example: If User has "Titre de séjour", DISCARD context about "First visa request".
-
 RESPONSE STRUCTURE (respond in {user_language}):
-**[DONNER]** (or equivalent: [GIVE] in English, [CUNG CẤP] in Vietnamese): Provide the GENERAL rule/cost/timeline that applies to EVERYONE (from Context only).
-**[EXPLIQUER]** (or equivalent: [EXPLAIN] in English, [GIẢI THÍCH] in Vietnamese): Explain that the procedure SPLITS based on specific conditions.
-**[DEMANDER]** (or equivalent: [ASK] in English, [YÊU CẦU] in Vietnamese):
-   - Ask ONE TARGETED question based on the document's conditional logic.
-   - Priority order: Nationality (EU/Non-EU) → Type of residence permit → Employment status → Duration of stay.
-   - STRICTLY FORBIDDEN: Generic questions like "Do you need more help?".
-   - STRICTLY FORBIDDEN: Asking about birthplace when residency/employment is the decision variable.
-   - STRICTLY FORBIDDEN: Questions about info already in the profile.
+**[DONNER]** (or equivalent): MANDATORY. Summarize the GENERAL procedure found in the context.
+   - You MUST provide this summary BEFORE asking questions.
+   - If context is empty, say "I found no specific procedure, but..."
 
-EXCEPTION: If the Context fully answers the question (e.g., "Student visa allows 964h work"), just ANSWER it. Do NOT ask more.
+**[EXPLIQUER]** (or equivalent): Explain that the procedure VARIES based on valid conditions.
+
+**[DEMANDER]** (or equivalent):
+   - Ask ONE TARGETED question to narrow down the case.
+   - Priority order: Nationality (EU/Non-EU) → Residence Status → Employment/Income → Duration of stay.
+   - STRICTLY FORBIDDEN: Generic questions.
+   - STRICTLY FORBIDDEN: Asking for info already in profile.
 
 LANGUAGE RULE:
 - Respond ENTIRELY in {user_language}.
-- Use localized tags corresponding to: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**.
-- Example for Vietnamese: Use **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[YÊU CẦU]**.
-- Example for English: Use **[GIVE]**, **[EXPLAIN]**, **[ASK]**.
+- Use localized tags: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]** (e.g. **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[YÊU CẦU]** for Vietnamese).
 - ⛔ DO NOT mix languages.
-- **TERMINOLOGY**: KEEP official French terms (ANTS, VLS-TS, Titre de séjour, Préfecture) exactly as they appear in the context. Do not translate these.
 """
         )
         chain = prompt | self.llm | StrOutputParser()
@@ -213,15 +202,15 @@ You MUST respond ENTIRELY in {user_language}.
 STRICT GROUNDING RULES (SAFETY CRITICAL):
 ⛔ NEVER invent specific numbers (costs, income thresholds, timelines, form numbers) not present in the Context above.
 ⛔ If the Context does not mention a specific figure, say "le montant exact dépend de votre situation" and cite service-public.fr.
-⛔ Do NOT use training knowledge for specific administrative figures — they change frequently and must come from the Context.
 ✅ ONLY cite figures that appear verbatim in the Context section above.
 ✅ For every key fact, cite: [Source: service-public.fr/...]
 
 STRATEGIC THINKING (Internal Monologue — do NOT output):
 1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Age, Visa Type).
-   - TAX RULE: For Tax questions, PRIORITY variables are "Fiscal Residence" AND "Income Source". If "Income Source" is missing, YOU MUST ASK FOR IT.
-   - HEALTHCARE RULE: For healthcare, PRIORITY variables are "Residence Status" and "Employment Status".
-   - DRIVING LICENSE RULE: For driving license, PRIORITY variables are "Residency Status" and "Foreign License Status".
+   - FAMILY REUNIFICATION: Priority is "Nationality" AND "Residence Status" (18 months?).
+   - TAX RULE: Priority is "Fiscal Residence" AND "Income Source".
+   - HEALTHCARE RULE: Priority is "Residence Status" AND "Employment Status".
+   - DRIVING LICENSE: Priority is "Residency Status" AND "Foreign License Status".
    - ⛔ **ANTI-HALLUCINATION**: NEVER assume nationality or status based on query language.
 
 2. **DEADLINE ANALYSIS (URGENCY CHECK)**:
@@ -236,52 +225,33 @@ STRATEGIC THINKING (Internal Monologue — do NOT output):
 3. Check Query: Did the user provide these variables?
 
 4. Decision:
-   - If variables are MISSING → Use [TAKE] to ask ONE targeted question.
+   - If variables are MISSING → Use [DEMANDER] to ask ONE targeted question.
    - **CRITICAL**: You MUST explain WHY you are asking.
-     - BAD: "Have you lived here 6 months?"
-     - GOOD: "To determine if you are a tax resident, I need to know: Have you lived in France for more than 6 months?"
-   - If variables are PRESENT → Just Answer directly without asking.
-   - PROGRESSION CHECK: If User confirms a step or says "Yes", MOVE to the next step (e.g., "Submit on ANTS").
+   - If variables are PRESENT → Just Answer directly.
 
     **ALLOWED EXTERNAL KNOWLEDGE**:
-    - You MAY use your internal knowledge of geography to determine if the User's Nationality is EU/EEE or Non-EU (e.g., Vietnam -> Non-EU).
-    - Use this deduction to FILTER the context.
-
-    **CRITICAL DEDUCTION**:
+    - You MAY use your internal knowledge of geography (Vietnam -> Non-EU).
     - If "Nationality" is known, IMMEDIATELY decide if it is EU/EEE or Non-EU.
-    - Example: Vietnam/China/USA -> Non-EU. Italy/Germany/Spain -> EU.
-    - DO NOT ask "Are you EU?" if you already know the Nationality. Just apply the correct rule.
 
-4. **CONTEXT FILTERING**:
-   - IGNORE information that explicitly contradicts the User Profile.
-   - Example: If User is "Vietnamese" (Non-EU), DISCARD all context about "European Union / EEE" citizens.
-   - Example: If User has "Titre de séjour", DISCARD context about "First visa request".
+    **CONTEXT FILTERING**:
+    - IGNORE information that explicitly contradicts the User Profile.
 
 RESPONSE STRUCTURE (respond in {user_language}):
-**[DONNER]** (or equivalent: [GIVE] in English, [CUNG CẤP] in Vietnamese): Provide the GENERAL rule/cost/timeline (from Context only, with citations).
+**[DONNER]** (or equivalent: [GIVE], [CUNG CẤP]): Provide the GENERAL rule/cost/timeline (from Context only, with citations).
    - **MANDATORY**: If the procedure is online, INJECT the link: `https://permisdeconduire.ants.gouv.fr` (for driving license) or `https://administration-etrangers-en-france.interieur.gouv.fr` (for residence).
    - **PERSONALIZATION**: If User Location is known (e.g. Lyon), mention specific local authorities (e.g. "Préfecture de Lyon", "Cour d'appel de Lyon" for translators).
 
-**[EXPLIQUER]** (or equivalent: [EXPLAIN] in English, [GIẢI THÍCH] in Vietnamese): Explain branching logic if any.
-   - **ALERT MODE**: If Urgency Check triggered, YOU MUST START this section with "⚠️ **[URGENT]**: Vous avez moins de X mois!" (translated to {user_language}). Use a direct, directive tone.
+**[EXPLIQUER]** (or equivalent: [EXPLAIN], [GIẢI THÍCH]): Explain branching logic if any.
+   - **ALERT MODE**: If Urgency Check triggered, YOU MUST START this section with "⚠️ **[URGENT]**: Vous avez moins de X mois!" (translated).
 
-**[DEMANDER]** (or equivalent: [ASK] in English, [YÊU CẦU] in Vietnamese):
+**[DEMANDER]** (or equivalent: [ASK], [YÊU CẦU]):
    - Ask ONE TARGETED question based on the document's conditional logic.
-   - Priority order: Nationality (EU/Non-EU) → Type of residence permit → Employment status.
+   - Priority order: Nationality (EU/Non-EU) → Residence Status → Employment.
    - **STRICTLY FORBIDDEN**: Generic questions like "Do you need more help?".
-   - **MANDATORY**: Always ask the NEXT STEP question (e.g., "Avez-vous chuẩn bị bản dịch chưa?", "Avez-vous créé un hồ sơ trên ANTS chưa?").
+   - **OPTIONAL**: If no critical variables are missing, you MAY ask the NEXT PRACTICAL STEP (e.g., "Have you prepared the translation?").
    - STRICTLY FORBIDDEN: Asking for info already in the profile.
 
-EXCEPTION: If the Context fully and directly answers the question (fact-based: specific number, timeline, rule),
-just ANSWER it directly. Do NOT add [DEMANDER].
-
-LANGUAGE RULE:
-- Respond ENTIRELY in {user_language}.
-- Use localized tags corresponding to: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]**.
-- Example for Vietnamese: Use **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[YÊU CẦU]**.
-- Example for English: Use **[GIVE]**, **[EXPLAIN]**, **[ASK]**.
-- ⛔ DO NOT mix languages.
-- **TERMINOLOGY**: KEEP official French terms (ANTS, VLS-TS, Titre de séjour, Préfecture) exactly as they appear in the context. Do not translate these.
+EXCEPTION: If the Context fully and directly answers the question (fact-based, or same answer for all groups like 'Students can work'), just ANSWER it directly. Do NOT add [DEMANDER].
 """
         )
         chain = prompt | self.llm | StrOutputParser()
