@@ -87,25 +87,17 @@ class AdminOrchestrator:
         # Including session_id prevents cross-session cache contamination
         # (e.g., eval test cases sharing cached responses from other sessions)
         from src.shared.guardrails import guardrail_manager
-        from src.agents.intent_classifier import intent_classifier
-        from src.agents.preprocessor import (
-            query_rewriter,
-            profile_extractor,
-            goal_extractor,
-        )
+        from src.shared.query_pipeline import get_query_pipeline
+        from src.shared.language_resolver import language_resolver
 
         # LOAD STATE (Structured State Management)
         state = await self.memory.load_agent_state(session_id)
         chat_history = state.messages
 
         # PREVIOUS STATE LANGUAGE (Fallback)
-        # We don't overwrite it immediately with user_lang to allow detection to work.
         previous_lang = state.user_profile.language
 
-        # Cache Key based on query, language, AND session_id
-        # Cache Key - partially constructed (we'll finalize lang later)
-        # However, for cache lookup, we might need a stable language.
-        # Let's use user_lang as the primary filter for cache if available.
+        # Cache Key — use user_lang as stable lookup key (detection happens after)
         lookup_lang = user_lang or previous_lang or "fr"
         cache_key = f"agent_res:{hashlib.md5((query + lookup_lang + session_id).encode()).hexdigest()}"
 
@@ -119,89 +111,45 @@ class AdminOrchestrator:
             except Exception as e:
                 logger.error(f"Redis cache error: {e}")
 
-        # STEP 0: Extract / Confirm Core Goal (MUST happen before query rewriting)
-        # This locks the user's primary objective so the rewriter can anchor to it.
-        new_goal = await goal_extractor.extract_goal(
-            query, chat_history, state.core_goal
+        # STEP 1: Preprocess (goal + rewrite + intent + profile) via QueryPipeline
+        pipeline = get_query_pipeline()
+        pr = await pipeline.run(
+            query=query,
+            chat_history=chat_history,
+            current_goal=state.core_goal,
+            user_profile_dict=state.user_profile.model_dump(exclude_none=True),
         )
-        if new_goal and new_goal != state.core_goal:
-            state.core_goal = new_goal
+
+        # Update state from pipeline results
+        if pr.new_core_goal and pr.new_core_goal != state.core_goal:
+            state.core_goal = pr.new_core_goal
             logger.info(f"Core Goal set/updated: {state.core_goal}")
 
-        # CLASSIFY INTENT
-        # Rewrite query anchored to core_goal + enriched with known user profile
-        rewritten_query = await query_rewriter.rewrite(
-            query,
-            chat_history,
-            core_goal=state.core_goal,
-            user_profile=state.user_profile.model_dump(exclude_none=True),
-        )
-        logger.info(f"Original: {query} | Rewritten: {rewritten_query}")
+        rewritten_query = pr.rewritten_query
+        intent = pr.intent
+        is_contextual_continuation = pr.is_contextual_continuation
+
+        # QueryPipeline doesn't know about state.current_step == "CLARIFICATION",
+        # so we apply that check here and override if needed.
+        if state.current_step == "CLARIFICATION" and len(query.split()) <= 5:
+            is_contextual_continuation = True
+            intent = "COMPLEX_PROCEDURE"
 
         state.metadata["current_query"] = rewritten_query
-
-        # We classify early to inform future routing decisions
-        # SHORT-CIRCUIT ("The 'Yes' Trap" Fix):
-        # If we are in an active procedure (CLARIFICATION step) and user gives a short answer,
-        # it is almost certainly a response to the agent's question. Force routing to AgentGraph.
-        is_short_answer = len(query.split()) <= 5
-        # Check if last agent message ended with a question mark or [HỎI]/[ASK]/[DEMANDER]
-        last_msg_is_question = (
-            chat_history
-            and chat_history[-1].type == "ai"
-            and "?" in chat_history[-1].content
-        )
-
-        is_contextual_continuation = (
-            state.current_step == "CLARIFICATION" or last_msg_is_question
-        ) and is_short_answer
-
-        if is_contextual_continuation:
-            logger.info(
-                "Short-Circuit: Routing short answer directly to AgentGraph (Contextual Continuation)"
-            )
-            intent = "COMPLEX_PROCEDURE"
-        else:
-            intent = await intent_classifier.classify(rewritten_query)
-
         state.intent = intent
+        logger.info(f"Original: {query} | Rewritten: {rewritten_query}")
         logger.info(f"Query Intent Classified: {intent}")
 
-        # LAYER 2: Extract User Profile (Entity Memory)
-        extracted_data = await profile_extractor.extract(query, chat_history)
-        if extracted_data:
-            logger.info(f"Extracted Profile Data: {extracted_data}")
-            # Update state.user_profile
-            # Only update fields that are present and not None
-            current_profile_dict = state.user_profile.model_dump()
-            updated = False
-            for key, value in extracted_data.items():
-                if value is not None and key in current_profile_dict:
-                    # Language-specific switching logic
-                    if key == "language":
-                        # Normalize 'fr' detection or similar
-                        full_val = self.lang_map.get(value.lower(), value)
-
-                        # 1. Do not overwrite if frontend provided a MANUAL non-default choice
-                        if user_lang and user_lang.lower() not in ["fr", "french"]:
-                            continue
-
-                        # 2. DEFENSIVE CHECK: If detection is 'fr' but state is 'English'/'Vietnamese',
-                        # it's likely a detector hallucination on a non-French query.
-                        if value == "fr" and state.user_profile.language in [
-                            "English",
-                            "Vietnamese",
-                        ]:
-                            continue
-
-                        # Otherwise allow specific switches (e.g. en -> vi)
-                        value = full_val
-
-                    # Logic: Overwrite if new value is found.
-                    if getattr(state.user_profile, key) != value:
-                        setattr(state.user_profile, key, value)
-                        updated = True
-
+        # STEP 2: Apply profile + resolve language via LanguageResolver
+        if pr.extracted_data:
+            logger.info(f"Extracted Profile Data: {pr.extracted_data}")
+            has_history = len(chat_history) > 0
+            updated = language_resolver.apply_to_state(
+                extracted_data=pr.extracted_data,
+                user_lang=user_lang,
+                state_profile=state.user_profile,
+                has_history=has_history,
+            )
             if updated:
                 logger.info(f"Updated User Profile: {state.user_profile}")
 
