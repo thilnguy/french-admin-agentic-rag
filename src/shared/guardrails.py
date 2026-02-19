@@ -42,6 +42,7 @@ class GuardrailManager:
             2. If the query is a conversational follow-up or meta-question (e.g., "Why?", "What is my name?"), and there is HISTORY showing a previous administrative discussion, it is APPROVED.
             3. NEW queries about unrelated topics (cooking, celebrities, non-French law) are REJECTED.
             4. Personal introductions (e.g., "My name is...") combined with admin questions are APPROVED.
+            5. Procedural confirmations or next-step requests (e.g., "What do I do next?", "I have it", "Yes", "Next step") are APPROVED if they relate to the context.
 
             Respond only with 'APPROVED' or 'REJECTED: [Short reason in Vietnamese]'.
 
