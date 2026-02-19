@@ -98,22 +98,16 @@ class AdminOrchestrator:
         state = await self.memory.load_agent_state(session_id)
         chat_history = state.messages
 
-        # SYNC FRONTEND LANGUAGE:
-        if user_lang:
-            # Normalize code to full name (e.g., "vi" -> "Vietnamese") for better LLM adherence
-            # We assume lang_map values are capitalized full names
-            full_name = self.lang_map.get(user_lang.lower(), user_lang)
-            state.user_profile.language = full_name
-
-        # Resolve effective language for processing
-        effective_lang = user_lang or state.user_profile.language or "fr"
-
-        # Ensure profile has it if it was empty
-        if not state.user_profile.language:
-            state.user_profile.language = effective_lang
+        # PREVIOUS STATE LANGUAGE (Fallback)
+        # We don't overwrite it immediately with user_lang to allow detection to work.
+        previous_lang = state.user_profile.language
 
         # Cache Key based on query, language, AND session_id
-        cache_key = f"agent_res:{hashlib.md5((query + effective_lang + session_id).encode()).hexdigest()}"
+        # Cache Key - partially constructed (we'll finalize lang later)
+        # However, for cache lookup, we might need a stable language.
+        # Let's use user_lang as the primary filter for cache if available.
+        lookup_lang = user_lang or previous_lang or "fr"
+        cache_key = f"agent_res:{hashlib.md5((query + lookup_lang + session_id).encode()).hexdigest()}"
 
         # Bypass cache if DEBUG=True
         if not settings.DEBUG:
@@ -183,28 +177,37 @@ class AdminOrchestrator:
             updated = False
             for key, value in extracted_data.items():
                 if value is not None and key in current_profile_dict:
-                    # BLOCKER: Do not overwrite language if it was explicitly provided by frontend OR already set
+                    # Language-specific switching logic
                     if key == "language":
-                        current_lang = state.user_profile.language
-                        # If we have a specific language set (not None, not 'fr', not 'French'), PROTECT IT.
-                        if current_lang and current_lang.lower() not in [
-                            "fr",
-                            "french",
-                        ]:
-                            continue
-                        # If user_lang passed in this turn, also protect
-                        if user_lang and user_lang != "fr":
+                        # Normalize 'fr' detection or similar
+                        full_val = self.lang_map.get(value.lower(), value)
+
+                        # 1. Do not overwrite if frontend provided a MANUAL non-default choice
+                        if user_lang and user_lang.lower() not in ["fr", "french"]:
                             continue
 
-                    # Logic: Overwrite or Merge?
-                    # For now, Overwrite if new value is found.
-                    # Exception: Maybe accumulation? But simplistic overwrite is standard for "I am now living in Paris"
+                        # 2. DEFENSIVE CHECK: If detection is 'fr' but state is 'English'/'Vietnamese',
+                        # it's likely a detector hallucination on a non-French query.
+                        if value == "fr" and state.user_profile.language in [
+                            "English",
+                            "Vietnamese",
+                        ]:
+                            continue
+
+                        # Otherwise allow specific switches (e.g. en -> vi)
+                        value = full_val
+
+                    # Logic: Overwrite if new value is found.
                     if getattr(state.user_profile, key) != value:
                         setattr(state.user_profile, key, value)
                         updated = True
 
             if updated:
                 logger.info(f"Updated User Profile: {state.user_profile}")
+
+        # Final Language for response
+        effective_lang = state.user_profile.language or "French"
+        logger.info(f"Effective Response Language: {effective_lang}")
 
         # Guardrail 1: Topic Validation (Context-aware)
         # BYPASS if Contextual Continuation (User answering a question)
@@ -222,19 +225,27 @@ class AdminOrchestrator:
             state.messages.append(AIMessage(content=f"Rejected: {reason}"))
             await self.memory.save_agent_state(session_id, state)
 
-            logger.warning(f"Query rejected: {reason}")
-            rejection_messages = {
+            # Translate the reason if it's not in the target language
+            # Guardrail reasons are now in English
+            final_reason = reason
+            lang_key = effective_lang.lower()
+            if lang_key not in ["en", "english"]:
+                final_reason = await self.translator(
+                    text=reason, target_language=effective_lang
+                )
+
+            rejection_templates = {
                 "fr": "Désolé, je ne peux pas traiter cette demande. Raison : {reason}",
                 "en": "Sorry, I cannot process this request. Reason: {reason}",
                 "vi": "Xin lỗi, tôi không thể hỗ trợ yêu cầu này. Lý do: {reason}",
             }
-            lang_key = self.lang_map.get(effective_lang.lower(), "French")[:2].lower()
-            return rejection_messages.get(lang_key, rejection_messages["fr"]).format(
-                reason=reason
-            )
+            target_key = self.lang_map.get(lang_key, "French")[:2].lower()
+            return rejection_templates.get(
+                target_key, rejection_templates["fr"]
+            ).format(reason=final_reason)
 
-        # Language normalization
-        full_lang = self.lang_map.get(effective_lang.lower(), effective_lang)
+        # Language normalization (already handled by extraction logic above)
+        full_lang = effective_lang
 
         # ROUTER LOGIC: Fast Lane vs Slow Lane
         # If intent is complex, delegate to AgentGraph
@@ -276,7 +287,7 @@ class AdminOrchestrator:
             # Extract final response
             final_messages = final_state_dict["messages"]
             last_message = final_messages[-1]
-            french_answer = last_message.content
+            internal_answer = last_message.content
 
             # SECURITY NOTE: Slow Lane hallucination guardrail is DISABLED.
             # Reason: AgentGraph agents (ProcedureGuideAgent, LegalResearchAgent) already have
@@ -292,8 +303,8 @@ class AdminOrchestrator:
             # Update local state object to match graph result (for consistency if we use object elsewhere)
             state.messages = final_messages
             # If we replaced the answer due to hallucination, we should update the last message content
-            if french_answer != last_message.content:
-                state.messages[-1].content = french_answer
+            if internal_answer != last_message.content:
+                state.messages[-1].content = internal_answer
 
             # Save state
             await self.memory.save_agent_state(session_id, state)
@@ -363,14 +374,14 @@ class AdminOrchestrator:
             )
 
             french_answer_msg = await self._call_llm(messages)
-            french_answer = french_answer_msg.content
+            internal_answer = french_answer_msg.content
 
             # Guardrail 2: Hallucination Check (Query + Context + History aware)
             # IMPORTANT: Only run if context is real (not the "No direct information" placeholder).
             # An empty/placeholder context causes false rejections — the LLM has nothing to verify against.
             real_context = context_text and "No direct information" not in context_text
             if real_context and not await guardrail_manager.check_hallucination(
-                context_text, french_answer, query=query, history=chat_history
+                context_text, internal_answer, query=query, history=chat_history
             ):
                 fallback_messages = {
                     "fr": "Désolé, je n'ai pas trouvé d'informations suffisamment fiables pour répondre à cette question en toute sécurité.",
@@ -380,19 +391,23 @@ class AdminOrchestrator:
                 lang_key = self.lang_map.get(effective_lang.lower(), "French")[
                     :2
                 ].lower()
-                french_answer = fallback_messages.get(lang_key, fallback_messages["fr"])
+                internal_answer = fallback_messages.get(
+                    lang_key, fallback_messages["fr"]
+                )
                 logger.warning("Hallucination detected, using fallback response.")
 
             # Save the finalized (possibly safe-fallback) answer to state
             state.messages.append(HumanMessage(content=query))
-            state.messages.append(AIMessage(content=french_answer))
+            state.messages.append(AIMessage(content=internal_answer))
             await self.memory.save_agent_state(session_id, state)
 
         # Step 3: Polyglot Translation
-        final_answer = french_answer
+        final_answer = internal_answer
         if full_lang != "French":
+            # Optimization: If the internal answer seems to already be in the target language (e.g. from AgentGraph),
+            # we might still run translation to ensure formalizing, but agents now handle this.
             final_answer = await self.translator(
-                text=french_answer, target_language=full_lang
+                text=internal_answer, target_language=full_lang
             )
 
         # Guardrail 3: Add Disclaimer
@@ -438,7 +453,9 @@ class AdminOrchestrator:
         state = await self.memory.load_agent_state(session_id)
         chat_history = state.messages
 
-        # 3. Classify
+        # Delay syncing frontend language to allow detection to win
+
+        # 3. Classify & Rewrite
         yield {"type": "status", "content": "Analysing request..."}
 
         rewritten_query = await query_rewriter.rewrite(query, chat_history)
@@ -448,32 +465,84 @@ class AdminOrchestrator:
         state.intent = intent
 
         # LAYER 2: Extract Profile
-        extracted_data = await profile_extractor.extract(rewritten_query, chat_history)
+        # Use original 'query' for extraction to get clean language signal
+        extracted_data = await profile_extractor.extract(query, chat_history)
         if extracted_data:
-            for key, value in extracted_data.items():
-                if value is not None and hasattr(state.user_profile, key):
-                    setattr(state.user_profile, key, value)
-        logger.info(f"Streaming - Updated Profile: {state.user_profile}")
+            logger.info(f"Extracted Profile: {extracted_data}")
+
+            # Resolve Language first
+            detected_lang = extracted_data.get("language")
+            if detected_lang:
+                normalized_lang = self.lang_map.get(
+                    detected_lang.lower(), detected_lang
+                )
+
+                # Rule: Update if Turn is non-FR OR if we are switching from default
+                can_update = True
+
+                # Manual Override protection: If user specifically chose English/Vietnamese on frontend
+                if user_lang and user_lang.lower() not in ["fr", "french"]:
+                    if normalized_lang != self.lang_map.get(user_lang.lower()):
+                        logger.info(
+                            f"Blocking detection {normalized_lang} due to frontend manual choice {user_lang}"
+                        )
+                        can_update = False
+
+                # Defensive check: if detected is 'fr' but we are already in 'English'/'Vietnamese'
+                if detected_lang == "fr" and state.user_profile.language in [
+                    "English",
+                    "Vietnamese",
+                ]:
+                    logger.info(
+                        f"Ignoring 'fr' hallucination. Staying in {state.user_profile.language}"
+                    )
+                    can_update = False
+
+                if can_update:
+                    logger.info(
+                        f"SETTING LANGUAGE: {state.user_profile.language} -> {normalized_lang}"
+                    )
+                    state.user_profile.language = normalized_lang
+
+            # Update other fields
+            for key, val in extracted_data.items():
+                if (
+                    val is not None
+                    and key not in ["language", "_reasoning"]
+                    and hasattr(state.user_profile, key)
+                ):
+                    setattr(state.user_profile, key, val)
+
+            logger.info(f"Updated Profile: {state.user_profile}")
+
+        # Final Resolution
+        full_lang = state.user_profile.language or "French"
+        effective_lang = full_lang
 
         # 4. Guardrail: Topic
         is_valid, reason = await guardrail_manager.validate_topic(
             query, history=chat_history
         )
         if not is_valid:
-            rejection_messages = {
+            rejection_templates = {
                 "fr": "Désolé, je ne peux pas traiter cette demande. Raison : {reason}",
                 "en": "Sorry, I cannot process this request. Reason: {reason}",
                 "vi": "Xin lỗi, tôi không thể hỗ trợ yêu cầu này. Lý do: {reason}",
             }
-            lang_key = self.lang_map.get(user_lang.lower(), "French")[:2].lower()
-            msg = rejection_messages.get(lang_key, rejection_messages["fr"]).format(
-                reason=reason
-            )
-            yield {"type": "token", "content": msg}
+            lang_key = effective_lang[:2].lower()
+            template = rejection_templates.get(lang_key, rejection_templates["fr"])
+
+            # Translate English reason if needed
+            final_reason = reason
+            if lang_key != "en":
+                final_reason = await self.translator(
+                    text=reason, target_language=effective_lang
+                )
+
+            yield {"type": "token", "content": template.format(reason=final_reason)}
             return
 
         # 5. Routing
-        full_lang = self.lang_map.get(user_lang.lower(), user_lang)
         final_answer = ""
 
         if intent in [
@@ -507,8 +576,6 @@ class AdminOrchestrator:
                     }
 
             # Update State with final answer (simplified for streaming)
-            # ideally we should get the final state from the graph, but astream_events doesn't yield it easily
-            # We assume the streamed content is the answer.
             state.messages.append(AIMessage(content=final_answer))
             await self.memory.save_agent_state(session_id, state)
 

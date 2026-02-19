@@ -45,6 +45,11 @@ class LegalResearchAgent:
             - Use the format: `[Source: service-public.fr/...]` at the end of the distinct section or sentence.
             - Use ONLY sources provided in the Context.
 
+            **LANGUAGE RULE**:
+            - You MUST respond ENTIRELY in {user_language}.
+            - KEEP official French administrative terms (e.g., 'Titre de séjour', 'Préfecture') in parentheses if there is no direct equivalent, or if the term is essential for identifying the procedure.
+            - Example: "You need to apply for a residence permit (Titre de séjour) at the local prefecture (Préfecture)."
+
             If the provided context does not contain the answer, strictly reply with: "INSUFFICIENT_CONTEXT".
 
             Context:
@@ -52,7 +57,7 @@ class LegalResearchAgent:
 
             Question: {query}
 
-            Answer (in French):"""
+            Answer in {user_language}:"""
         )
 
     @retry(
@@ -66,6 +71,7 @@ class LegalResearchAgent:
 
     async def run(self, query: str, state: AgentState) -> str:
         logger.info(f"LegalResearchAgent started for query: {query}")
+        user_lang = state.user_profile.language or "French"
 
         # Step 1: Refine Query
         refined_query = await self._refine_query(query)
@@ -76,19 +82,21 @@ class LegalResearchAgent:
         context = self._format_docs(docs)
 
         # Step 3: Synthesize (with implicit evaluation)
-        return await self._synthesize_answer(query, context)
+        return await self._synthesize_answer(query, context, user_lang)
 
     async def _refine_query(self, query: str) -> str:
         # Optimization: Use llm_fast (gpt-4o-mini)
         chain = self.refiner_prompt | self.llm_fast | StrOutputParser()
         return await self._run_chain(chain, {"query": query})
 
-    async def _synthesize_answer(self, query: str, context: str) -> str:
+    async def _synthesize_answer(self, query: str, context: str, user_lang: str) -> str:
         if not context:
             return "Je n'ai trouvé aucune information officielle correspondante dans ma base de données."
 
         chain = self.synthesis_prompt | self.llm | StrOutputParser()
-        result = await self._run_chain(chain, {"query": query, "context": context})
+        result = await self._run_chain(
+            chain, {"query": query, "context": context, "user_language": user_lang}
+        )
 
         if "INSUFFICIENT_CONTEXT" in result:
             # Logic for fallback or search loop could go here
