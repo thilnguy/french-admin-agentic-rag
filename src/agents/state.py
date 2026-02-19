@@ -21,6 +21,7 @@ class UserProfile(BaseModel):
     location: Optional[str] = None  # e.g., "Paris", "Antibes"
     fiscal_residence: Optional[str] = None  # e.g., "France", "Etranger"
     income_source: Optional[str] = None  # e.g., "France", "Etranger"
+    _reasoning: Optional[str] = None  # Debugging: Why this profile was extracted
 
 
 class AgentState(BaseModel):
