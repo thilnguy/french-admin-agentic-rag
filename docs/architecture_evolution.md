@@ -1,17 +1,17 @@
 # Architecture Evolution: Monolithic to Multi-Agent System
 
-## 1. Current State: The "Router-Pipeline" Pattern
-Currently, `AdminOrchestrator` acts as a monolithic controller that executes a hardcoded linear pipeline:
-`Guardrail -> Translate -> Retrieve -> Generate -> Translate -> Guardrail`
+## 1. Current State: Agentic Hybrid Architecture (v1.1.0)
+We have successfully evolved from a monolithic pipeline to a **Hybrid Agentic System**.
+The `AdminOrchestrator` now acts as an **Intelligent Router** that delegates to specialized components or agents.
 
-| Feature | Current Implementation | Limitation |
+| Feature | Current Implementation (v1.1.0) | Capabilities |
 |---------|------------------------|------------|
-| **Autonomy** | None. Linear script. | Cannot handle complex multi-step reasoning (e.g., "Find form X, then tell me how to fill it"). |
-| **Skills** | Python Functions (`retrieve`, `translate`) | Passive tools. Cannot self-correct (e.g., "Search failed, let me try a broader query"). |
-| **State** | Redis List (Chat History) | No structured state (e.g., "clarifying missing details", "waiting for user document"). |
-| **Scalability** | Rigid Class Method | Adding new capabilities (e.g., "Appointment Booking") makes `handle_query` massive and unmaintainable. |
+| **Autonomy** | **Hybrid Router** | Routes Simple QA to "Fast Lane" and Complex Tasks to "Agent Graph". |
+| **Skills** | **Active Agents** | `ProcedureGuideAgent` (Clarification) and `LegalResearchAgent` (Deep Search). |
+| **State** | **AgentState (Pydantic)** | Structured state with `user_profile`, ensuring context retention across turns. |
+| **Search** | **Hybrid Retrieval** | BM25 (Keyword) + Vector (Semantic) + RRF Fusion for high recall. |
 
-**Verdict**: Technically **NOT** a Multi-Agent System. It is an **Agentic Pipeline**.
+**Verdict**: We have reached the **Target State (Phase 3)** of the initial roadmap.
 
 ---
 
