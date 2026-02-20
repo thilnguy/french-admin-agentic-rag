@@ -1,4 +1,5 @@
 import asyncio
+import pytest
 from unittest.mock import MagicMock, patch
 from src.agents.orchestrator import AdminOrchestrator
 from src.agents.state import UserProfile
@@ -22,8 +23,10 @@ async def test_layer3_reranker_integration():
         # Let's patch 'skills.legal_retriever.main.QdrantClient' and 'skills.legal_retriever.main.HuggingFaceEmbeddings'
 
         with (
-            patch("skills.legal_retriever.main.QdrantClient"),
-            patch("skills.legal_retriever.main.HuggingFaceEmbeddings"),
+            patch("skills.legal_retriever.main._get_qdrant_client"),
+            patch("skills.legal_retriever.main._get_embeddings"),
+            patch("src.agents.orchestrator.redis.Redis"),
+            patch("src.agents.orchestrator.ChatOpenAI"),
         ):
             # We also need to mock the vector search result
             # But let's just run the orchestrator and see if reranker.rerank is called with profile.
@@ -41,6 +44,9 @@ async def test_layer3_reranker_integration():
             # Let's use the Orchestrator but mock memory to return a state with profile.
             pass
 
+
+@pytest.mark.asyncio
+async def test_reranker_retrieve_direct():
     # Simplified Test: Call retrieve_legal_info directly
     print("Test 1: Calling retrieve_legal_info with profile")
     from skills.legal_retriever.main import retrieve_legal_info
@@ -50,7 +56,8 @@ async def test_layer3_reranker_integration():
     # Mock QdrantVectorStore to avoid initialization errors
     with (
         patch("skills.legal_retriever.main.QdrantVectorStore") as mock_vectorstore_cls,
-        patch("skills.legal_retriever.main.HuggingFaceEmbeddings"),
+        patch("skills.legal_retriever.main._get_embeddings"),
+        patch("skills.legal_retriever.main._get_qdrant_client"),
     ):
         # Mock vector store instance
         mock_vs = mock_vectorstore_cls.return_value
@@ -89,3 +96,4 @@ async def test_layer3_reranker_integration():
 
 if __name__ == "__main__":
     asyncio.run(test_layer3_reranker_integration())
+    asyncio.run(test_reranker_retrieve_direct())

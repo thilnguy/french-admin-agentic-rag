@@ -14,6 +14,7 @@ from src.memory.manager import memory_manager
 from src.config import settings
 from src.utils.logger import logger
 from src.utils import metrics
+from src.agents.graph import agent_graph
 import time
 
 # Maximum time (seconds) for a full query cycle.
@@ -205,7 +206,7 @@ class AdminOrchestrator:
             Intent.LEGAL_INQUIRY,
         ]:
             logger.info(f"Routing to AgentGraph for intent: {intent}")
-            from src.agents.graph import agent_graph
+            # from src.agents.graph import agent_graph (Moved to top-level)
 
             # We need to ensure state has the latest query in messages for the graph to see it?
             # actually our graph nodes read state.messages[-1].content
@@ -471,7 +472,7 @@ class AdminOrchestrator:
         ]:
             # SLOW LANE (Agent Graph)
             yield {"type": "status", "content": "Routing to Expert Agent..."}
-            from src.agents.graph import agent_graph
+            # from src.agents.graph import agent_graph (Moved to top-level)
 
             state.messages.append(HumanMessage(content=query))
 

@@ -48,7 +48,15 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings():
-    return Settings()
+    try:
+        return Settings()
+    except PermissionError:
+        # Fallback if .env is inaccessible (e.g. during CI/constrained environments)
+        # Pydantic will still use environment variables
+        class SafeSettings(Settings):
+            model_config = SettingsConfigDict(env_file=None)
+
+        return SafeSettings()
 
 
 settings = get_settings()
