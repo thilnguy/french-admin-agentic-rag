@@ -99,11 +99,18 @@ async def test_contract_handle_query_simple_qa_returns_answer():
 @pytest.mark.asyncio
 async def test_contract_handle_query_cache_hit():
     """Contract: If Redis has a cached response, return it immediately without LLM."""
-    with patch("src.agents.orchestrator.redis.Redis"):
+    with (
+        patch("src.agents.orchestrator.redis.Redis"),
+        patch("src.agents.orchestrator.memory_manager") as mock_mem,
+    ):
         orch = AdminOrchestrator()
         orch.cache = AsyncMock()
         orch.cache.get.return_value = "Cached correct answer"
         orch._call_llm = AsyncMock()  # Should never be called
+
+        state = make_state()
+        mock_mem.load_agent_state = AsyncMock(return_value=state)
+        mock_mem.save_agent_state = AsyncMock()
 
         with patch("src.config.settings.DEBUG", False):
             result = await orch.handle_query("Any query", "fr", "session-cache")
@@ -137,11 +144,17 @@ async def test_contract_handle_query_topic_rejection_french():
             "src.shared.guardrails.GuardrailManager.validate_topic",
             new_callable=AsyncMock,
         ) as mock_validate,
+        patch(
+            "src.agents.preprocessor.profile_extractor.extract", new_callable=AsyncMock
+        ) as mock_extract,
     ):
         orch = AdminOrchestrator()
         orch.cache = AsyncMock()
         orch.cache.get.return_value = None
         orch._call_llm = AsyncMock()
+
+        state = make_state()
+        mock_extract.return_value = {"language": "en"}
 
         state = make_state()
         mock_mem.load_agent_state = AsyncMock(return_value=state)
@@ -289,12 +302,19 @@ async def test_contract_stream_query_simple_qa_yields_events():
 @pytest.mark.asyncio
 async def test_contract_stream_query_cache_hit():
     """Contract: stream_query returns cached answer immediately without LLM."""
-    with patch("src.agents.orchestrator.redis.Redis"):
+    with (
+        patch("src.agents.orchestrator.redis.Redis"),
+        patch("src.agents.orchestrator.memory_manager") as mock_mem,
+    ):
         orch = AdminOrchestrator()
         orch.cache = AsyncMock()
         orch.cache.get.return_value = "Cached stream answer"
         orch.llm = MagicMock()
         orch.llm.astream = AsyncMock()
+
+        state = make_state()
+        mock_mem.load_agent_state = AsyncMock(return_value=state)
+        mock_mem.save_agent_state = AsyncMock()
 
         with patch("src.config.settings.DEBUG", False):
             events = []

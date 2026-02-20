@@ -11,10 +11,14 @@ async def test_stream_query_fast_lane():
     """Test streaming for SIMPLE_QA (Fast Lane)."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
+        patch("langchain_openai.ChatOpenAI"),
         patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock
         ) as mock_retriever,
+        patch(
+            "src.agents.orchestrator.translate_admin_text", new_callable=AsyncMock
+        ) as mock_translator,
         patch(
             "src.shared.guardrails.guardrail_manager.validate_topic",
             new_callable=AsyncMock,
@@ -75,6 +79,7 @@ async def test_stream_query_slow_lane():
     """Test streaming for COMPLEX_PROCEDURE (Slow Lane/AgentGraph)."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
+        patch("langchain_openai.ChatOpenAI"),
         patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.shared.guardrails.guardrail_manager.validate_topic",
@@ -142,6 +147,7 @@ async def test_stream_query_cache_hit():
     """Test streaming returns cached response."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
+        patch("langchain_openai.ChatOpenAI"),
         patch("src.config.settings.DEBUG", False),
     ):
         orchestrator = AdminOrchestrator()

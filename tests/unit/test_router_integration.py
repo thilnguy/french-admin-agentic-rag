@@ -11,6 +11,8 @@ async def test_orchestrator_routes_to_fast_lane_simple_qa():
     """Test that SIMPLE_QA uses the legacy/fast path."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
+        patch("src.agents.orchestrator.ChatOpenAI"),
+        patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.intent_classifier.intent_classifier.classify",
             new_callable=AsyncMock,
@@ -51,6 +53,17 @@ async def test_orchestrator_routes_to_fast_lane_simple_qa():
         ]
         mock_hallucination.return_value = True
 
+        # Pipeline Mock
+        mock_pipeline = AsyncMock()
+        mock_get_pipeline.return_value = mock_pipeline
+        mock_pipeline.run.return_value = MagicMock(
+            rewritten_query="Simple question",
+            intent=Intent.SIMPLE_QA,
+            extracted_data={},
+            new_core_goal=None,
+            is_contextual_continuation=False,
+        )
+
         # State
         state = AgentState(session_id="test", messages=[])
         mock_memory.load_agent_state = AsyncMock(return_value=state)
@@ -60,8 +73,10 @@ async def test_orchestrator_routes_to_fast_lane_simple_qa():
         response = await orchestrator.handle_query("Simple question", "en")
 
         # Verify
-        mock_classify.assert_called_once()
-        orchestrator.llm.ainvoke.assert_called_once()  # Legacy path uses LLM
+        # mock_classify.assert_called_once() # Removed as pipeline handles it
+        # orchestrator.llm.ainvoke.assert_called_once() # Logic changed, check result
+        mock_get_pipeline.assert_called_once()
+        mock_pipeline.run.assert_awaited_once()
         mock_retriever.assert_called_once()
         assert response == "Translated content"
 
@@ -74,6 +89,8 @@ async def test_orchestrator_routes_to_agent_graph_complex():
     """Test that COMPLEX_PROCEDURE uses the AgentGraph."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
+        patch("src.agents.orchestrator.ChatOpenAI"),
+        patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.intent_classifier.intent_classifier.classify",
             new_callable=AsyncMock,
@@ -81,6 +98,7 @@ async def test_orchestrator_routes_to_agent_graph_complex():
         patch(
             "src.shared.guardrails.guardrail_manager.validate_topic",
             new_callable=AsyncMock,
+            return_value=(True, ""),
         ) as mock_validate,
         patch(
             "src.shared.guardrails.guardrail_manager.check_hallucination",
@@ -92,16 +110,38 @@ async def test_orchestrator_routes_to_agent_graph_complex():
         ),
         patch("src.config.settings.OPENAI_API_KEY", "sk-test"),
         patch("src.agents.orchestrator.memory_manager") as mock_memory,
+        patch("src.agents.orchestrator.agent_graph") as mock_agent_graph,
         patch(
-            "src.agents.graph.agent_graph.ainvoke", new_callable=AsyncMock
-        ) as mock_graph_invoke,
+            "src.agents.orchestrator.translate_admin_text", new_callable=AsyncMock
+        ) as mock_translator,
+        patch(
+            "src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock
+        ) as mock_retriever,
     ):
         # Setup
         orchestrator = AdminOrchestrator()
+        mock_translator.return_value = (
+            "Graph response"  # Fallback if translator is called
+        )
+        mock_retriever.return_value = []
+
+        # Mock Graph ainvoke
+        mock_agent_graph.ainvoke = AsyncMock()
 
         # Intent = COMPLEX_PROCEDURE
         mock_classify.return_value = Intent.COMPLEX_PROCEDURE
         mock_validate.return_value = (True, "")
+
+        # Pipeline Mock
+        mock_pipeline = AsyncMock()
+        mock_get_pipeline.return_value = mock_pipeline
+        mock_pipeline.run.return_value = MagicMock(
+            rewritten_query="Complex task",
+            intent=Intent.COMPLEX_PROCEDURE,
+            extracted_data={},
+            new_core_goal=None,
+            is_contextual_continuation=False,
+        )
 
         # State
         state = AgentState(session_id="test", messages=[])
@@ -114,14 +154,14 @@ async def test_orchestrator_routes_to_agent_graph_complex():
             HumanMessage(content="users query"),
             AIMessage(content="Graph response"),
         ]
-        mock_graph_invoke.return_value = {"messages": final_messages}
+        mock_agent_graph.ainvoke.return_value = {"messages": final_messages}
 
         # Run
         response = await orchestrator.handle_query("Complex task", "fr")
 
         # Verify
-        mock_classify.assert_called_once()
-        mock_graph_invoke.assert_called_once()
+        # mock_classify.assert_called_once() # Handled by pipeline
+        mock_agent_graph.ainvoke.assert_called_once()
         assert response == "Graph response"
 
         # Check that state was saved with graph response
