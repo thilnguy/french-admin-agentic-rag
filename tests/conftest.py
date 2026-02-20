@@ -42,17 +42,17 @@ def mock_openai_globally():
             "langchain_openai.ChatOpenAI.ainvoke",
             new_callable=AsyncMock,
             side_effect=lambda *args, **kwargs: create_mock_msg(),
-        ) as mock_ainvoke,
+        ),
         patch(
             "langchain_openai.ChatOpenAI.invoke", MagicMock(side_effect=create_mock_msg)
-        ) as mock_invoke,
+        ),
         patch(
             "langchain_openai.ChatOpenAI.astream", new_callable=AsyncMock
         ) as mock_astream,
         patch(
             "langchain_openai.ChatOpenAI.stream",
             MagicMock(return_value=[create_mock_msg()]),
-        ) as mock_stream,
+        ),
     ):
 
         async def mock_astream_gen(*args, **kwargs):

@@ -18,7 +18,7 @@ async def test_stream_query_fast_lane():
         ) as mock_retriever,
         patch(
             "src.agents.orchestrator.translate_admin_text", new_callable=AsyncMock
-        ) as mock_translator,
+        ),
         patch(
             "src.shared.guardrails.guardrail_manager.validate_topic",
             new_callable=AsyncMock,
