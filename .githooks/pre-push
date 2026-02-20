@@ -46,6 +46,11 @@ SUCCESS_PASS=$(echo "$SUCCESS_RATE >= 100.0" | bc -l)
 
 if [ "$SCORE_PASS" -eq 1 ] && [ "$SUCCESS_PASS" -eq 1 ]; then
     echo "✅ RAG Performance is solid. Push allowed."
+    echo "=== LOCAL EVALUATION PROOF ===" > evals/latest_eval_proof.log
+    echo "Date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> evals/latest_eval_proof.log
+    echo "Average Score: $AVG_SCORE / 10" >> evals/latest_eval_proof.log
+    echo "Success Rate: $SUCCESS_RATE%" >> evals/latest_eval_proof.log
+    echo "Passed strict local RAG validation." >> evals/latest_eval_proof.log
     exit 0
 else
     echo "❌ RAG Performance REGRESSION DETECTED!"
