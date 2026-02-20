@@ -1,0 +1,56 @@
+#!/bin/bash
+# Pre-push hook to ensure RAG performance doesn't regress
+# It runs evals/llm_judge.py and blocks push if score < 9.0 or success < 100%
+
+echo "================================================================"
+echo "🛡️  Running RAG Anti-Regression Pre-Push Hook"
+echo "================================================================"
+
+# Check if OpenAI API Key is set
+if [ -z "$OPENAI_API_KEY" ]; then
+    echo "⚠️  OPENAI_API_KEY is not set. Skipping pre-push RAG evals."
+    echo "   (Set it in your environment to test locally before pushing)"
+    exit 0
+fi
+
+# We run the judge and capture its output
+# Using uv to ensure we're in the right virtual environment
+echo "Running llm_judge.py... (This might take a minute to call GPT-4o)"
+OUTPUT=$(uv run python evals/llm_judge.py)
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "❌ llm_judge.py crashed!"
+    echo "$OUTPUT"
+    exit 1
+fi
+
+# Extract metrics from the output using grep
+# Example:
+# Average Score:          9.5/10
+# Success Rate (Score>=7): 100.0%
+
+AVG_SCORE=$(echo "$OUTPUT" | grep "Average Score:" | awk -F':' '{print $2}' | awk '{print $1}' | cut -d'/' -f1)
+SUCCESS_RATE=$(echo "$OUTPUT" | grep "Success Rate" | awk -F':' '{print $2}' | tr -d ' %')
+
+echo ""
+echo "📊 Hook Evaluation Results:"
+echo "   Average Score: $AVG_SCORE / 10"
+echo "   Success Rate:  $SUCCESS_RATE%"
+echo ""
+
+# Validate thresholds (Average Score >= 9.0, Success Rate == 100.0)
+# Use bc for floating point comparison
+SCORE_PASS=$(echo "$AVG_SCORE >= 9.0" | bc -l)
+SUCCESS_PASS=$(echo "$SUCCESS_RATE >= 100.0" | bc -l)
+
+if [ "$SCORE_PASS" -eq 1 ] && [ "$SUCCESS_PASS" -eq 1 ]; then
+    echo "✅ RAG Performance is solid. Push allowed."
+    exit 0
+else
+    echo "❌ RAG Performance REGRESSION DETECTED!"
+    echo "   Minimum required: Avg Score >= 9.0 AND Success Rate = 100%"
+    echo "   Please review evals/llm_judge_results.json and fix the regression."
+    echo "   Push aborted."
+    exit 1
+fi
