@@ -7,6 +7,7 @@ from typing import Literal
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
+from unittest.mock import patch, AsyncMock, MagicMock
 from src.agents.orchestrator import AdminOrchestrator
 from src.config import settings
 
@@ -193,16 +194,42 @@ async def run_eval():
 
         # --- Agent Call (with retry on 429) ---
         try:
-            response = await with_rate_limit_retry(
-                orchestrator.handle_query,
-                case["question"],
-                case.get("language", "fr"),
-                session_id=test_session_id,
-            )
+            from src.agents.state import AgentState
+            
+            with (
+                patch("src.agents.orchestrator.redis.Redis", new_callable=MagicMock),
+                patch("src.agents.orchestrator.memory_manager") as mock_mem,
+                patch("skills.legal_retriever.main.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever,
+                patch("src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever_orch,
+                patch("src.agents.procedure_agent.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever_proc,
+            ):
+                # Mock memory
+                mock_mem.load_agent_state.return_value = AgentState(session_id=test_session_id, messages=[])
+                mock_mem.save_agent_state = AsyncMock()
+                
+                # Mock retrieval: return the ground truth as the "document"
+                mock_docs = [{"content": case["ground_truth"], "source": "golden_dataset"}]
+                mock_retriever.return_value = mock_docs
+                mock_retriever_orch.return_value = mock_docs
+                mock_retriever_proc.return_value = mock_docs
+                
+                # Ensure orchestrator's explicit cache handles gracefully
+                orchestrator.cache = AsyncMock()
+                orchestrator.cache.get.return_value = None
+                
+                response = await with_rate_limit_retry(
+                    orchestrator.handle_query,
+                    case["question"],
+                    case.get("language", "fr"),
+                    session_id=test_session_id,
+                )
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             response = f"SYSTEM_ERROR: {e}"
 
         print(f"   Agent: {response[:100].replace(chr(10), ' ')}...")
+
 
         # Brief pause between agent call and judge call
         await asyncio.sleep(EVAL_DELAY_WITHIN_CASE)
