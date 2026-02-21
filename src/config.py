@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # OpenAI / Local LLM
     OPENAI_API_KEY: str
-    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_MODEL: str = "gpt-4o"
     LLM_PROVIDER: str = "openai"  # "openai" or "local"
     LOCAL_LLM_URL: str = "http://localhost:8000/v1"
     LOCAL_LLM_MODEL: str = "qwen-7b-french-admin"
