@@ -18,9 +18,13 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
-    # OpenAI
+    # OpenAI / Local LLM
     OPENAI_API_KEY: str
     OPENAI_MODEL: str = "gpt-4o-mini"
+    LLM_PROVIDER: str = "openai"  # "openai" or "local"
+    LOCAL_LLM_URL: str = "http://localhost:8000/v1"
+    LOCAL_LLM_MODEL: str = "qwen-7b-french-admin"
+
 
     # Redis
     REDIS_HOST: str = "localhost"

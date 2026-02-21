@@ -4,13 +4,14 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from src.utils.logger import logger
 from src.config import settings
+from src.utils.llm_factory import get_llm
+
 
 
 class GuardrailManager:
     def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini", temperature=0, api_key=settings.OPENAI_API_KEY
-        )
+        self.llm = get_llm(temperature=0)
+
 
     async def validate_topic(
         self, query: str, history: list = None

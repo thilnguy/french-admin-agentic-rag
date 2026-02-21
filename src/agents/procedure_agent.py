@@ -9,7 +9,8 @@ from tenacity import (
     retry_if_exception_type,
 )
 from src.config import settings
-from src.agents.state import AgentState
+from src.agents.state import AgentState, UserProfile
+from src.utils.llm_factory import get_llm
 from skills.legal_retriever.main import retrieve_legal_info
 from src.utils.logger import logger
 from src.utils import metrics
@@ -18,9 +19,7 @@ import time
 
 class ProcedureGuideAgent:
     def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o", temperature=0, api_key=settings.OPENAI_API_KEY
-        )
+        self.llm = get_llm(temperature=0.2)
 
         # Step Analyzer: Determines the current stage of the procedure
         # Restored to d2414c8 logic — simple and effective.

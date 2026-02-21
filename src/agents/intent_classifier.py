@@ -1,7 +1,9 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from src.config import settings
+from src.utils.llm_factory import get_llm
 from enum import Enum
+
 
 
 class Intent(str, Enum):
@@ -14,11 +16,8 @@ class Intent(str, Enum):
 
 class IntentClassifier:
     def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini",  # Fast & Cheap for classification
-            temperature=0,
-            api_key=settings.OPENAI_API_KEY,
-        )
+        self.llm = get_llm(temperature=0)
+
 
         system_prompt = """You are an intent classifier for a French Administration Assistant.
         Classify the user's query into one of the following categories:
