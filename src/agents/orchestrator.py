@@ -15,7 +15,10 @@ from src.config import settings
 from src.utils.logger import logger
 from src.utils import metrics
 from src.agents.graph import agent_graph
+from src.utils.llm_factory import get_llm
 import time
+
+
 
 # Maximum time (seconds) for a full query cycle.
 # Complex Vietnamese queries with multi-step reasoning can take 30-50s.
@@ -25,11 +28,8 @@ QUERY_TIMEOUT_SECONDS = 60
 
 class AdminOrchestrator:
     def __init__(self):
-        self.llm = ChatOpenAI(
-            model=settings.OPENAI_MODEL,
-            temperature=0.2,
-            api_key=settings.OPENAI_API_KEY,
-        )
+        self.llm = get_llm(temperature=0.2)
+
         self.retriever = retrieve_legal_info
         self.translator = translate_admin_text
 

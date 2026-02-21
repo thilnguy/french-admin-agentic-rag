@@ -9,19 +9,18 @@ from tenacity import (
     retry_if_exception_type,
 )
 from src.config import settings
+from src.utils.llm_factory import get_llm
 from src.agents.state import AgentState
+
 from skills.legal_retriever.main import retrieve_legal_info
 from src.utils.logger import logger
 
 
 class LegalResearchAgent:
     def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o", temperature=0, api_key=settings.OPENAI_API_KEY
-        )
-        self.llm_fast = ChatOpenAI(
-            model="gpt-4o-mini", temperature=0, api_key=settings.OPENAI_API_KEY
-        )
+        self.llm = get_llm(temperature=0)
+        self.llm_fast = get_llm(temperature=0)
+
 
         # 1. Query Refiner: Optimizes user query for vector search
         self.refiner_prompt = ChatPromptTemplate.from_template(

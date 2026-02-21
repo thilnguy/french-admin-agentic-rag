@@ -16,7 +16,7 @@
                 "current residence"
             ]
         },
-        "response": "**[DONNER]**: Pour obtenir un passeport français, vous devez prouver votre nationalité française. Cela peut être fait à l'aide de documents tels qu'une carte d'identité ou un passeport récent, un acte de naissance, ou d'autres documents liés à la nationalité. Si vous vivez à l'étranger, comme au Canada ou au Portugal, et que votre passeport est expiré ou va expirer, vous pouvez demander un renouvellement sans vous déplacer à l'ambassade ou au consulat, à condition de remplir certaines conditions spécifiques.\n\n**[EXPLIQUER]**: La procédure pour obtenir ou renouveler un passeport français varie en fonction de votre situation personnelle, notamment si vous vivez en France ou à l'étranger, et si votre passeport est perdu, volé, ou simplement expiré. Il est important de vérifier les conditions spécifiques qui s'appliquent à votre cas.\n\n**[DEMANDER]**: Pouvez-vous préciser si vous vivez actuellement en France ou à l'étranger, et si votre passeport est expiré, perdu, ou volé ? Cela m'aidera à vous fournir des informations plus précises sur la procédure à suivre.\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "**[DONNER]**: Pour obtenir un passeport français, vous devez vous rendre dans une mairie équipée d'une station d'enregistrement. Vous aurez besoin de fournir plusieurs pièces justificatives, notamment une photo d'identité, un justificatif de domicile et un acte de naissance. Le coût pour un adulte est de 86€.\n\n**[EXPLIQUER]**: La procédure peut varier en fonction de votre situation personnelle, notamment votre nationalité et votre statut de résidence.\n\n**[DEMANDER]**: Pour vous aider plus précisément, pourriez-vous me préciser si vous êtes citoyen de l'Union Européenne ou non ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -24,7 +24,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general context about the requirements for obtaining a French passport, such as proving nationality and the possibility of renewing it from abroad. It also asked for critical missing information regarding the user's current residence and the status of their passport, which aligns perfectly with the expected hybrid behavior. No hallucinations were detected as the agent did not invent any specific details not supported by the question."
+            "reasoning": "The agent provided a general context about obtaining a French passport, including necessary documents and cost, which aligns with the expected behavior for a hybrid response. It also asked a relevant clarifying question about the user's nationality, which is one of the critical pieces of information needed. There was no hallucination detected as the agent did not invent any specific details beyond what was necessary for the context."
         }
     },
     {
@@ -45,7 +45,7 @@
                 "nationality"
             ]
         },
-        "response": "**[DONNER]** : Pour renouveler un titre de séjour en France, vous devez faire votre demande dans les deux derniers mois de validité de votre titre actuel. Vous devrez présenter à nouveau les documents prouvant que vous remplissez les conditions pour obtenir un titre de séjour. Le coût du renouvellement est de 225 € (200 € pour la taxe sur le titre de séjour et 25 € pour le droit de timbre). La demande peut être faite en ligne ou sur place.\n\n**[EXPLIQUER]** : La procédure de renouvellement peut varier en fonction de votre situation personnelle, notamment la durée de votre séjour en France, votre statut de résidence, et votre type de titre de séjour. Par exemple, si vous résidez en France depuis au moins 5 ans avec un titre de séjour « talent-famille », le renouvellement ne peut pas vous être refusé et sera pour une durée de 4 ans.\n\n**[DEMANDER]** : Pour vous donner des informations plus précises, pourriez-vous préciser si vous êtes en France avec un titre de séjour spécifique, comme « talent-famille » ou en tant que membre de famille d’un étranger avec une « carte bleue européenne » ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "**[DONNER]** : Pour renouveler un titre de séjour en France, vous devez faire la demande dans les deux mois précédant l'expiration de votre titre actuel. Il est nécessaire de prendre rendez-vous à la préfecture et de fournir les justificatifs requis, tels que votre titre de séjour actuel, un justificatif de domicile, et des preuves de vos ressources. Une taxe de 225€ est également à payer.\n\n**[EXPLIQUER]** : La procédure peut varier en fonction de votre nationalité et de votre statut de résidence en France. Ces éléments peuvent influencer les documents requis et les démarches spécifiques à suivre.\n\n**[DEMANDER]** : Pour vous fournir des informations plus précises, pourriez-vous me préciser si vous êtes ressortissant de l'Union Européenne ou d'un pays hors UE ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -53,7 +53,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general overview of the process for renewing a residence permit in France, including the timeline, required documents, and costs, which aligns with the expected behavior for a HYBRID response. Additionally, the agent asked for specific information about the user's type of residence permit, which is one of the critical pieces of missing information needed to provide a more tailored response. There was no hallucination detected as the details provided were general and accurate. Therefore, the response was appropriate and complete, earning a perfect score."
+            "reasoning": "The agent provided a general overview of the process for renewing a residence permit, which is useful context. It also asked for specific missing information regarding the user's nationality, which is critical for providing more tailored advice. There was no hallucination as the agent did not invent any specific details beyond the general process. This response aligns perfectly with the expected hybrid behavior."
         }
     },
     {
@@ -73,7 +73,7 @@
                 "employment_status"
             ]
         },
-        "response": "**[DONNER]**: To register for French healthcare (Sécurité Sociale), the procedure depends on your nationality and residency status. If you are a French citizen born abroad without a social security number, you should register on the website etudiant-etranger.ameli.fr. If you are from the European Economic Area (EEA) or Switzerland and studying in France, you should be affiliated with the health insurance system of your home country. If you have a European Health Insurance Card (EHIC), you can use it for healthcare services in France.\n\n**[EXPLIQUER]**: The registration process for French healthcare varies based on your nationality and whether you are a legal resident or a temporary visitor. It is important to determine your specific situation to follow the correct procedure.\n\n**[DEMANDER]**: Could you please specify your nationality or whether you are a legal resident in France? This will help determine the appropriate steps for your healthcare registration.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "response": "**[DONNER]**: To register for French healthcare (Sécurité Sociale), you need to be a legal resident in France. You should apply through the CPAM (Caisse Primaire d'Assurance Maladie) by providing your residence permit, proof of address, and employment contract if applicable. Once your application is processed, you will receive a carte vitale within 2-3 weeks.\n\n**[EXPLIQUER]**: The procedure can vary depending on your specific circumstances, such as your nationality and residency status.\n\n**[DEMANDER]**: Could you please confirm if you are a legal resident in France? This will help determine the next steps for your registration.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -81,7 +81,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general context about the registration process for French healthcare, mentioning the importance of nationality and residency status. It also asked for critical missing information, specifically about the user's nationality and residency status, which aligns with the expected behavior for a HYBRID response. There was no hallucination detected as the agent did not invent specific details. Therefore, the response is appropriate and well-executed, deserving a perfect score."
+            "reasoning": "The agent provided a comprehensive response by giving general context about the registration process for French healthcare, including the necessary documents and the expected timeline for receiving the carte vitale. Additionally, it appropriately asked for critical missing information regarding the user's residence status, which is essential for determining the next steps. There was no hallucination detected as the agent did not invent any specific details beyond the general process. This response aligns perfectly with the expected hybrid behavior."
         }
     },
     {
@@ -101,7 +101,7 @@
                 "residency_status"
             ]
         },
-        "response": "**[CUNG CẤP]**: Pour obtenir un permis de conduire de catégorie B en France, vous devez suivre la procédure en ligne sur le site de l'ANTS si vous faites la demande vous-même. Vous devez préparer les documents suivants sous forme de photos ou numérisés : pièce d'identité, justificatif de domicile, photo et signature numérique. Si vous ne pouvez pas accéder au service de photo et signature numérique, vous pouvez envoyer un modèle photo-signature par courrier. De plus, si vous êtes étranger, vous devez fournir des documents prouvant votre statut de séjour légal ou une preuve de présence en France d'au moins 6 mois.\n\n**[GIẢI THÍCH]**: La procédure peut varier en fonction de votre statut de résidence et de votre nationalité. Cela peut affecter les documents requis et la procédure spécifique.\n\n**[YÊU CẦU]**: Pouvez-vous indiquer votre statut de résidence en France ? Cela m'aidera à fournir des informations plus détaillées sur la procédure qui vous convient.\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
+        "response": "**[CUNG CẤP]**: Để lấy giấy phép lái xe ở Pháp, bạn cần thực hiện các bước sau: 1) Đăng ký tại một trường lái xe (auto-école), 2) Vượt qua kỳ thi lý thuyết (code de la route), và 3) Vượt qua kỳ thi thực hành. Chi phí trung bình cho quá trình này là 1500€. Nếu bạn đã có bằng lái xe từ nước ngoài, bạn có thể đổi bằng trong vòng 1 năm.\n\n**[GIẢI THÍCH]**: Quy trình có thể thay đổi tùy thuộc vào tình trạng cư trú và quốc tịch của bạn. Điều này có thể ảnh hưởng đến khả năng đổi bằng lái xe nước ngoài của bạn.\n\n**[YÊU CẦU]**: Bạn có thể cho biết bạn có bằng lái xe nước ngoài không và tình trạng cư trú của bạn tại Pháp như thế nào không? Điều này sẽ giúp tôi cung cấp thông tin chính xác hơn cho bạn.\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -109,7 +109,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general overview of the process to obtain a French driving license, including necessary documents and procedures, which is useful context. It also asked for the user's residency status, which is one of the critical pieces of missing information needed to tailor the response. There was no hallucination detected as the agent did not invent any specific details. This makes the response a perfect example of a hybrid approach, aligning well with the expected behavior."
+            "reasoning": "The agent provided a comprehensive overview of the process to obtain a French driver's license, including the steps and average cost, which serves as general context. Additionally, it appropriately asked for critical missing information regarding the user's current license status and residency status, which are necessary to provide more tailored advice. There was no hallucination detected as the agent did not invent any specific details beyond the general information provided."
         }
     },
     {
@@ -126,7 +126,7 @@
             "expected_behavior": "DIRECT",
             "critical_missing_info": []
         },
-        "response": "Le délai de traitement pour une demande de naturalisation est de 18 mois au maximum à partir de la délivrance du récépissé. Ce délai est réduit à 12 mois si vous justifiez avoir votre résidence habituelle en France depuis au moins 10 ans à la date de la remise du récépissé. Les délais de réponse peuvent être prolongés une fois pour une période de 3 mois, et dans ce cas, l'administration doit motiver sa décision.\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "L'administration a 18 mois au maximum à partir de la délivrance du récépissé pour répondre à une demande de naturalisation ou de réintégration dans la nationalité française. Ce délai est réduit à 12 mois si vous justifiez avoir votre résidence habituelle en France depuis au moins 10 ans à la date de la remise du récépissé. Les délais de réponse peuvent être prolongés une fois pour une période de 3 mois, et dans ce cas, l'administration doit motiver sa décision.\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "DIRECT_ANSWER",
             "is_action_appropriate": true,
@@ -134,7 +134,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a direct answer to the question about the processing time for a naturalization request, which aligns with the expected behavior of a DIRECT response. The information given is accurate and does not include any hallucinated details. Additionally, the agent provided general context about the conditions under which the processing time might vary, which is useful for understanding the process better. Therefore, the response is appropriate and complete, earning a perfect score."
+            "reasoning": "The agent provided a direct answer to the question about the processing time for a naturalization request, which aligns with the expected behavior. The response included specific details about the standard processing time and conditions under which the time might be reduced, without inventing any information. Additionally, the agent provided general context about the process, which is useful for the user."
         }
     },
     {
@@ -154,7 +154,7 @@
                 "income_sources"
             ]
         },
-        "response": "**[DONNER]** : Pour déclarer vos impôts en France pour la première fois, vous devez utiliser une déclaration papier si vous n'étiez pas rattaché à la déclaration de vos parents l'année précédente. Vous recevrez normalement une déclaration préremplie en avril/mai, mais si ce n'est pas le cas, vous pouvez télécharger les formulaires nécessaires sur le site Service-Public.fr ou sur le site des impôts à partir de fin avril/début mai. Assurez-vous de vérifier et de corriger les informations avant de signer votre déclaration. Vous devez également conserver les justificatifs pendant 3 ans en cas de demande de l'administration.\n\n**[EXPLIQUER]** : La procédure peut varier en fonction de votre situation personnelle, notamment si vous avez des revenus à l'étranger ou si vous êtes rattaché au foyer fiscal de vos parents.\n\n**[DEMANDER]** : Pour vous aider plus précisément, pourriez-vous préciser si vous avez déjà un statut de résident fiscal en France ou si vous déclarez vos revenus pour la première fois après un retour en France ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "**[DONNER]**: Pour déclarer vos impôts en France, vous devez créer un compte sur le site impots.gouv.fr. La déclaration se fait en ligne entre avril et juin. En tant que résident fiscal français, vous devez déclarer tous vos revenus mondiaux. Depuis 2019, le prélèvement à la source s'applique.\n\n**[EXPLIQUER]**: La procédure de déclaration des impôts peut varier en fonction de votre statut de résidence fiscale et de vos sources de revenus.\n\n**[DEMANDER]**: Pour vous aider plus précisément, pourriez-vous préciser si vous êtes résident fiscal en France?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -162,7 +162,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general context about how to declare taxes in France for the first time, including the use of paper forms and the need to verify information. It also asked for critical missing information regarding the user's residency status, which is essential for determining the correct procedure. There was no hallucination detected, and the response aligns perfectly with the expected hybrid behavior."
+            "reasoning": "The agent provided a comprehensive response by giving general context about how to declare taxes in France, including the need to create an account on impots.gouv.fr, the timeline for declaration, and the requirement to declare worldwide income for French residents. Additionally, the agent appropriately asked for clarification regarding the user's residency status, which is one of the critical pieces of information needed. There was no hallucination detected, and the response aligns perfectly with the expected hybrid behavior."
         }
     },
     {
@@ -179,7 +179,7 @@
             "expected_behavior": "DIRECT",
             "critical_missing_info": []
         },
-        "response": "Yes, you can work in France with a student visa. If you have a long-stay visa equivalent to a residence permit (VLS-TS) or a student residence permit, you are allowed to work up to 964 hours per year, which is 60% of the annual legal working time in France. This applies to both European and non-European students. However, if you exceed this limit, you risk losing your student status and your residence permit may not be renewed.\n\nFor European students, there is no need for a residence permit or work authorization to work during your studies. For non-European students, while you can work without a work permit, you must adhere to the 964-hour limit to maintain your student status.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "response": "Yes, as an international student with a valid student visa in France, you are allowed to work up to 964 hours per year, which is equivalent to 60% of full-time employment. During the summer holidays, from June to September, you can work full-time. No additional work permit is required for this. [Source: service-public.fr]\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
         "verdict": {
             "action_type": "DIRECT_ANSWER",
             "is_action_appropriate": true,
@@ -187,7 +187,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a direct answer to the question, which was expected. It correctly stated that students can work up to 964 hours per year on a student visa in France, aligning with the ground truth. The response included relevant context about the conditions for European and non-European students, which is useful information. There was no hallucination or invention of facts, and the response was complete and accurate, thus deserving a perfect score."
+            "reasoning": "The agent provided a direct and accurate answer to the question, aligning with the expected behavior of a DIRECT response. It included relevant details about working hours and conditions for students with a valid visa in France, without inventing any information. The response also provided general context, which is appropriate for a direct answer, and did not require any clarification as there were no critical missing details to address."
         }
     },
     {
@@ -207,7 +207,7 @@
                 "current_residence_status"
             ]
         },
-        "response": "**[DONNER]** : La procédure de regroupement familial en France permet à votre famille résidant à l'étranger de vous rejoindre. Elle concerne votre époux(se) majeur(e) et légalement marié(e) avec vous, ainsi que vos enfants mineurs. Vous devez fournir des documents tels que les actes de naissance et de mariage, et prouver que vous avez des revenus suffisants et stables. En général, tous les membres de la famille doivent arriver ensemble, mais des exceptions peuvent être faites dans l'intérêt des enfants.\n\n**[EXPLIQUER]** : La procédure peut varier en fonction de votre situation personnelle, notamment votre statut de résidence et votre situation financière. Par exemple, si vous êtes salarié, vous devrez fournir des documents spécifiques comme votre contrat de travail et vos bulletins de salaire.\n\n**[DEMANDER]** : Pour vous donner des informations plus précises, pourriez-vous préciser si vous êtes ressortissant de l'Union Européenne ou d'un pays tiers ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "**[DONNER]**: Le regroupement familial en France permet à une personne résidant légalement en France de faire venir sa famille. Les conditions incluent être en France depuis au moins 18 mois, avoir des ressources stables équivalentes au SMIC minimum, et disposer d'un logement adapté. Le dossier doit être déposé à l'OFII, et le délai de traitement est généralement de 6 à 12 mois.\n\n**[EXPLIQUER]**: La procédure de regroupement familial peut varier en fonction de votre nationalité et de votre statut de résidence en France.\n\n**[DEMANDER]**: Pour vous aider plus précisément, pourriez-vous me dire si vous êtes ressortissant de l'Union Européenne ou d'un pays tiers?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -215,7 +215,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general overview of the family reunification process in France, which is useful context. It also asked for critical missing information regarding the user's nationality, which is necessary to provide more specific guidance. There was no hallucination detected as the agent did not invent any specific details. This response aligns perfectly with the expected HYBRID behavior."
+            "reasoning": "The agent provided a general overview of the regroupement familial process, including the conditions and steps involved, which aligns with the expected behavior for a hybrid response. Additionally, the agent asked for critical missing information regarding the user's nationality, which is necessary to provide more specific guidance. There was no hallucination detected as the agent did not invent any details beyond the general context provided. Therefore, the response was appropriate and complete, earning a perfect score."
         }
     },
     {
@@ -231,7 +231,7 @@
             "expected_behavior": "DIRECT",
             "critical_missing_info": []
         },
-        "response": "The cost of a residence permit (carte de séjour) in France depends on the situation. In general, you must pay 225 € (a stamp duty of 25 € and a tax of 200 €) via fiscal stamps. However, in the case of a minor entrusted to the ASE (Aide Sociale à l'Enfance) service, the cost is 25 € for a first application. You will need to provide proof of payment when the card is issued.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "response": "The cost of a residence permit (carte de séjour) in France depends on the situation. Generally, you must pay 225 € (a stamp duty of 25 € and a tax of 200 €) via fiscal stamps. However, in the case of a minor entrusted to the ASE (Aide Sociale à l'Enfance) service, the cost is 25 € for a first application. You will also need to provide proof of payment when the card is issued.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
         "verdict": {
             "action_type": "DIRECT_ANSWER",
             "is_action_appropriate": true,
@@ -239,7 +239,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a direct answer to the question about the cost of a French carte de séjour, including the breakdown of the cost and the method of payment. It also mentioned a specific case for minors, which is accurate and relevant. The response did not invent any details and provided useful context about the payment method and exceptions, aligning with the expected behavior of a direct answer."
+            "reasoning": "The agent provided a direct answer to the question about the cost of a French carte de séjour, including the breakdown of the cost and a special case for minors. It did not invent any details and provided relevant context about the payment method and the need for proof of payment. This aligns with the expected behavior of providing a direct answer."
         }
     },
     {
@@ -259,7 +259,7 @@
                 "residence_status"
             ]
         },
-        "response": "**[CUNG CẤP]**: Để đăng ký kết hôn tại Pháp, bạn cần chuẩn bị một số tài liệu quan trọng. Dưới đây là các bước cơ bản:\n\n1. **Formulaire và ảnh**: Điền vào mẫu cerfa n°15277 với 2 bản, kèm theo 2 ảnh thẻ mới nhất. Cả bạn và người bạn đời của bạn đều phải ký vào mẫu này.\n\n2. **Chứng minh nhân dân và địa chỉ**: Cung cấp bản sao giấy tờ tùy thân (hộ chiếu hoặc thẻ cư trú) và một chứng từ xác nhận địa chỉ cư trú gần đây có ghi rõ tên, họ và địa chỉ đầy đủ của bạn.\n\n3. **Tình trạng hôn nhân**: Cung cấp bản gốc giấy khai sinh và giấy chứng nhận kết hôn (nếu có) không quá 3 tháng.\n\n4. **Tài liệu bổ sung**: Nếu bạn không phải là công dân EU và đã ở trong không gian Schengen dưới 3 tháng trong 5 năm qua, bạn cần cung cấp hộ chiếu hoặc tài liệu tương đương.\n\n**[GIẢI THÍCH]**: Quy trình có thể thay đổi tùy thuộc vào quốc tịch và tình trạng cư trú của bạn. Ví dụ, nếu bạn là công dân của một quốc gia không thuộc EU, bạn có thể cần cung cấp thêm tài liệu như visa Schengen.\n\n**[YÊU CẦU]**: Bạn có thể cho biết quốc tịch của bạn để tôi có thể cung cấp thông tin chi tiết hơn về các yêu cầu cụ thể không?\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
+        "response": "**[CUNG CẤP]**: Để đăng ký kết hôn tại Pháp, bạn cần thực hiện các bước sau: 1) Xuất trình giấy tờ tại mairie, bao gồm hộ chiếu, giấy khai sinh không quá 3 tháng, và chứng minh nơi ở. 2) Đợi công bố hôn nhân trong 10 ngày. 3) Tổ chức lễ cưới tại mairie. Lưu ý rằng ít nhất một trong hai người phải cư trú tại commune nơi bạn muốn kết hôn.\n\n**[GIẢI THÍCH]**: Quy trình có thể thay đổi tùy thuộc vào quốc tịch và tình trạng cư trú của bạn. Điều này có thể ảnh hưởng đến các yêu cầu cụ thể về giấy tờ và thời gian xử lý.\n\n**[YÊU CẦU]**: Bạn có thể cho biết quốc tịch của bạn là gì không? Điều này sẽ giúp tôi cung cấp thông tin chi tiết hơn về quy trình đăng ký kết hôn tại Pháp.\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -267,7 +267,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general overview of the process for registering a marriage in France, which is useful context. It also correctly asked for the user's nationality, which is one of the critical pieces of missing information needed to provide more specific guidance. There was no hallucination detected as the agent did not invent any specific details that were not provided in the question. The response aligns perfectly with the expected HYBRID behavior."
+            "reasoning": "The agent provided a comprehensive overview of the general process for registering a marriage in France, which aligns with the expected behavior for a HYBRID response. It also appropriately asked for critical missing information regarding the user's nationality, which is necessary to provide more specific guidance. There was no hallucination detected as the agent did not invent any details beyond the general process. The response was well-structured, providing both context and a request for clarification, thus earning a perfect score."
         }
     }
 ]

@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from src.agents.state import UserProfile
 from src.config import settings
-
+from src.utils.llm_factory import get_llm
 from src.utils.logger import logger
 
 
@@ -86,11 +86,7 @@ query_rewriter = QueryRewriter()
 
 class ProfileExtractor:
     def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
-            temperature=0,
-            api_key=settings.OPENAI_API_KEY,
-        )
+        self.llm = get_llm(temperature=0)
         # We use JsonOutputParser with the Pydantic model
         self.parser = JsonOutputParser(pydantic_object=UserProfile)
 
@@ -188,11 +184,7 @@ class GoalExtractor:
     """Extracts and maintains the user's core goal across the conversation."""
 
     def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
-            temperature=0,
-            api_key=settings.OPENAI_API_KEY,
-        )
+        self.llm = get_llm(temperature=0)
 
         self.prompt = ChatPromptTemplate.from_template(
             """You are a Goal Extractor for a French Administration Bot.
