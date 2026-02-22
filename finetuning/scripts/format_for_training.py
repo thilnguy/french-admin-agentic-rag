@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 # Configuration
-INPUT_PATH = Path("finetuning/data/self_instruct_samples.jsonl")
+INPUT_PATH = Path("finetuning/data/final_train_raw.jsonl")
 OUTPUT_PATH = Path("finetuning/data/train_expert_formatted.jsonl")
 
 def format_sample(sample: dict) -> dict:

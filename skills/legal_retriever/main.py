@@ -14,7 +14,11 @@ import time
 @lru_cache(maxsize=1)
 def _get_qdrant_client():
     logger.info("Initializing Qdrant client...")
-    return QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT)
+    return QdrantClient(
+        host=settings.QDRANT_HOST, 
+        port=settings.QDRANT_PORT,
+        api_key=settings.QDRANT_API_KEY
+    )
 
 
 @lru_cache(maxsize=1)

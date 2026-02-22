@@ -167,7 +167,6 @@ async def run_eval():
         test_cases = json.load(f)
 
     # Initialize Components
-    orchestrator = AdminOrchestrator()
     judge_llm = ChatOpenAI(
         model="gpt-4o", temperature=0, api_key=settings.OPENAI_API_KEY
     )
@@ -198,13 +197,20 @@ async def run_eval():
             
             with (
                 patch("src.agents.orchestrator.redis.Redis", new_callable=MagicMock),
+                patch("src.memory.manager.redis.from_url", new_callable=MagicMock),
                 patch("src.agents.orchestrator.memory_manager") as mock_mem,
                 patch("skills.legal_retriever.main.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever,
                 patch("src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever_orch,
                 patch("src.agents.procedure_agent.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever_proc,
             ):
-                # Mock memory
-                mock_mem.load_agent_state.return_value = AgentState(session_id=test_session_id, messages=[])
+                # Initialize Orchestrator INSIDE the patch so it picks up mocked Redis/Memory
+                orchestrator = AdminOrchestrator()
+
+                # Mock memory: Ensure a FRESH state object is returned for EACH call
+                async def mock_load_state(sid):
+                    return AgentState(session_id=sid, messages=[])
+
+                mock_mem.load_agent_state = AsyncMock(side_effect=mock_load_state)
                 mock_mem.save_agent_state = AsyncMock()
                 
                 # Mock retrieval: return the ground truth as the "document"

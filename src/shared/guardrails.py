@@ -10,7 +10,13 @@ from src.utils.llm_factory import get_llm
 
 class GuardrailManager:
     def __init__(self):
-        self.llm = get_llm(temperature=0)
+        # Always use a robust model for Guardrails to prevent false refusals,
+        # especially for non-French languages or complex logic.
+        self.llm = ChatOpenAI(
+            model="gpt-4o-mini",
+            temperature=0,
+            api_key=settings.OPENAI_API_KEY
+        )
 
 
     async def validate_topic(

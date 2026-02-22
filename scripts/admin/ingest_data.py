@@ -1,17 +1,23 @@
 import os
+import argparse
 from datasets import load_dataset
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams, Batch
+from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
 def ingest_agent_public_dataset(
-    dataset_id: str, collection_name: str, embedding_col: str
+    dataset_id: str, 
+    collection_name: str, 
+    embedding_col: str = None, 
+    local_embed_model: str = None
 ):
     """
-    Ingests a pre-embedded dataset from Hugging Face into Qdrant.
+    Ingests a dataset into Qdrant. 
+    Can use pre-embedded columns or calculate embeddings locally.
     """
     print(f"Loading dataset: {dataset_id}...")
     ds = load_dataset(dataset_id, split="train", streaming=True)
@@ -21,20 +27,22 @@ def ingest_agent_public_dataset(
         port=int(os.getenv("QDRANT_PORT", 6333)),
     )
 
-    # Get a sample to determine vector size
-    import json
-
-    sample = next(iter(ds))
-    emb_sample = sample[embedding_col]
-
-    # Correctly parse the sample to get the actual dimension (e.g., 1024)
-    if isinstance(emb_sample, str):
-        try:
-            emb_sample = json.loads(emb_sample)
-        except json.JSONDecodeError:
-            emb_sample = [float(x.strip()) for x in emb_sample.strip("[]").split(",")]
-
-    vector_size = len(emb_sample)
+    embeddings_model = None
+    if local_embed_model:
+        print(f"Initializing local embeddings: {local_embed_model}")
+        embeddings_model = HuggingFaceEmbeddings(model_name=local_embed_model)
+        vector_size = 768 # Default for e5-base
+    else:
+        # Get a sample to determine vector size from pre-embedded column
+        import json
+        sample = next(iter(ds))
+        emb_sample = sample[embedding_col]
+        if isinstance(emb_sample, str):
+            try:
+                emb_sample = json.loads(emb_sample)
+            except json.JSONDecodeError:
+                emb_sample = [float(x.strip()) for x in emb_sample.strip("[]").split(",")]
+        vector_size = len(emb_sample)
 
     if not client.collection_exists(collection_name):
         print(f"Creating collection: {collection_name} (Size: {vector_size})")
@@ -44,27 +52,28 @@ def ingest_agent_public_dataset(
         )
 
     print(f"Starting ingestion for {collection_name}...")
-    batch_size = 100
-    ids = []
-    vectors = []
-    payloads = []
+    batch_size = 50 if local_embed_model else 100
+    ids, vectors, payloads = [], [], []
 
     import json
-
     count = 0
     for i, row in enumerate(ds):
-        emb_value = row[embedding_col]
-        # Parse if it's a string (Hugging Face sometimes stores these as JSON strings)
-        if isinstance(emb_value, str):
-            try:
-                emb_value = json.loads(emb_value)
-            except json.JSONDecodeError:
-                # Fallback for simple string representations if json.loads fails
-                emb_value = [float(x.strip()) for x in emb_value.strip("[]").split(",")]
+        if embeddings_model:
+            # Calculate embedding locally
+            text = row.get("text") or row.get("content") or ""
+            # e5 models often require 'query:' or 'passage:' prefix
+            prefix = "passage: " if "e5" in local_embed_model else ""
+            emb_value = embeddings_model.embed_query(prefix + text)
+        else:
+            emb_value = row[embedding_col]
+            if isinstance(emb_value, str):
+                try:
+                    emb_value = json.loads(emb_value)
+                except json.JSONDecodeError:
+                    emb_value = [float(x.strip()) for x in emb_value.strip("[]").split(",")]
 
         ids.append(i)
         vectors.append(emb_value)
-        # Remove embedding from payload to save space
         payload = {k: v for k, v in row.items() if k != embedding_col}
         payloads.append(payload)
 
@@ -76,8 +85,9 @@ def ingest_agent_public_dataset(
             count += len(ids)
             print(f"Ingested {count} points...")
             ids, vectors, payloads = [], [], []
+            if count >= 2000: # Limit for local testing/demo purposes
+                break
 
-    # Final batch
     if ids:
         client.upsert(
             collection_name=collection_name,
@@ -89,16 +99,22 @@ def ingest_agent_public_dataset(
 
 
 if __name__ == "__main__":
-    # Ingest Service Public (for procedures)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--local-embed", type=str, default=None, help="Local embedding model name")
+    args = parser.parse_args()
+
+    # Ingest Service Public
     ingest_agent_public_dataset(
         dataset_id="AgentPublic/service-public",
         collection_name="service_public_procedures",
-        embedding_col="embeddings_bge-m3",
+        embedding_col="embeddings_bge-m3" if not args.local_embed else None,
+        local_embed_model=args.local_embed
     )
 
-    # Ingest LEGI (for law reference)
+    # Ingest LEGI
     ingest_agent_public_dataset(
         dataset_id="AgentPublic/legi",
         collection_name="legi_legislation",
-        embedding_col="embeddings_bge-m3",
+        embedding_col="embeddings_bge-m3" if not args.local_embed else None,
+        local_embed_model=args.local_embed
     )

@@ -16,7 +16,7 @@
                 "current residence"
             ]
         },
-        "response": "[DONNER] Pour obtenir un passeport français, vous devez vous rendre dans une mairie équipée d'une station d'enregistrement avec les pièces justificatives suivantes : une photo d'identité, un justificatif de domicile, et un acte de naissance. Le coût est de 86€ pour un adulte.\n\n[EXPLIQUER] Si vous êtes citoyen non-UE, vous devez également fournir un justificatif de ressources suffisantes.\n\n[DEMANDER] Quelle est votre nationalité ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "**[DONNER]** Pour obtenir un passeport français, rendez-vous à la mairie avec une photo d'identité, un justificatif de domicile, et un acte de naissance. Le coût est de 86€.\n\n**[EXPLIQUER]** La procédure peut varier selon votre statut de résidence et votre nationalité.\n\n**[DEMANDER]** Quel est votre statut de résidence en France ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -24,7 +24,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a comprehensive response by giving the general context needed to obtain a French passport, including the necessary documents and cost. It also appropriately asked for the user's nationality, which is critical information needed to provide a more tailored response. There was no hallucination detected as the agent did not invent any specific details beyond what was necessary."
+            "reasoning": "The agent provided a general overview of the process to obtain a French passport, including necessary documents and cost, which aligns with the ground truth. It also appropriately asked for the user's residency status, which is critical information needed to tailor the response further. No hallucinations were detected, and the response was well-balanced between providing context and seeking clarification."
         }
     },
     {
@@ -45,7 +45,7 @@
                 "nationality"
             ]
         },
-        "response": "**[DONNER]** : Le renouvellement du titre de séjour doit être demandé dans les 2 mois précédant l'expiration. Il faut prendre rendez-vous à la préfecture, fournir les justificatifs requis (titre actuel, justificatif de domicile, ressources), et payer la taxe de 225€.\n\n**[EXPLIQUER]** : La procédure peut varier en fonction de votre statut de résidence, votre nationalité, et votre situation professionnelle.\n\n**[DEMANDER]** : Quel est votre statut de résidence en France ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "**[DONNER]** Le renouvellement du titre de séjour doit être demandé dans les 2 mois précédant l'expiration. Il faut prendre rendez-vous à la préfecture, fournir les justificatifs requis (titre actuel, justificatif de domicile, ressources), et payer la taxe de 225€.\n\n**[EXPLIQUER]** Le processus peut varier selon votre statut de résidence et votre situation professionnelle.\n\n**[DEMANDER]** Quel est votre statut de résidence en France ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -53,7 +53,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general overview of the steps required to renew a residence permit, which aligns with the ground truth. It also correctly identified the need for additional information by asking about the user's status of residence, which is one of the critical pieces of information needed. No hallucination was detected as the agent did not invent any specific details. The response was well-balanced, providing both context and clarification, making it a perfect hybrid response."
+            "reasoning": "The agent provided a general overview of the steps required to renew a residence permit, which aligns with the expected behavior for a hybrid response. It also asked for the user's status of residence, which is one of the critical pieces of information needed to provide a more tailored response. There was no hallucination as the agent did not invent any specific details beyond the general process. The response was appropriate and complete, earning a perfect score."
         }
     },
     {
@@ -73,7 +73,7 @@
                 "employment_status"
             ]
         },
-        "response": "To register for French healthcare, you need to be a legal resident. Apply through CPAM with your residence permit (Titre de séjour), proof of address, and employment contract if applicable.\n\nThe procedure varies based on your residency status and employment status.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "response": "To register for French healthcare, you need to be a legal resident. Apply through CPAM with your residence permit (Titre de séjour), proof of address, and employment contract if applicable. You'll receive a carte vitale within 2-3 weeks.\n\nThe registration process varies based on your residency status and employment status.\n\nAre you currently employed in France?\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -81,7 +81,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general context on how to register for French healthcare, mentioning the need for a residence permit, proof of address, and employment contract if applicable. It also noted that the procedure varies based on residency and employment status, which aligns with the critical information needed. This is a perfect hybrid response as it gives context and asks for the missing information implicitly."
+            "reasoning": "The agent provided a comprehensive response by giving the general context needed to register for French healthcare, including the necessary documents and process. It also appropriately asked for critical missing information regarding the user's employment status, which is relevant to the registration process. There was no hallucination detected, as all information provided was accurate and relevant. This makes the response a perfect example of a hybrid approach, scoring 10/10."
         }
     },
     {
@@ -101,15 +101,15 @@
                 "residency_status"
             ]
         },
-        "response": "Xin lỗi, tôi không thể hỗ trợ yêu cầu này. Lý do: Truy vấn là về một chủ đề không phải của Pháp (giấy phép lái xe).",
+        "response": "**[DONNER]** Pour obtenir un permis de conduire français, vous devez vous inscrire dans une auto-école, réussir l'examen théorique et l'examen pratique. Le coût moyen est de 1500€.\n\n**[EXPLIQUER]** La procédure peut varier en fonction de votre statut de résidence et si vous possédez un permis de conduire étranger.\n\n**[YÊU CẦU]** Possédez-vous un permis de conduire étranger ?\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
         "verdict": {
-            "action_type": "REFUSAL",
-            "is_action_appropriate": false,
-            "asked_for_missing_info": false,
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
             "hallucination_detected": false,
-            "context_provided": false,
-            "score": 0,
-            "reasoning": "The agent refused to answer the question, incorrectly stating that the topic is not related to France, which is incorrect as the question is about obtaining a French driver's license. The expected behavior was to provide a hybrid response by giving general context about the process and asking for critical missing information such as the user's current license status and residency status. The agent did not provide any context or ask for clarification, resulting in a score of 0."
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a general overview of the process to obtain a French driving license, which includes enrolling in a driving school, passing theoretical and practical exams, and mentioned the average cost. It also appropriately asked for critical missing information regarding the user's current license status, which is necessary to provide a more tailored response. No hallucination was detected as the agent did not invent any specific details. This response aligns perfectly with the expected hybrid behavior."
         }
     },
     {
@@ -126,7 +126,7 @@
             "expected_behavior": "DIRECT",
             "critical_missing_info": []
         },
-        "response": "[DONNER] Le délai de traitement d'une demande de naturalisation française est généralement de 18 à 24 mois. [Source: service-public.fr/...]\n\n[EXPLIQUER] Le traitement peut varier selon votre situation spécifique. [Source: service-public.fr/...]\n\n[DEMANDER] Quelle est votre statut de résidence en France ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "[DONNER] Le délai de traitement d'une demande de naturalisation française est généralement de 18 à 24 mois. [Source: service-public.fr/...]\n\n[EXPLIQUER] Le délai peut varier selon votre situation spécifique, comme votre résidence en France et votre intégration. [Source: service-public.fr/...]\n\n[DEMANDER] Pouvez-vous me donner votre statut de résidence en France et votre niveau de français?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "DIRECT_ANSWER",
             "is_action_appropriate": true,
@@ -134,7 +134,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a direct answer to the question about the processing time for a naturalization request, which aligns with the expected behavior of a DIRECT response. The agent also provided general context about the variability of processing times, which is useful information. There was no hallucination detected, as the information given is accurate and relevant. The agent did not need to ask for any missing information since the question was straightforward and did not require further clarification."
+            "reasoning": "The agent provided a direct answer to the question about the processing time for a naturalization request, which aligns with the expected behavior of a DIRECT response. It also provided additional context about factors that might affect the processing time, which is useful but not necessary for a DIRECT response. There was no hallucination as the information given is accurate and relevant. Therefore, the response is appropriate and scores a 10."
         }
     },
     {
@@ -154,7 +154,7 @@
                 "income_sources"
             ]
         },
-        "response": "**[DONNER]** : Pour déclarer vos impôts en France, vous devez vous inscrire sur impots.gouv.fr. La déclaration se fait en ligne entre avril et juin. Vous devez déclarer tous vos revenus mondiaux.\n\n**[EXPLIQUER]** : La procédure peut varier en fonction de votre statut de résidence et de vos sources de revenus.\n\n**[DEMANDER]** : Quels sont vos revenus et votre statut de résidence en France ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "**[DONNER]** : Pour déclarer vos impôts en France, vous devez créer un compte sur impots.gouv.fr. La déclaration se fait en ligne entre avril et juin. Vous devez déclarer tous vos revenus mondiaux si vous êtes résident fiscal français.\n\n**[EXPLIQUER]** : La procédure peut varier en fonction de votre statut de résidence et de vos sources de revenus.\n\n**[DEMANDER]** : Quel est votre statut de résidence en France ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -162,7 +162,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general context about how to declare taxes in France, including the need to register on impots.gouv.fr and the timeline for declaration. It also correctly identified the need to declare worldwide income if the person is a French tax resident. Additionally, the agent asked for critical missing information regarding the user's residence status and income sources, which are necessary to tailor the advice. There was no hallucination detected, and the response aligns perfectly with the expected hybrid behavior."
+            "reasoning": "The agent provided a general context about how to declare taxes in France, including the need to create an account on impots.gouv.fr and the timeline for declaration. It also correctly identified the need to clarify the user's residence status, which is critical information needed to provide a more tailored response. No hallucinations were detected, and the response aligns perfectly with the expected hybrid behavior."
         }
     },
     {
@@ -179,7 +179,7 @@
             "expected_behavior": "DIRECT",
             "critical_missing_info": []
         },
-        "response": "International students with a valid student visa can work up to 964 hours per year, which is 60% of full-time work. During summer holidays (June-September), you can work full-time.\n\nThe conditions for working vary based on your valid student visa status.\n\nAre you an EU or non-EU student?\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "response": "International students with a valid student visa can work up to 964 hours per year (60% of full-time). No additional work permit is needed. During summer holidays (June-September), you can work full-time.\n\nThe exact number of hours depends on your current employment status and the type of visa. If you are unsure about your employment status, you can check with your university or the relevant administrative office.\n\nPlease confirm your current employment status and the type of visa you hold.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
         "verdict": {
             "action_type": "DIRECT_ANSWER",
             "is_action_appropriate": true,
@@ -187,7 +187,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a direct answer to the question, stating the conditions under which a student can work in France with a student visa. It correctly mentioned the 964 hours per year limit and the possibility of full-time work during summer holidays. The additional question about EU or non-EU status was unnecessary for the direct answer but did not detract from the correctness of the response. No hallucination was detected, and the context provided was accurate and relevant."
+            "reasoning": "The agent provided a direct answer to the question, which aligns with the expected behavior of a DIRECT response. It correctly stated that international students with a valid student visa can work up to 964 hours per year and can work full-time during summer holidays. The additional context about checking with the university or relevant authorities is useful but not necessary for the direct answer. There was no hallucination, as all information provided is accurate and relevant. Therefore, the response is appropriate and scores a 10."
         }
     },
     {
@@ -207,7 +207,7 @@
                 "current_residence_status"
             ]
         },
-        "response": "**[DONNER]** Le regroupement familial permet de faire venir sa famille en France. Les conditions incluent une résidence de 18 mois en France, des ressources stables au SMIC minimum, et un logement adapté. Le dossier doit être déposé à l'OFII.\n\n**[EXPLIQUER]** La procédure varie selon votre statut de résidence en France et votre situation professionnelle.\n\n**[DEMANDER]** Quel est votre statut de résidence en France ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "response": "**[DONNER]** : Le regroupement familial permet de faire venir sa famille en France. Vous devez être en France depuis 18 mois, avoir des ressources stables (SMIC minimum), et un logement adapté. Le dossier doit être déposé à l'OFII.\n\n**[EXPLIQUER]** : La procédure peut varier en fonction de votre statut de résidence et votre nationalité.\n\n**[DEMANDER]** : Quel est votre statut de résidence en France ?\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -215,7 +215,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general overview of the regroupement familial process, which is useful context for the user. It also asked for the user's current residence status, which is one of the critical pieces of information needed to provide a more tailored response. This aligns perfectly with the expected HYBRID behavior, as it combines both context and clarification."
+            "reasoning": "The agent provided a general overview of the regroupement familial process, which is useful context. It also asked for the user's current residence status, which is one of the critical pieces of missing information needed to provide a more tailored response. There was no hallucination detected as the agent did not invent any specific details. This response aligns perfectly with the expected hybrid behavior."
         }
     },
     {
@@ -231,15 +231,15 @@
             "expected_behavior": "DIRECT",
             "critical_missing_info": []
         },
-        "response": "I'm sorry, I cannot assist with that request.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "response": "The cost of a residence permit (carte de séjour) is €225 for the initial issuance and renewal.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
         "verdict": {
-            "action_type": "REFUSAL",
-            "is_action_appropriate": false,
+            "action_type": "DIRECT_ANSWER",
+            "is_action_appropriate": true,
             "asked_for_missing_info": false,
             "hallucination_detected": false,
             "context_provided": false,
-            "score": 0,
-            "reasoning": "The agent refused to provide an answer to a direct question about the cost of a French carte de séjour. The expected behavior was to provide a direct answer, as the question was straightforward and did not require clarification or refusal. The agent did not provide any context or information, resulting in a score of 0."
+            "score": 10,
+            "reasoning": "The agent provided a direct answer to the question about the cost of a French carte de séjour, which aligns with the expected behavior. The information given is accurate and does not include any hallucinated details. The agent also included a note advising to consult official sources for confirmation, which is a good practice but not necessary for the direct answer requirement."
         }
     },
     {
@@ -259,7 +259,7 @@
                 "residence_status"
             ]
         },
-        "response": "**[DONNER]**: Pour se marier en France, vous devez présenter des documents à la mairie, y compris un passeport, un acte de naissance de moins de 3 mois, et une preuve de domicile. Ensuite, attendez la publication des bans pendant 10 jours et célébrez le mariage à la mairie.\n\n**[EXPLIQUER]**: La procédure d'enregistrement du mariage peut varier en fonction de votre statut de résidence et de votre nationalité.\n\n**[DEMANDER]**: Avez-vous la nationalité de l'UE ?\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
+        "response": "**[DONNER]**: Pour s'inscrire au mariage en France, vous devez présenter des documents à la mairie, y compris un passeport, un acte de naissance de moins de 3 mois, et une preuve de résidence. Ensuite, attendez la publication des bans pendant 10 jours et organisez la cérémonie de mariage à la mairie. L'une des deux parties doit résider dans cette commune.\n\n**[EXPLIQUER]**: La procédure d'enregistrement du mariage peut varier en fonction de votre statut de résidence et de votre nationalité.\n\n**[DEMANDER]**: Êtes-vous citoyen de l'UE ?\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
         "verdict": {
             "action_type": "HYBRID",
             "is_action_appropriate": true,
@@ -267,7 +267,7 @@
             "hallucination_detected": false,
             "context_provided": true,
             "score": 10,
-            "reasoning": "The agent provided a general overview of the marriage registration process in France, which aligns with the ground truth. It also asked a relevant clarifying question about the user's nationality, which is part of the critical information needed. This makes the response a perfect example of a hybrid approach, as it combines context with a request for missing information."
+            "reasoning": "The agent provided a general overview of the marriage registration process in France, which aligns with the expected behavior for a HYBRID response. It also asked a relevant clarifying question about the user's nationality, which is part of the critical information needed. There was no hallucination detected as the agent did not invent any specific details. The response was well-balanced, providing both context and seeking necessary clarification, thus deserving a perfect score."
         }
     }
 ]
