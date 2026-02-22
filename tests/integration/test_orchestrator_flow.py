@@ -53,13 +53,16 @@ async def test_orchestrator_full_flow_simple_qa():
 
         # Initialize
         orch = AdminOrchestrator()
+        
+        with patch.object(orch, "_call_llm", new_callable=AsyncMock) as mock_orch_call:
+            mock_orch_call.return_value = AIMessage(content="Generated Answer")
 
-        # Run
-        session_id = "test_sess_flow"
-        response = await orch.handle_query("How to get a visa?", session_id=session_id)
+            # Run
+            session_id = "test_sess_flow"
+            response = await orch.handle_query("How to get a visa?", session_id=session_id)
 
-        # Verify Response
-        assert response == "Generated Answer"
+            # Verify Response
+            assert response == "Generated Answer"
 
         # Verify Intent Classification execution
         mock_classify.assert_called_once()
