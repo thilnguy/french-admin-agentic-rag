@@ -2,21 +2,26 @@
 
 Comprehensive evaluation framework measuring quality, performance, and guardrail effectiveness.
 
+## 📁 Directory Structure
+
+Organized for scalability and clarity:
+
+- **`data/`**: Datasets categorized by stage
+  - `raw/`: Initial golden sets (v1, v2).
+  - `enriched/`: Datasets with reasoning and behavior metadata.
+  - `benchmarks/`: Adversarial, latency, and blind test sets.
+- **`runners/`**: Core evaluation scripts.
+- **`utils/`**: Helper tools (enrichment, data cleaning).
+- **`results/`**: Execution outputs and judge verdicts.
+
 ## 🎯 Evaluation Dimensions
 
 | Dimension | Script | Metrics | Target |
 |-----------|--------|---------|--------|
-| **Quality** | `eval_rag_quality.py` | Faithfulness, Relevancy, Precision, Recall, Correctness | >0.8-0.9 |
-| **Performance** | `eval_performance.py` | E2E latency (p95), Retrieval latency | <2s, <500ms |
-| **Guardrails** | `eval_guardrails.py` | Precision, Recall, FPR, FNR | >0.95, >0.98 |
-
-## 📁 Test Data
-
-- `test_data/ds_golden_v1_raw.json` (10 cases): Initial French admin Q&A set.
-- `test_data/ds_golden_v2_enriched.json` (30 cases): Expanded set with expected behavior metadata.
-- `test_data/ds_eval_9.8_blind_v1.json` (20 cases): Core logic benchmark (Achieved 9.8/10).
-- `test_data/ds_adversarial_guardrails.json` (10 cases): Edge cases for factual traps and off-target queries.
-- `test_data/ds_bench_latency.json` (5 cases): Latency benchmarks.
+| **Quality** | `runners/eval_rag_quality.py` | Faithfulness, Recall, Precision | >0.8-0.9 |
+| **Performance** | `runners/eval_performance.py` | E2E latency (p95), Retrieval latency | <2s, <500ms |
+| **Guardrails** | `runners/eval_guardrails.py` | Precision, Recall, FPR, FNR | >0.95, >0.98 |
+| **Expert Judge**| `runners/llm_judge.py` | Reasoning score, Hallucination | 10/10 |
 
 ## 🚀 Running Evaluations
 
@@ -28,25 +33,22 @@ export OPENAI_API_KEY=sk-...
 
 **Run evaluations:**
 ```bash
-cd evals
-uv run python eval_rag_quality.py      # Ragas metrics
-uv run python eval_performance.py      # Latency benchmarks
-uv run python eval_guardrails.py       # Topic validation accuracy
-```
+# Run judge on blind test (default)
+uv run python evals/runners/llm_judge.py --limit 5
 
-**Run all:**
-```bash
-uv run python eval_rag_quality.py && uv run python eval_performance.py && uv run python eval_guardrails.py
+# Run performance benchmarks
+uv run python evals/runners/eval_performance.py
+
+# Run guardrail validation
+uv run python evals/runners/eval_guardrails.py
 ```
 
 ## 📊 Metrics
 
-**RAG Quality (Ragas):**
+**RAG Quality:**
 - Faithfulness (>0.9): No hallucinations
-- Answer Relevancy (>0.85): Answers match queries
-- Context Precision (>0.8): Retrieved docs are relevant
-- Context Recall (>0.85): All necessary info retrieved
-- Answer Correctness (>0.8): Semantic + factual accuracy
+- Relevance (>0.85): Answers match queries
+- Precision (>0.8): Retrieved docs are relevant
 
 **Performance:**
 - E2E p95 <2s, Retrieval p95 <500ms
@@ -55,11 +57,7 @@ uv run python eval_rag_quality.py && uv run python eval_performance.py && uv run
 - Precision >0.95 (low false approvals)
 - Recall >0.98 (low false rejections)
 
-## 🔧 Customization
+## 🔧 Maintenance
 
-Add test cases to `test_data/golden_set.json`, adjust thresholds in eval scripts.
-
-## 📚 References
-
-- [Ragas Docs](https://docs.ragas.io/)
-- [LangSmith](https://docs.smith.langchain.com/) (set `LANGCHAIN_TRACING_V2=true`)
+- To enrich new raw data: `uv run python evals/utils/enrich_golden_set.py`
+- Results are stored in `evals/results/llm_judge_results.json`.

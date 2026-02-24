@@ -15,10 +15,16 @@ Target SLAs:
 import asyncio
 import json
 import time
+import argparse
 from pathlib import Path
 from statistics import median, quantiles
+from unittest.mock import patch
 from src.agents.orchestrator import AdminOrchestrator
 from skills.legal_retriever.main import retrieve_legal_info
+from src.config import settings
+
+# Force DEBUG mode to bypass cache for performance measurement
+settings.DEBUG = True
 
 
 class LatencyTracker:
@@ -107,7 +113,7 @@ async def run_performance_evaluation():
     print("✅ Warmup complete\n")
 
     # Load benchmark queries
-    test_data_path = Path(__file__).parent / "test_data" / "ds_bench_latency.json"
+    test_data_path = Path(__file__).parent.parent / "data" / "benchmarks" / "ds_bench_latency.json"
     with open(test_data_path, "r", encoding="utf-8") as f:
         benchmarks = json.load(f)
 

@@ -162,8 +162,7 @@ async def run_eval(data_file: str = None, limit: int = None):
     if data_file:
         data_path = Path(data_file)
     else:
-        #data_path = Path(__file__).parent / "test_data" / "ds_golden_v2_enriched.json"
-        data_path = Path(__file__).parent / "test_data" / "ds_eval_9.8_blind_v1.json"
+        data_path = Path(__file__).parent.parent / "data" / "benchmarks" / "ds_eval_9.8_blind_v1.json"
     
     if not data_path.exists():
         print(f"❌ Data file not found: {data_path}")
@@ -322,7 +321,7 @@ async def run_eval(data_file: str = None, limit: int = None):
     print("=" * 60)
 
     # Save Results
-    output_path = Path(__file__).parent / "llm_judge_results.json"
+    output_path = Path(__file__).parent.parent / "results" / "llm_judge_results.json"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=4, ensure_ascii=False)
     print(f"📝 Full results saved to {output_path}")

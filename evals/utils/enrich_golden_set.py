@@ -22,8 +22,8 @@ class EnrichedTestCase(BaseModel):
 
 
 async def enrich_data():
-    input_path = Path(__file__).parent / "test_data" / "ds_golden_v2_raw.json"
-    output_path = Path(__file__).parent / "test_data" / "ds_golden_v2_enriched.json"
+    input_path = Path(__file__).parent.parent / "data" / "raw" / "ds_golden_v2_raw.json"
+    output_path = Path(__file__).parent.parent / "data" / "enriched" / "ds_golden_v2_enriched.json"
 
     with open(input_path, "r", encoding="utf-8") as f:
         data = json.load(f)
