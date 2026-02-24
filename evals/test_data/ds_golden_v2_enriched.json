@@ -1,0 +1,313 @@
+[
+    {
+        "question": "Comment obtenir un passeport français ?",
+        "category": "Identity",
+        "ground_truth": "Pour obtenir un passeport, vous devez vous rendre dans une mairie équipée d'une station d'enregistrement avec les pièces justificatives (photo d'identité, justificatif de domicile, acte de naissance). Le coût est de 86€ pour un adulte.",
+        "critical_missing_info": [
+            "nationality",
+            "current residence"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "Quelles sont les étapes pour renouveler un titre de séjour ?",
+        "category": "Immigration",
+        "ground_truth": "Le renouvellement du titre de séjour doit être demandé dans les 2 mois précédant l'expiration. Il faut prendre rendez-vous à la préfecture, fournir les justificatifs requis (titre actuel, justificatif de domicile, ressources), et payer la taxe de 225€.",
+        "critical_missing_info": [
+            "type_of_residence_permit",
+            "current_status",
+            "reason_for_stay"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "Comment demander l'Aide Personnalisée au Logement (APL) ?",
+        "category": "Social",
+        "ground_truth": "L'APL se demande en ligne sur le site de la CAF (caf.fr). Vous devez avoir un contrat de location, vos relevés de revenus des 12 derniers mois, et votre RIB. Le montant dépend de vos revenus et du loyer.",
+        "critical_missing_info": [
+            "revenus",
+            "loyer"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "Can I work in France with a student visa?",
+        "category": "Immigration",
+        "ground_truth": "Yes, international students with a valid student visa can work up to 964 hours per year (60% of full-time). No additional work permit is needed.",
+        "critical_missing_info": [],
+        "expected_behavior": "DIRECT",
+        "language": "en"
+    },
+    {
+        "question": "Làm thế nào để đăng ký thất nghiệp tại Pôle Emploi ?",
+        "category": "Work",
+        "ground_truth": "Để đăng ký Pôle Emploi: 1) Đăng ký online tại pole-emploi.fr ngay khi nghỉ việc. 2) Tham gia buổi phỏng vấn đầu tiên. Bạn cần hợp đồng lao động cũ và giấy tờ tùy thân.",
+        "critical_missing_info": [
+            "employment history",
+            "identification documents"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "vi"
+    },
+    {
+        "question": "What is the 'Prime d'activité' and am I eligible?",
+        "category": "Social",
+        "ground_truth": "The Prime d'activité is a financial aid for low-income workers. To be eligible, you must be 18+, live in France permanently, and earn less than a certain threshold (around 1900€ for a single person).",
+        "critical_missing_info": [
+            "age",
+            "residence_status",
+            "income"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "en"
+    },
+    {
+        "question": "Comment déclarer mes impôts pour la première fois ?",
+        "category": "Taxes",
+        "ground_truth": "Pour une première déclaration, vous pouvez le faire sur papier (formulaire 2042) hoặc en ligne si vous avez reçu vos identifiants. La période est généralement en mai. Vous devez déclarer vos revenus de l'année précédente.",
+        "critical_missing_info": [
+            "residence_status",
+            "income_sources"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "Comment résilier mon bail de location ?",
+        "category": "Housing",
+        "ground_truth": "Le préavis est généralement de 3 mois, réduit à 1 mois en zone tendue, perte d'emploi ou mutation. La lettre doit être envoyée en recommandé avec accusé de réception (LRAR).",
+        "critical_missing_info": [
+            "location",
+            "reason_for_termination"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "How do I get a Carte Vitale?",
+        "category": "Health",
+        "ground_truth": "You must register with CPAM (Ameli). Once your rights are open, you will receive a form to order your Carte Vitale. You need to provide an ID photo and proof of identity.",
+        "critical_missing_info": [
+            "residence_status",
+            "employment_status"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "en"
+    },
+    {
+        "question": "Tôi muốn đăng ký làm auto-entrepreneur (Micro-entreprise).",
+        "category": "Work",
+        "ground_truth": "Bạn có thể đăng ký trên cổng autoentrepreneur.urssaf.fr. Cần có số an sinh xã hội và giấy phép cư trú cho phép làm việc tự do.",
+        "critical_missing_info": [
+            "social_security_number",
+            "residence_permit"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "vi"
+    },
+    {
+        "question": "Quel est le coût d'une carte grise pour une voiture d'occasion ?",
+        "category": "Daily Life",
+        "ground_truth": "Le coût dépend de la puissance fiscale (CV), du département et des émissions CO2. Il comprend la taxe régionale, la taxe de gestion (11€) et la redevance d'acheminement (2.76€).",
+        "critical_missing_info": [
+            "puissance_fiscale",
+            "département",
+            "émissions_CO2"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "Comment demander l'aide juridique (Aide Juridictionnelle) ?",
+        "category": "Legal",
+        "ground_truth": "L'aide juridictionnelle permet la prise en charge des frais de justice par l'État. Elle dépend de vos ressources mensuelles. Le dossier se dépose au bureau d'aide juridictionnelle de votre tribunal.",
+        "critical_missing_info": [
+            "resources_monthly",
+            "location"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "How do I register my child for primary school?",
+        "category": "Daily Life",
+        "ground_truth": "Registration starts at the Mairie (Town Hall) with your livret de famille, proof of address, and vaccination records. The school will then finalize the enrollment.",
+        "critical_missing_info": [
+            "child's age",
+            "residence location"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "en"
+    },
+    {
+        "question": "Qu'est-ce que le RSA và ai có quyền hưởng ?",
+        "category": "Social",
+        "ground_truth": "Le RSA (Revenu de Solidarité Active) est une aide pour les personnes sans ressources. Conditions: 25 ans minimum (sauf enfant à charge), résidence stable en France depuis 3 mois, revenus inférieurs aux plafonds.",
+        "critical_missing_info": [
+            "age",
+            "residence_status",
+            "income_level"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "Comment obtenir un numéro de sécurité sociale?",
+        "category": "Health",
+        "ground_truth": "Si vous travaillez, votre employeur fait la démarche. Sinon, contactez la CPAM. Il faut fournir un acte de naissance traduit et une pièce d'identité.",
+        "critical_missing_info": [
+            "employment_status",
+            "nationality"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "What happens if I don't pay my taxes on time?",
+        "category": "Taxes",
+        "ground_truth": "A 10% penalty is applied if you miss the deadline. You can request a 'remise gracieuse' (graceful remission) or a payment plan at your tax office (SIE).",
+        "critical_missing_info": [],
+        "expected_behavior": "DIRECT",
+        "language": "en"
+    },
+    {
+        "question": "Làm thế nào để đổi bằng lái xe nước ngoài sang bằng Pháp ?",
+        "category": "Daily Life",
+        "ground_truth": "Việc đổi bằng lái xe (échange de permis) diễn ra online trên trang ANTS. Cần thực hiện trong vòng 1 năm kể từ ngày có hộ khẩu cư trú (résidence normale) tại Pháp.",
+        "critical_missing_info": [
+            "nationality",
+            "residence_status",
+            "date_of_residence"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "vi"
+    },
+    {
+        "question": "Comment obtenir une attestation de droits à l'assurance maladie ?",
+        "category": "Health",
+        "ground_truth": "Vous pouvez la télécharger sur votre compte Ameli (ameli.fr) hoặc la demander aux bornes multiservices des agences CPAM.",
+        "critical_missing_info": [],
+        "expected_behavior": "DIRECT",
+        "language": "fr"
+    },
+    {
+        "question": "What documents are needed for a marriage in France?",
+        "category": "Daily Life",
+        "ground_truth": "Documents include: birth certificates (less than 3 months old if French, 6 if foreign), proof of address, ID of witnesses, and certificate of celibacy/custom for foreigners.",
+        "critical_missing_info": [
+            "nationality",
+            "residence_status"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "en"
+    },
+    {
+        "question": "Mất thẻ Carte Vitale thì phải làm sao ?",
+        "category": "Health",
+        "ground_truth": "Phải báo mất trên trang ameli.fr hoặc gửi đơn báo mất tới CPAM. Sau đó đặt lại thẻ mới thông qua tài khoản cá nhân.",
+        "critical_missing_info": [],
+        "expected_behavior": "DIRECT",
+        "language": "vi"
+    },
+    {
+        "question": "Comment demander la nationalité française par décret ?",
+        "category": "Immigration",
+        "ground_truth": "Il faut résider en France depuis 5 ans, prouver son intégration républicaine, avoir un niveau B1 en français et ne pas avoir de condamnations pénales.",
+        "critical_missing_info": [
+            "current_residence",
+            "length_of_residence",
+            "language_proficiency",
+            "criminal_record"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "Can I claim French social security for my parents visiting on a tourist visa?",
+        "category": "Health",
+        "ground_truth": "No, a tourist visa (Schengen) requires private travel insurance. French Social Security is for residents or workers.",
+        "critical_missing_info": [],
+        "expected_behavior": "DIRECT",
+        "language": "en"
+    },
+    {
+        "question": "Tôi muốn xin học bổng CROUS cho sinh viên.",
+        "category": "Social",
+        "ground_truth": "Bạn cần điền hồ sơ Dossiers Social Étudiant (DSE) trên trang messervices.etudiant.gouv.fr trước ngày 15/5 hàng năm.",
+        "critical_missing_info": [
+            "nationality",
+            "current level of study",
+            "residence status"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "vi"
+    },
+    {
+        "question": "Quel est le délai pour déclarer un changement d'adresse à la CAF ?",
+        "category": "Social",
+        "ground_truth": "Il faut le faire immédiatement ou dans les plus brefs délais sur le site 'Mon Compte' de la CAF để tránh indus (paiements indus) hoặc suspension des aides.",
+        "critical_missing_info": [],
+        "expected_behavior": "DIRECT",
+        "language": "fr"
+    },
+    {
+        "question": "Comment obtenir l'Allocation Adulte Handicapé (AAH) ?",
+        "category": "Social",
+        "ground_truth": "L'AAH se demande auprès de la MDPH (Maison Départementale des Personnes Handicapées) via un formulaire spécifique complété par un certificat médical de moins de 12 mois.",
+        "critical_missing_info": [
+            "disability_status",
+            "residence_department"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "How do I pay a speeding fine in France?",
+        "category": "Daily Life",
+        "ground_truth": "Fines can be paid online at amendes.gouv.fr using the payment key on the notice. Payment within 15 days usually results in a reduced amount.",
+        "critical_missing_info": [],
+        "expected_behavior": "DIRECT",
+        "language": "en"
+    },
+    {
+        "question": "Làm thế nào để gia hạn hộ chiếu Việt Nam tại Pháp ?",
+        "category": "Identity",
+        "ground_truth": "Bạn cần liên hệ với Đại sứ quán Việt Nam tại Paris. Thủ tục bao gồm tờ khai, ảnh, hộ chiếu cũ và lệ phí.",
+        "critical_missing_info": [
+            "current passport expiration date",
+            "residence status in France"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "vi"
+    },
+    {
+        "question": "Comment se pacser en France ?",
+        "category": "Daily Life",
+        "ground_truth": "Le PACS se conclut soit en mairie, soit devant un notaire. Il faut une convention de PACS, une déclaration conjointe, et les actes de naissance des deux partenaires.",
+        "critical_missing_info": [
+            "nationality",
+            "residence_status"
+        ],
+        "expected_behavior": "HYBRID",
+        "language": "fr"
+    },
+    {
+        "question": "What is 'Taxe d'habitation'?",
+        "category": "Housing",
+        "ground_truth": "The Taxe d'habitation is a local housing tax. For main residences, it has been gradually abolished for all taxpayers since 2023. It still applies to secondary residences.",
+        "critical_missing_info": [],
+        "expected_behavior": "DIRECT",
+        "language": "en"
+    },
+    {
+        "question": "Quels sont les droits d'un locataire en cas de panne de chauffage ?",
+        "category": "Housing",
+        "ground_truth": "Le propriétaire a l'obligation de fournir un logement décent với un chauffage fonctionnel. Le locataire doit l'avertir par écrit. En cas d'inaction, il peut saisir le tribunal ou la commission de conciliation.",
+        "critical_missing_info": [],
+        "expected_behavior": "DIRECT",
+        "language": "fr"
+    }
+]

@@ -25,7 +25,7 @@ async def evaluate_guardrails():
     print("=" * 60 + "\n")
 
     # Load adversarial test cases
-    test_data_path = Path(__file__).parent / "test_data" / "adversarial.json"
+    test_data_path = Path(__file__).parent / "test_data" / "ds_adversarial_guardrails.json"
     with open(test_data_path, "r", encoding="utf-8") as f:
         test_cases = json.load(f)
 

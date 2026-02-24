@@ -65,7 +65,7 @@ def run_rag_quality_evaluation():
     print("=" * 60)
 
     # Load test data
-    test_data_path = Path(__file__).parent / "test_data" / "golden_set.json"
+    test_data_path = Path(__file__).parent / "test_data" / "ds_golden_v1_raw.json"
     with open(test_data_path, "r", encoding="utf-8") as f:
         test_cases = json.load(f)
 

@@ -45,11 +45,19 @@ class GuardrailManager:
             Your only job is to decide if the query is RELEVANT to French administrative tasks or the current conversation.
 
             RULES:
-            1. If the query is about French procedures, law, public services, or ID documents, it is APPROVED.
-            2. If the query is a conversational follow-up or meta-question (e.g., "Why?", "What is my name?"), and there is HISTORY showing a previous administrative discussion, it is APPROVED.
-            3. NEW queries about unrelated topics (cooking, celebrities, non-French law) are REJECTED.
-            4. Personal introductions (e.g., "My name is...") combined with admin questions are APPROVED.
-            5. Procedural confirmations or next-step requests (e.g., "What do I do next?", "I have it", "Yes", "Next step") are APPROVED if they relate to the context.
+            1. If the query is about French procedures, law, public services, identity documents, transport (Navigo, SNCF, RATP, driving licenses, vehicle registration, Crit'Air), civil registry (birth/death/marriage), or legal records (Casier Judiciaire/Criminal Record), it is APPROVED.
+            2. If the query is about TAXES in France (Impôts, donations, inheritance/succession, IFI, local taxes, tax-free gifts), it is APPROVED.
+            3. If the query is about EDUCATION in France (School registration, Assurance scolaire, student aid, bourses, university admin), it is APPROVED.
+            4. If the query involves FOREIGN DOCUMENTS being used for French procedures (e.g., "Can I use my UK license?", "Is my US diploma valid?"), it is APPROVED.
+            5. If the query is about LABOR rights, strikes, chômage technique, employer disputes, or natural disaster compensation (floods, etc.), it is APPROVED.
+            6. Housing rights, tenant/landlord disputes, social benefits (CAF, AAH, RSA, Chèque Énergie, Retirement) are APPROVED.
+            7. Embassy/consular procedures, visa applications, and administrative certificates are APPROVED.
+            8. Conversational follow-ups, meta-questions, or personal introductions in an admin context are APPROVED.
+            9. UNRELATED topics (cooking, celebrities, general sports, non-French law unrelated to residency) are REJECTED.
+
+            CRITICAL: Your job is ONLY to validate the TOPIC, not to answer the question. 
+            Do NOT say 'REJECTED: It is not possible to do X'. Only say REJECTED if the topic is completely unrelated to French law or administration.
+            When in doubt, respond APPROVED.
 
             Respond only with 'APPROVED' or 'REJECTED: [Short reason in English]'.
 
@@ -97,14 +105,15 @@ class GuardrailManager:
             2. The conversation HISTORY.
             3. The current user QUERY (e.g., names or details the user just introduced).
             4. Common sense/AI identity (e.g., "I am an AI").
-            5. REASONABLE SYNTHESIS: A step-by-step summary or paraphrase of administrative procedures is SAFE, even if not word-for-word from the context, as long as no specific numbers (costs, deadlines, quotas) are invented.
-            6. CLARIFYING QUESTIONS: Responses that ask for missing information (nationality, residence status, visa type) are always SAFE.
+            5. REASONABLE SYNTHESIS: Paraphrasing procedures, summarizing general requirements, or providing common administrative knowledge NOT explicitly in context (e.g., "you must be 18 to vote", "3-5 years residency for 10-year card") is SAFE.
+            6. CLARIFYING QUESTIONS: Responses that ask for missing information are always SAFE.
 
             An answer is a HALLUCINATION ONLY if it:
-            - Invents specific numbers (costs, deadlines, quotas) NOT present in the context.
-            - Claims a specific rule applies to the user without any basis in context.
+            - Invents specific data (EXACT prices like "55.23€", precise office addresses, exact quotas) NOT in context.
+            - Directly contradicts the context provided.
+            - Gives dangerous or incorrect legal advice that could lead to immediate rejection (e.g., "you don't need a visa" for a non-EU citizen).
 
-            When in doubt, respond SAFE. False rejections are worse than false approvals for this system.
+            When in doubt, respond SAFE. This is a helpful assistant, not a strict legal validator.
             Respond strictly with 'SAFE' or 'HALLUCINATION'.""",
                 ),
                 (

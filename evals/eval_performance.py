@@ -107,7 +107,7 @@ async def run_performance_evaluation():
     print("✅ Warmup complete\n")
 
     # Load benchmark queries
-    test_data_path = Path(__file__).parent / "test_data" / "speed_bench.json"
+    test_data_path = Path(__file__).parent / "test_data" / "ds_bench_latency.json"
     with open(test_data_path, "r", encoding="utf-8") as f:
         benchmarks = json.load(f)
 

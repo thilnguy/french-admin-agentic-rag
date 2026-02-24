@@ -1,0 +1,162 @@
+[
+  {
+    "question": "Tôi muốn đăng ký thẻ cư trú 10 năm sau khi đã ở Pháp 3 năm với diện tài năng (Passeport Talent).",
+    "category": "Immigration",
+    "ground_truth": "Thông thường thẻ 10 năm yêu cầu 5 năm cư trú. Tuy nhiên, diện Passeport Talent có những điều kiện riêng. Bạn cần kiểm tra xem mình có thuộc diện đóng góp đặc biệt hoặc có gia đình là người Pháp không.",
+    "critical_missing_info": ["family_situation", "years_of_residence"],
+    "expected_behavior": "HYBRID",
+    "language": "vi"
+  },
+  {
+    "question": "Can I get a refund for my Navigo pass if I was on strike?",
+    "category": "Daily Life",
+    "ground_truth": "Yes, IDFM usually provides a refund platform (mondedommagementnavigo.fr) after major strikes. You need to provide proof of residence or work in the affected area.",
+    "critical_missing_info": ["line_used", "period_of_strike"],
+    "expected_behavior": "HYBRID",
+    "language": "en"
+  },
+  {
+    "question": "Comment obtenir l'aide juridictionnelle si je suis étranger sans titre de séjour ?",
+    "category": "Legal",
+    "ground_truth": "L'aide juridictionnelle est possible pour les étrangers sans titre de séjour dans certains cas (procédure d'expulsion, droit d'asile, ou si vous êtes mineur).",
+    "critical_missing_info": ["legal_case_type"],
+    "expected_behavior": "HYBRID",
+    "language": "fr"
+  },
+  {
+    "question": "Mon employeur ne me paie pas mes heures supplémentaires, que faire ?",
+    "category": "Work",
+    "ground_truth": "Vous devez d'abord envoyer une mise en demeure par LRAR. Si cela échoue, vous pouvez saisir les Prud'hommes.",
+    "critical_missing_info": ["contract_type", "proof_of_hours"],
+    "expected_behavior": "HYBRID",
+    "language": "fr"
+  },
+  {
+    "question": "What are the rules for 'chômage technique' during a flood?",
+    "category": "Work",
+    "ground_truth": "In case of natural disasters, the employer can trigger 'activité partielle'. Employees receive around 70% of gross salary, and the state compensates the employer.",
+    "critical_missing_info": ["region", "company_size"],
+    "expected_behavior": "HYBRID",
+    "language": "en"
+  },
+  {
+    "question": "Tôi bị mất hộ chiếu Việt Nam tại Nice, tôi có phải lên Paris không?",
+    "category": "Identity",
+    "ground_truth": "Bạn cần trình báo cảnh sát Pháp tại Nice trước. Sau đó liên hệ ĐSQ tại Paris. ĐSQ có thể hỗ trợ qua bưu điện hoặc bạn phải đến trực tiếp tùy trường hợp khẩn cấp.",
+    "critical_missing_info": ["emergency_level"],
+    "expected_behavior": "HYBRID",
+    "language": "vi"
+  },
+  {
+    "question": "Comment faire ma demande de retraite si j'ai travaillé à l'étranger ?",
+    "category": "Social",
+    "ground_truth": "La France a des accords avec de nombreux pays. Vous devez déclarer vos périodes travaillées via le formulaire E202 pour l'Europe, ou selon la convention bilatérale.",
+    "critical_missing_info": ["countries_worked_in", "age"],
+    "expected_behavior": "HYBRID",
+    "language": "fr"
+  },
+  {
+    "question": "Can I keep my French health insurance if I move to Germany for a job?",
+    "category": "Health",
+    "ground_truth": "No, you usually switch to the German system (SGB). However, you can keep some rights via the S1 form if you live in France but work in Germany (Frontalier).",
+    "critical_missing_info": ["residence_location", "job_type"],
+    "expected_behavior": "HYBRID",
+    "language": "en"
+  },
+  {
+    "question": "Làm sao để xóa tiền án trong hồ sơ Casier Judiciaire?",
+    "category": "Legal",
+    "ground_truth": "Hồ sơ số 3 sẽ tự động xóa sau một thời gian nhất định tùy tội danh. Để xóa hồ sơ số 2, bạn phải nộp đơn lên công tố viên (Procureur).",
+    "critical_missing_info": ["type_of_offense", "time_passed"],
+    "expected_behavior": "HYBRID",
+    "language": "vi"
+  },
+  {
+    "question": "Est-ce que je peux déduire les frais de garde d'enfants de mes impôts ?",
+    "category": "Taxes",
+    "ground_truth": "Oui, il existe un crédit d'impôt pour les frais de garde hors du domicile pour les enfants de moins de 6 ans. Le plafond est de 3500€ par enfant.",
+    "critical_missing_info": ["child_age", "total_expenses"],
+    "expected_behavior": "HYBRID",
+    "language": "fr"
+  },
+  {
+    "question": "How do I register a birth in France?",
+    "category": "Identity",
+    "ground_truth": "The birth must be declared within 5 days at the Mairie of the place of birth. You need the doctor's certificate and ID of parents.",
+    "critical_missing_info": ["place_of_birth", "marital_status"],
+    "expected_behavior": "HYBRID",
+    "language": "en"
+  },
+  {
+    "question": "Tôi muốn xin trợ cấp người tàn tật (AAH) nhưng tôi đang đi làm.",
+    "category": "Social",
+    "ground_truth": "AAH có thể kết hợp với thu nhập từ công việc nhưng sẽ bị giảm trừ theo tỷ lệ. Bạn cần khai báo thu nhập hàng quý (DTR).",
+    "critical_missing_info": ["income_level", "disability_percentage"],
+    "expected_behavior": "HYBRID",
+    "language": "vi"
+  },
+  {
+    "question": "Comment obtenir un permis de construire pour une piscine ?",
+    "category": "Housing",
+    "ground_truth": "Une déclaration préalable est nécessaire si la piscine fait entre 10 et 100m2. Au-delà, un permis de construire est requis.",
+    "critical_missing_info": ["pool_size", "location"],
+    "expected_behavior": "HYBRID",
+    "language": "fr"
+  },
+  {
+    "question": "Can I get a French driving license if I only have a US tourist visa?",
+    "category": "Identity",
+    "ground_truth": "No, you need a valid French residence permit (titre de séjour) to exchange or apply for a French driving license.",
+    "critical_missing_info": [],
+    "expected_behavior": "DIRECT",
+    "language": "en"
+  },
+  {
+    "question": "Tôi bị chủ nhà đuổi ra khỏi nhà ngay lập tức vì không trả tiền thuê, họ có quyền không?",
+    "category": "Housing",
+    "ground_truth": "Không. Chủ nhà phải tuân thủ quy trình trục xuất thông qua tòa án. Ngoài ra, có 'Trêve hivernale' (nghỉ đông) từ tháng 11 đến tháng 3.",
+    "critical_missing_info": ["has_court_order", "current_month"],
+    "expected_behavior": "HYBRID",
+    "language": "vi"
+  },
+  {
+    "question": "Comment renouveler mon passeport talent 'chercheur' ?",
+    "category": "Immigration",
+    "ground_truth": "Vous devez demander le renouvellement 2 mois avant l'expiration. Il faut une nouvelle convention d'accueil signée par votre organisme employeur.",
+    "critical_missing_info": ["contract_extension_proof"],
+    "expected_behavior": "HYBRID",
+    "language": "fr"
+  },
+  {
+    "question": "What is 'L'assurance scolaire' and is it mandatory?",
+    "category": "Daily Life",
+    "ground_truth": "It is not mandatory for regular school hours but required for optional activities like field trips or cafeteria. It covers liability and personal injury.",
+    "critical_missing_info": ["activity_type"],
+    "expected_behavior": "HYBRID",
+    "language": "en"
+  },
+  {
+    "question": "Tôi muốn tặng tiền cho con cái, có phải nộp thuế không?",
+    "category": "Taxes",
+    "ground_truth": "Bạn có thể tặng tối đa 100.000€ mỗi 15 năm không thuế cho mỗi người con (Abattement). Trên mức đó sẽ bị đánh thuế.",
+    "critical_missing_info": ["amount", "last_donation_date"],
+    "expected_behavior": "HYBRID",
+    "language": "vi"
+  },
+  {
+    "question": "Comment obtenir le 'Chèque Énergie' ?",
+    "category": "Social",
+    "ground_truth": "Le chèque énergie est attribué automatiquement selon vos revenus déclarés aux impôts. Il n'y a pas de démarche à faire s'il est dû.",
+    "critical_missing_info": ["income_declared"],
+    "expected_behavior": "HYBRID",
+    "language": "fr"
+  },
+  {
+    "question": "Can I drive a commercial truck in France with a UK B-license?",
+    "category": "Daily Life",
+    "ground_truth": "No, a B-license is for passenger cars. You need a Category C or D license for commercial trucks or buses.",
+    "critical_missing_info": [],
+    "expected_behavior": "DIRECT",
+    "language": "en"
+  }
+]

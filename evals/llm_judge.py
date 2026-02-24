@@ -1,4 +1,5 @@
 import asyncio
+import argparse
 import json
 import redis
 from pathlib import Path
@@ -132,7 +133,7 @@ async def judge_response(llm, test_case, agent_response):
 
 
 # --- Main Eval Loop ---
-async def run_eval():
+async def run_eval(data_file: str = None, limit: int = None):
     print("=" * 60)
     print("🚀 STARTING LLM-JUDGE EVALUATION")
     print("=" * 60)
@@ -158,15 +159,30 @@ async def run_eval():
         print(f"⚠️  Could not flush Redis cache: {e} (continuing anyway)")
 
     # Load Enriched Data
-    data_path = Path(__file__).parent / "test_data" / "golden_set_enriched.json"
+    if data_file:
+        data_path = Path(data_file)
+    else:
+        #data_path = Path(__file__).parent / "test_data" / "ds_golden_v2_enriched.json"
+        data_path = Path(__file__).parent / "test_data" / "ds_eval_9.8_blind_v1.json"
+    
     if not data_path.exists():
-        print("❌ Enriched data not found! Run enrich_golden_set.py first.")
+        print(f"❌ Data file not found: {data_path}")
         return
 
     with open(data_path, "r", encoding="utf-8") as f:
         test_cases = json.load(f)
 
+    if limit:
+        test_cases = test_cases[:limit]
+
     # Initialize Components
+    print(f"📡 Model Provider: {settings.LLM_PROVIDER}")
+    print(f"🤖 Local Model ID: {settings.LOCAL_LLM_MODEL}")
+    if settings.LLM_PROVIDER == "openai":
+        print("⚠️  WARNING: Evaluating OpenAI model, NOT the local fine-tuned model!")
+    else:
+        print("✅ SUCCESS: Evaluating local model configuration.")
+
     judge_llm = ChatOpenAI(
         model="gpt-4o", temperature=0, api_key=settings.OPENAI_API_KEY
     )
@@ -202,6 +218,7 @@ async def run_eval():
                 patch("skills.legal_retriever.main.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever,
                 patch("src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever_orch,
                 patch("src.agents.procedure_agent.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever_proc,
+                patch("src.agents.legal_agent.retrieve_legal_info", new_callable=AsyncMock) as mock_retriever_legal,
             ):
                 # Initialize Orchestrator INSIDE the patch so it picks up mocked Redis/Memory
                 orchestrator = AdminOrchestrator()
@@ -218,6 +235,7 @@ async def run_eval():
                 mock_retriever.return_value = mock_docs
                 mock_retriever_orch.return_value = mock_docs
                 mock_retriever_proc.return_value = mock_docs
+                mock_retriever_legal.return_value = mock_docs
                 
                 # Ensure orchestrator's explicit cache handles gracefully
                 orchestrator.cache = AsyncMock()
@@ -311,4 +329,9 @@ async def run_eval():
 
 
 if __name__ == "__main__":
-    asyncio.run(run_eval())
+    parser = argparse.ArgumentParser(description="Run LLM Judge Evaluation")
+    parser.add_argument("--data", type=str, help="Path to test data JSON file")
+    parser.add_argument("--limit", type=int, help="Limit number of test cases")
+    args = parser.parse_args()
+
+    asyncio.run(run_eval(data_file=args.data, limit=args.limit))

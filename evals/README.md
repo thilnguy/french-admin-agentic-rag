@@ -12,9 +12,11 @@ Comprehensive evaluation framework measuring quality, performance, and guardrail
 
 ## 📁 Test Data
 
-- `test_data/golden_set.json` (10 cases): French admin Q&A (passports, residence, healthcare, etc.)
-- `test_data/adversarial.json` (10 cases): Edge cases (factual traps, off-topic, security, empty input)
-- `test_data/speed_bench.json` (5 cases): Latency benchmarks (simple/complex queries)
+- `test_data/ds_golden_v1_raw.json` (10 cases): Initial French admin Q&A set.
+- `test_data/ds_golden_v2_enriched.json` (30 cases): Expanded set with expected behavior metadata.
+- `test_data/ds_eval_9.8_blind_v1.json` (20 cases): Core logic benchmark (Achieved 9.8/10).
+- `test_data/ds_adversarial_guardrails.json` (10 cases): Edge cases for factual traps and off-target queries.
+- `test_data/ds_bench_latency.json` (5 cases): Latency benchmarks.
 
 ## 🚀 Running Evaluations
 
