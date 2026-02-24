@@ -11,7 +11,7 @@ from src.config import settings
 from src.utils.logger import logger
 
 # Configuration
-SEED_DATA_PATH = Path("evals/test_data/golden_set_enriched.json")
+SEED_DATA_PATH = Path("evals/data/enriched/ds_golden_v1_enriched.json")
 OUTPUT_PATH = Path("finetuning/data/self_instruct_samples.jsonl")
 MODEL_TEACHER = "gpt-4o"
 TARGET_TOTAL = 300
