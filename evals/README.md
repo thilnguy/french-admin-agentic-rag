@@ -60,4 +60,4 @@ uv run python evals/runners/eval_guardrails.py
 ## 🔧 Maintenance
 
 - To enrich new raw data: `uv run python evals/utils/enrich_golden_set.py`
-- Results are stored in `evals/results/llm_judge_results_qwen2.5_7B_8bit.json`.
+- Results are stored in `evals/results/llm_judge_results_rule_refactor.json`.
