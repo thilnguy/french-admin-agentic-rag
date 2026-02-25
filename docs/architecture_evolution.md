@@ -5,12 +5,12 @@ We have successfully implemented the **Local Brain Strategy**. The system is no 
 
 | Feature | Implementation (v1.2.0) | Infrastructure |
 |---------|------------------------|----------------|
-| **Core Brain** | **Fine-tuned Qwen 2.5 7B** | Local Mac M4 (MLX) |
+| **Core Brain** | **Fine-tuned Qwen 2.5 7B 8-bit** | Local Mac M4 (MLX) |
 | **Safety Layer** | **Hybrid Guardrails** | GPT-4o-mini (Cloud) |
 | **Logic Flow** | **LangGraph Orchestrator**| Local Mac M4 |
 | **Search** | **Hybrid RAG** | Qdrant + BM25 (Local) |
 
-**Verdict**: We have surpassed the original Target State by achieving a perfect **10/10** score on local hardware.
+**Verdict**: We have surpassed the original Target State by achieving a highly reliable **9.0/10** score with an 88.9% clarification detection accuracy on local hardware.
 
 ---
 

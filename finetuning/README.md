@@ -3,7 +3,7 @@
 Đây là hướng dẫn thực hiện Phase 3 và Phase 4 của kế hoạch tối ưu chi phí LLM.
 
 ## 1. Chuẩn bị dữ liệu (Data Preparation)
-Dữ liệu chuyên gia đã được chuẩn bị với 300 mẫu (bao gồm Reasoning CoT):
+Dữ liệu chuyên gia đã được chuẩn bị với 600 mẫu (bao gồm Reasoning CoT và data Clarification Injection):
 `finetuning/data/train_expert_formatted.jsonl`
 
 
@@ -37,7 +37,7 @@ Sau khi training xong, bạn có thể chạy model ngay lập tức bằng serv
 ### Bước 1: Chạy Server
 ```bash
 uv run --with mlx-lm python -m mlx_lm.server \
-    --model Qwen/Qwen2.5-7B-Instruct \
+    --model mlx-community/Qwen2.5-7B-Instruct-8bit \
     --adapter-path finetuning/adapters.safetensors \
     --port 8020
 ```
@@ -60,7 +60,7 @@ uv run python evals/llm_judge.py
 Nếu không muốn chạy server, bạn có thể test thử một câu hỏi trực tiếp:
 ```bash
 uv run --with mlx-lm python -m mlx_lm.generate \
-    --model Qwen/Qwen2.5-7B-Instruct \
+    --model mlx-community/Qwen2.5-7B-Instruct-8bit \
     --adapter-path finetuning/adapters.safetensors \
     --prompt "<|im_start|>user\nComment obtenir un titre de séjour salarié?<|im_end|>\n<|im_start|>assistant\n<thinking>" \
     --max-tokens 500

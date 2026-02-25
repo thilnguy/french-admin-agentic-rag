@@ -4,11 +4,11 @@ A production-ready RAG agent designed to assist with French administrative proce
 
 ## 🚀 Features
 
-- **Local-First "Local Brain" Architecture**: Primary agent logic runs on a fine-tuned **Qwen 2.5 7B** model optimized for Mac M4 (MLX).
+- **Local-First "Local Brain" Architecture**: Primary agent logic runs on a fine-tuned **Qwen 2.5 7B 8-bit** model optimized for Mac M4 (MLX).
 - **Asynchronous Core**: Built with `asyncio` for high-conformance concurrent request handling.
 - **Hybrid Search**: Combines BM25 and Vector Search (Qdrant) with RRF Fusion for superior retrieval.
 - **Agentic Workflows**: Deployment of specialized agents orchestrated via LangGraph.
-- **Expert Performance**: Achieved a perfect **10.0/10** score on administrative evaluation benchmarks.
+- **Expert Performance**: Achieved a **9.0/10** score on strict administrative benchmarks with **88.9% clarification accuracy**.
 - **Robustness**: Multi-layer guardrails (gpt-4o-mini) and 91%+ test coverage.
 - **Multi-language Support**: Native support for French, English, and Vietnamese with cross-language intent classification.
 
