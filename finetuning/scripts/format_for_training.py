@@ -1,9 +1,7 @@
 import json
 from pathlib import Path
 
-# Configuration
-INPUT_PATH = Path("finetuning/data/final_train_raw.jsonl")
-OUTPUT_PATH = Path("finetuning/data/train_expert_formatted.jsonl")
+
 
 def format_sample(sample: dict) -> dict:
     """
@@ -29,16 +27,16 @@ def format_sample(sample: dict) -> dict:
         ]
     }
 
-def main():
-    if not INPUT_PATH.exists():
-        print(f"Error: {INPUT_PATH} not found.")
+def main(input_path: Path, output_path: Path):
+    if not input_path.exists():
+        print(f"Error: {input_path} not found.")
         return
 
-    print(f"Formatting expert samples from {INPUT_PATH}...")
+    print(f"Formatting expert samples from {input_path}...")
     
     formatted_count = 0
-    with open(INPUT_PATH, "r", encoding="utf-8") as f_in, \
-         open(OUTPUT_PATH, "w", encoding="utf-8") as f_out:
+    with open(input_path, "r", encoding="utf-8") as f_in, \
+         open(output_path, "w", encoding="utf-8") as f_out:
         
         for line in f_in:
             try:
@@ -50,7 +48,13 @@ def main():
                 print(f"Skipping line due to error: {e}")
 
     print(f"Successfully formatted {formatted_count} samples for training.")
-    print(f"Output saved to: {OUTPUT_PATH}")
+    print(f"Output saved to: {output_path}")
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="Format training data to ChatML")
+    parser.add_argument("--input", type=str, required=True, help="Input JSONL file")
+    parser.add_argument("--output", type=str, required=True, help="Output JSONL file")
+    args = parser.parse_args()
+    
+    main(Path(args.input), Path(args.output))

@@ -1,0 +1,451 @@
+[
+    {
+        "case": {
+            "question": "Tôi muốn đăng ký thẻ cư trú 10 năm sau khi đã ở Pháp 3 năm với diện tài năng (Passeport Talent).",
+            "category": "Immigration",
+            "ground_truth": "Thông thường thẻ 10 năm yêu cầu 5 năm cư trú. Tuy nhiên, diện Passeport Talent có những điều kiện riêng. Bạn cần kiểm tra xem mình có thuộc diện đóng góp đặc biệt hoặc có gia đình là người Pháp không.",
+            "critical_missing_info": [
+                "family_situation",
+                "years_of_residence"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "vi"
+        },
+        "response": "Xin lỗi, tôi không tìm thấy thông tin đủ tin cậy để trả lời câu hỏi này một cách an toàn.\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
+        "verdict": {
+            "action_type": "REFUSAL",
+            "is_action_appropriate": false,
+            "asked_for_missing_info": false,
+            "hallucination_detected": false,
+            "context_provided": false,
+            "score": 0,
+            "reasoning": "The agent refused to provide an answer, citing a lack of reliable information. However, the expected behavior was HYBRID, where the agent should have provided general context about the Passeport Talent and asked for critical missing information such as family situation or years of residence. The agent did not provide any context or ask for missing information, resulting in a score of 0."
+        }
+    },
+    {
+        "case": {
+            "question": "Can I get a refund for my Navigo pass if I was on strike?",
+            "category": "Daily Life",
+            "ground_truth": "Yes, IDFM usually provides a refund platform (mondedommagementnavigo.fr) after major strikes. You need to provide proof of residence or work in the affected area.",
+            "critical_missing_info": [
+                "line_used",
+                "period_of_strike"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "en"
+        },
+        "response": "**[GIVE]**: Yes, you can request a refund through the Navigo refund platform if you were affected by a strike and can provide proof of residence or work in the affected area.\n\n**[EXPLAIN]**: The refund process is available on the Navigo refund platform (mondedommagementnavigo.fr) and requires proof of residence or work in the affected area to be eligible.\n\n**[REQUEST]**: Proof of residence or work in the affected area.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a general context about the refund process for the Navigo pass during a strike, which is appropriate for a HYBRID response. It also asked for proof of residence or work in the affected area, which is one of the critical pieces of information needed. There was no hallucination detected, and the response was well-aligned with the expected behavior."
+        }
+    },
+    {
+        "case": {
+            "question": "Comment obtenir l'aide juridictionnelle si je suis étranger sans titre de séjour ?",
+            "category": "Legal",
+            "ground_truth": "L'aide juridictionnelle est possible pour les étrangers sans titre de séjour dans certains cas (procédure d'expulsion, droit d'asile, ou si vous êtes mineur).",
+            "critical_missing_info": [
+                "legal_case_type"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "fr"
+        },
+        "response": "**[DONNER]**: Vous pouvez demander l'aide juridictionnelle si vous êtes en procédure d'expulsion, demandeur d'asile, ou mineur.\n\n**[EXPLIQUER]**: L'aide juridictionnelle est accessible aux étrangers sans titre de séjour dans certaines situations spécifiques, comme la procédure d'expulsion, le droit d'asile, ou si vous êtes mineur. Vous devez fournir des preuves de votre situation.\n\n**[DEMANDER]**: Pouvez-vous préciser si vous êtes en procédure d'expulsion, demandeur d'asile, ou mineur ?<|im_end|>\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a general context about the eligibility for legal aid for foreigners without a residence permit, mentioning specific situations like expulsion, asylum, or being a minor. It also asked for clarification on the user's specific situation, which aligns perfectly with the expected hybrid behavior. No hallucinations were detected, and the response was informative and appropriate."
+        }
+    },
+    {
+        "case": {
+            "question": "Mon employeur ne me paie pas mes heures supplémentaires, que faire ?",
+            "category": "Work",
+            "ground_truth": "Vous devez d'abord envoyer une mise en demeure par LRAR. Si cela échoue, vous pouvez saisir les Prud'hommes.",
+            "critical_missing_info": [
+                "contract_type",
+                "proof_of_hours"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "fr"
+        },
+        "response": "**[DONNER]** : Vous devez d'abord envoyer une mise en demeure par LRAR à votre employeur. Si cela échoue, vous pouvez saisir les Prud'hommes.\n\n**[EXPLIQUER]** : La mise en demeure est un préalable obligatoire pour saisir les Prud'hommes. Vous devez prouver que vous avez travaillé ces heures supplémentaires et que votre employeur ne les a pas payées.\n\n**[DEMANDER]** : Pouvez-vous fournir une preuve écrite de vos heures supplémentaires ?<|im_end|>\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a perfect hybrid response by giving the necessary general context about the steps to take when not paid for overtime (sending a mise en demeure and potentially going to Prud'hommes) and also asked for critical missing information (proof of hours worked). This aligns well with the expected behavior for a hybrid response, as it combines both informative guidance and a request for essential information to proceed further."
+        }
+    },
+    {
+        "case": {
+            "question": "What are the rules for 'chômage technique' during a flood?",
+            "category": "Work",
+            "ground_truth": "In case of natural disasters, the employer can trigger 'activité partielle'. Employees receive around 70% of gross salary, and the state compensates the employer.",
+            "critical_missing_info": [
+                "region",
+                "company_size"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "en"
+        },
+        "response": "**[GIVE]**: 'Partial activity' can be triggered during a flood, allowing employees to receive 70% of their gross salary, with state compensation for the employer.\n\n**[EXPLAIN]**: This measure is part of the 'partial activity' scheme, designed to maintain employment during economic downturns or exceptional circumstances like natural disasters. The scheme requires the employer to apply for state compensation.\n\n**[REQUEST]**: Company size, proof of hours worked.\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a general explanation of the 'partial activity' scheme, which is relevant to the question about 'chômage technique' during a flood. It also appropriately asked for critical missing information, such as company size, which is necessary to determine eligibility and application specifics. No hallucination was detected, as the agent did not invent any specific details. The response aligns perfectly with the expected hybrid behavior, providing both context and clarification."
+        }
+    },
+    {
+        "case": {
+            "question": "Tôi bị mất hộ chiếu Việt Nam tại Nice, tôi có phải lên Paris không?",
+            "category": "Identity",
+            "ground_truth": "Bạn cần trình báo cảnh sát Pháp tại Nice trước. Sau đó liên hệ ĐSQ tại Paris. ĐSQ có thể hỗ trợ qua bưu điện hoặc bạn phải đến trực tiếp tùy trường hợp khẩn cấp.",
+            "critical_missing_info": [
+                "emergency_level"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "vi"
+        },
+        "response": "**[DONNER]**: Bạn phải khai báo mất mát với cảnh sát địa phương và liên hệ với lãnh sự quán Việt Nam tại Paris để xin cấp hộ chiếu mới.\n\n**[EXPLIQUER]**: Thủ tục để xin cấp hộ chiếu mới sau khi bị mất bao gồm việc khai báo với cảnh sát và nộp đơn tại lãnh sự quán. Lãnh sự quán có thể giúp bạn gia hạn hộ chiếu tại Paris.\n\n**[DEMANDER]**: Tình huống khẩn cấp của bạn là gì?\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a hybrid response by giving general context about the procedure to report a lost passport and contact the consulate. It also asked for the critical missing information regarding the emergency level, which is necessary to determine if the person needs to go to Paris or if the consulate can assist remotely. There was no hallucination detected as the agent did not invent any specific details not present in the question."
+        }
+    },
+    {
+        "case": {
+            "question": "Comment faire ma demande de retraite si j'ai travaillé à l'étranger ?",
+            "category": "Social",
+            "ground_truth": "La France a des accords avec de nombreux pays. Vous devez déclarer vos périodes travaillées via le formulaire E202 pour l'Europe, ou selon la convention bilatérale.",
+            "critical_missing_info": [
+                "countries_worked_in",
+                "age"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "fr"
+        },
+        "response": "**[DONNER]**: Vous devez déclarer vos périodes de travail à l'étranger via le formulaire E202 pour l'Europe ou selon la convention bilatérale applicable.\n\n**[EXPLIQUER]**: Le formulaire E202 est utilisé pour déclarer les périodes de travail à l'étranger pour le calcul de la pension de retraite. La convention bilatérale entre la France et le pays d'origine du travail peut modifier les règles.\n\n**[DEMANDER]**: Période de travail à l'étranger, convention bilatérale applicable.<|im_end|>\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a hybrid response by giving general context about the process of declaring work periods abroad using the E202 form and conventions, which is accurate. It also asked for critical missing information regarding the period of work abroad and applicable bilateral conventions, aligning with the expected behavior for a hybrid response. No hallucinations were detected as the agent did not invent any specific details. Therefore, the response is appropriate and complete, deserving a perfect score."
+        }
+    },
+    {
+        "case": {
+            "question": "Can I keep my French health insurance if I move to Germany for a job?",
+            "category": "Health",
+            "ground_truth": "No, you usually switch to the German system (SGB). However, you can keep some rights via the S1 form if you live in France but work in Germany (Frontalier).",
+            "critical_missing_info": [
+                "residence_location",
+                "job_type"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "en"
+        },
+        "response": "**[GIVE]**: You can retain your rights to French health insurance via the S1 form if you are a cross-border worker and work in Germany.\n\n**[EXPLAIN]**: The S1 form allows cross-border workers to retain health insurance rights in France. This requires residence in France and employment in Germany.\n\n**[ASK]**: Could you specify your cross-border worker status and your current place of residence?\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a hybrid response by giving general context about the S1 form and its relevance to cross-border workers, which is accurate. It also asked for critical missing information regarding the user's cross-border worker status and place of residence, which are necessary to determine eligibility for retaining French health insurance. There was no hallucination detected, and the response aligns perfectly with the expected behavior for a hybrid scenario."
+        }
+    },
+    {
+        "case": {
+            "question": "Làm sao để xóa tiền án trong hồ sơ Casier Judiciaire?",
+            "category": "Legal",
+            "ground_truth": "Hồ sơ số 3 sẽ tự động xóa sau một thời gian nhất định tùy tội danh. Để xóa hồ sơ số 2, bạn phải nộp đơn lên công tố viên (Procureur).",
+            "critical_missing_info": [
+                "type_of_offense",
+                "time_passed"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "vi"
+        },
+        "response": "**[DONNER]**: Để xóa một hồ sơ tư pháp, cần nộp đơn yêu cầu tới công tố viên.\n\n**[EXPLIQUER]**: Hồ sơ tư pháp sẽ tự động được xóa sau một khoảng thời gian nhất định tùy theo loại án phạt. Để yêu cầu xóa, cần liên hệ với công tố viên.\n\n**[DEMANDER]**: Ngày của án phạt, loại án phạt.\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a hybrid response, which is appropriate for the expected behavior. It gave general context about the process of removing a criminal record and asked for critical missing information (type of offense and time passed). There was no hallucination detected, as the agent did not invent any specific details. The response was well-rounded, providing both context and clarification, which merits a perfect score."
+        }
+    },
+    {
+        "case": {
+            "question": "Est-ce que je peux déduire les frais de garde d'enfants de mes impôts ?",
+            "category": "Taxes",
+            "ground_truth": "Oui, il existe un crédit d'impôt pour les frais de garde hors du domicile pour les enfants de moins de 6 ans. Le plafond est de 3500€ par enfant.",
+            "critical_missing_info": [
+                "child_age",
+                "total_expenses"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "fr"
+        },
+        "response": "**[DONNER]** : Oui, vous pouvez déduire les frais de garde d'enfants de moins de 6 ans de vos impôts, jusqu'à un plafond de 3500€ par enfant.\n\n**[EXPLIQUER]** : Le crédit d'impôt pour frais de garde est accessible aux parents ayant des enfants de moins de 6 ans. Il est limité à 3500€ par enfant.\n\n**[DEMANDER]** : Pouvez-vous préciser le nombre d'enfants à charge et leur âge actuel ?<|im_end|>\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a correct and concise explanation of the tax deduction for child care expenses, including the age limit and the maximum deductible amount. It also appropriately asked for critical missing information, such as the number of children and their ages, which aligns with the expected HYBRID behavior. No hallucination was detected, and the response was well-rounded with both context and clarification."
+        }
+    },
+    {
+        "case": {
+            "question": "How do I register a birth in France?",
+            "category": "Identity",
+            "ground_truth": "The birth must be declared within 5 days at the Mairie of the place of birth. You need the doctor's certificate and ID of parents.",
+            "critical_missing_info": [
+                "place_of_birth",
+                "marital_status"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "en"
+        },
+        "response": "**[GIVE]**: The birth must be declared within 5 days at the Mairie of the place of birth. You need the doctor's certificate and ID of parents.\n\n**[EXPLAIN]**: Birth registration in France is a legal requirement and must be done at the local Mairie. The documents required include the doctor's certificate and the ID of the parents.\n\n**[REQUEST]**: Could you please provide the place of birth and the parents' IDs?\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a perfect hybrid response by giving the necessary general context about birth registration in France, including the requirement to declare the birth within 5 days at the Mairie and the need for a doctor's certificate and parents' IDs. Additionally, the agent appropriately asked for critical missing information, specifically the place of birth, which is essential for the registration process. There was no hallucination detected, as the agent did not invent any specific details beyond the general requirements."
+        }
+    },
+    {
+        "case": {
+            "question": "Tôi muốn xin trợ cấp người tàn tật (AAH) nhưng tôi đang đi làm.",
+            "category": "Social",
+            "ground_truth": "AAH có thể kết hợp với thu nhập từ công việc nhưng sẽ bị giảm trừ theo tỷ lệ. Bạn cần khai báo thu nhập hàng quý (DTR).",
+            "critical_missing_info": [
+                "income_level",
+                "disability_percentage"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "vi"
+        },
+        "response": "**[DONNER]**: Vâng, bạn có thể yêu cầu AAH đồng thời với thu nhập từ việc làm, nhưng thu nhập này sẽ bị khấu trừ theo một tỷ lệ.\n\n**[EXPLIQUER]**: AAH là một khoản thu nhập đoàn kết tích cực có thể được kết hợp với thu nhập từ việc làm. Việc khấu trừ được thực hiện dựa trên tỷ lệ hoạt động. Bạn phải khai báo thu nhập hàng quý của mình.\n\n**[DEMANDER]**: Tỷ lệ hoạt động của bạn là bao nhiêu và thu nhập từ việc làm của bạn là bao nhiêu?\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a hybrid response by giving general context about the AAH and its interaction with employment income, which is useful for understanding the situation. It also asked for critical missing information, specifically about the income level, which is necessary to determine the eligibility and calculation of AAH. There was no hallucination detected as the agent did not invent any specific details. The response aligns perfectly with the expected behavior for a HYBRID scenario."
+        }
+    },
+    {
+        "case": {
+            "question": "Comment obtenir un permis de construire pour une piscine ?",
+            "category": "Housing",
+            "ground_truth": "Une déclaration préalable est nécessaire si la piscine fait entre 10 et 100m2. Au-delà, un permis de construire est requis.",
+            "critical_missing_info": [
+                "pool_size",
+                "location"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "fr"
+        },
+        "response": "**[DONNER]**: Pour une piscine de plus de 100m2, vous devez obtenir un permis de construire.\n\n**[EXPLIQUER]**: Le permis de construire est nécessaire pour toutes les piscines de plus de 100m2. Il doit être demandé auprès de la mairie et comprend des études techniques et un plan de la piscine.\n\n**[DEMANDER]**: Quel est le volume de la piscine ?<|im_end|>\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": false,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 5,
+            "reasoning": "The agent provided general context about the need for a building permit for pools over 100m2, which is accurate. However, it failed to ask for the critical missing information regarding the pool size and location, which are necessary to determine the exact requirements. The agent's question about the volume of the pool is irrelevant to the permit requirements, which are based on surface area, not volume. Therefore, while the context was provided, the clarification was not effectively sought, resulting in a partial score."
+        }
+    },
+    {
+        "case": {
+            "question": "Can I get a French driving license if I only have a US tourist visa?",
+            "category": "Identity",
+            "ground_truth": "No, you need a valid French residence permit (titre de séjour) to exchange or apply for a French driving license.",
+            "critical_missing_info": [],
+            "expected_behavior": "DIRECT",
+            "language": "en"
+        },
+        "response": "**[GIVE]**: No, a US tourist visa does not allow you to exchange or apply for a French driving license.  \n**[EXPLAIN]**: You need a valid French residence permit (titre de séjour) to exchange or apply for a French driving license.  \n**[ASK]**: What is your current residence status in France?\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "verdict": {
+            "action_type": "DIRECT_ANSWER",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": false,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a direct answer to the question, stating that a US tourist visa does not allow for obtaining a French driving license. It also provided the necessary context by explaining the requirement of a valid French residence permit. This aligns perfectly with the expected behavior of a direct answer, and no hallucination was detected. The agent's response was complete and accurate, warranting a perfect score."
+        }
+    },
+    {
+        "case": {
+            "question": "Tôi bị chủ nhà đuổi ra khỏi nhà ngay lập tức vì không trả tiền thuê, họ có quyền không?",
+            "category": "Housing",
+            "ground_truth": "Không. Chủ nhà phải tuân thủ quy trình trục xuất thông qua tòa án. Ngoài ra, có 'Trêve hivernale' (nghỉ đông) từ tháng 11 đến tháng 3.",
+            "critical_missing_info": [
+                "has_court_order",
+                "current_month"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "vi"
+        },
+        "response": "**[DONNER]**: Không, chủ nhà không có quyền trục xuất bạn ngay lập tức mà không thông qua một phiên tòa.\n\n**[EXPLIQUER]**: Tại Pháp, chủ nhà phải tuân thủ quy trình tư pháp để trục xuất người thuê nhà. Có những giai đoạn 'Trêve hivernale' cấm trục xuất trong mùa đông.\n\n**[DEMANDER]**: Hiện tại là giai đoạn nào và bạn có bằng chứng thanh toán tiền thuê nhà không?\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a hybrid response, which is appropriate for the expected behavior. It gave general context about the legal process for eviction in France and the 'Trêve hivernale' period, which is relevant to the user's situation. Additionally, it asked for critical missing information regarding the current month and evidence of rent payment, aligning with the critical info needed. There was no hallucination detected, as the agent did not invent any specific details. Overall, the response was well-balanced and informative, earning a perfect score."
+        }
+    },
+    {
+        "case": {
+            "question": "Comment renouveler mon passeport talent 'chercheur' ?",
+            "category": "Immigration",
+            "ground_truth": "Vous devez demander le renouvellement 2 mois avant l'expiration. Il faut une nouvelle convention d'accueil signée par votre organisme employeur.",
+            "critical_missing_info": [
+                "contract_extension_proof"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "fr"
+        },
+        "response": "**[DONNER]** : Vous devez demander le renouvellement 2 mois avant l'expiration, avec une nouvelle convention d'accueil signée par votre organisme employeur.\n\n**[EXPLIQUER]** : Le renouvellement du passeport talent nécessite un document officiel de l'employeur confirmant votre statut de chercheur. Cela garantit que votre situation professionnelle est actuelle.\n\n**[DEMANDER]** : Pouvez-vous fournir la convention d'accueil signée par votre organisme employeur ?<|im_end|>\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided the necessary general context about the renewal process, including the need for a new convention d'accueil signed by the employer. It also asked for the critical missing information, which is the signed convention d'accueil. There was no hallucination detected, as the agent did not invent any specific details. This response perfectly aligns with the expected hybrid behavior."
+        }
+    },
+    {
+        "case": {
+            "question": "What is 'L'assurance scolaire' and is it mandatory?",
+            "category": "Daily Life",
+            "ground_truth": "It is not mandatory for regular school hours but required for optional activities like field trips or cafeteria. It covers liability and personal injury.",
+            "critical_missing_info": [
+                "activity_type"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "en"
+        },
+        "response": "**[PROVIDE]**: School insurance covers the school's liabilities in the event of bodily or material damage. It is not mandatory for regular class hours but may be required for optional activities such as excursions or cafeteria service.\n\n**[EXPLAIN]**: School insurance is an insurance contract that protects the educational institution against accidents occurring on its premises. It is generally optional for class hours but may be required for certain extracurricular activities.\n\n**[ASK]**: What type of activity requires school insurance?\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a general context about school insurance, explaining that it is not mandatory for regular class hours but may be required for optional activities. It also asked a relevant clarifying question about the type of activity, which aligns with the critical missing information needed. There was no hallucination detected, and the response was appropriate for the expected hybrid behavior."
+        }
+    },
+    {
+        "case": {
+            "question": "Tôi muốn tặng tiền cho con cái, có phải nộp thuế không?",
+            "category": "Taxes",
+            "ground_truth": "Bạn có thể tặng tối đa 100.000€ mỗi 15 năm không thuế cho mỗi người con (Abattement). Trên mức đó sẽ bị đánh thuế.",
+            "critical_missing_info": [
+                "amount",
+                "last_donation_date"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "vi"
+        },
+        "response": "**[DONNER]**: Vâng, đối với số tiền vượt quá 100.000€, các khoản tặng cho sẽ phải chịu thuế.\n\n**[EXPLIQUER]**: Các khoản giảm trừ thuế cho tặng cho con cái được giới hạn ở mức 100.000€ cho mỗi con và mỗi giai đoạn 15 năm. Các khoản tặng cho vượt quá mức này sẽ phải chịu thuế.\n\n**[DEMANDER]**: Số tiền tặng cho là bao nhiêu và bạn có bao nhiêu con?\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a general context about the tax exemption limit for donations to children and asked for critical missing information such as the amount of the donation and the number of children. This aligns perfectly with the expected HYBRID behavior, as it combines providing useful information with asking for necessary details to give a more accurate answer."
+        }
+    },
+    {
+        "case": {
+            "question": "Comment obtenir le 'Chèque Énergie' ?",
+            "category": "Social",
+            "ground_truth": "Le chèque énergie est attribué automatiquement selon vos revenus déclarés aux impôts. Il n'y a pas de démarche à faire s'il est dû.",
+            "critical_missing_info": [
+                "income_declared"
+            ],
+            "expected_behavior": "HYBRID",
+            "language": "fr"
+        },
+        "response": "**[DONNER]** : Le chèque énergie est attribué automatiquement si vos revenus déclarés aux impôts correspondent aux critères établis.\n\n**[EXPLIQUER]** : Le montant du chèque énergie dépend des revenus et de la composition de la famille. Il est distribué mensuellement par courrier.\n\n**[DEMANDER]** : Pouvez-vous fournir vos revenus annuels et le nombre de personnes dans votre foyer ?<|im_end|>\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
+        "verdict": {
+            "action_type": "HYBRID",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": true,
+            "hallucination_detected": true,
+            "context_provided": true,
+            "score": 5,
+            "reasoning": "The agent provided a hybrid response by giving general context about the chèque énergie and asking for critical missing information (income). However, it incorrectly stated that the chèque énergie is distributed monthly, which is a hallucination. The chèque énergie is typically distributed annually, not monthly. Despite this error, the agent's approach of combining context with a request for information aligns with the expected hybrid behavior, but the hallucination reduces the score."
+        }
+    },
+    {
+        "case": {
+            "question": "Can I drive a commercial truck in France with a UK B-license?",
+            "category": "Daily Life",
+            "ground_truth": "No, a B-license is for passenger cars. You need a Category C or D license for commercial trucks or buses.",
+            "critical_missing_info": [],
+            "expected_behavior": "DIRECT",
+            "language": "en"
+        },
+        "response": "**[GIVE]**: No, a UK B-license does not allow driving commercial trucks in France. You need a Category C or D license.  \n**[EXPLAIN]**: The UK B-license is for passenger cars. In France, commercial trucks and buses require a Category C or D license. This is regulated by the French Road Safety Code.  \n**[ASK]**: What is your current driving license category in the UK?\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
+        "verdict": {
+            "action_type": "DIRECT_ANSWER",
+            "is_action_appropriate": true,
+            "asked_for_missing_info": false,
+            "hallucination_detected": false,
+            "context_provided": true,
+            "score": 10,
+            "reasoning": "The agent provided a direct answer to the question, which was expected. It correctly stated that a UK B-license does not allow driving commercial trucks in France and explained the need for a Category C or D license. The agent also provided general context about the licensing requirements, which is useful. There was no need to ask for additional information, as the question was straightforward. No hallucination was detected."
+        }
+    }
+]

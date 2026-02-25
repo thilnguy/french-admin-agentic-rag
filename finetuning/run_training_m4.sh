@@ -10,11 +10,16 @@ if [[ $(uname -m) != "arm64" ]]; then
     echo "⚠️  WARNING: This script is optimized for Apple Silicon (M1/M2/M3/M4). Proceeding anyway..."
 fi
 
-# 2. Check for dataset and prepare for MLX
+# Accept arguments with defaults
+SOURCE_DATA=${1:-"finetuning/data/train_expert_formatted.jsonl"}
+ADAPTER_PATH=${2:-"finetuning/adapters.safetensors"}
+MODEL=${3:-"mlx-community/Qwen2.5-7B-Instruct-8bit"}
+ITERS=${4:-600}
+
 # MLX-LM expects train.jsonl / valid.jsonl in the data directory
-SOURCE_DATA="finetuning/data/train_expert_formatted.jsonl"
-TARGET_TRAIN="finetuning/data/train.jsonl"
-TARGET_VALID="finetuning/data/valid.jsonl"
+DATA_DIR=$(dirname "$SOURCE_DATA")
+TARGET_TRAIN="$DATA_DIR/train.jsonl"
+TARGET_VALID="$DATA_DIR/valid.jsonl"
 
 if [ ! -f "$SOURCE_DATA" ]; then
     echo "❌ Error: Expert dataset not found at $SOURCE_DATA"
@@ -35,16 +40,18 @@ echo "📦 Ensuring MLX-LM is available via uv..."
 echo "🔥 Launching LoRA Fine-tuning (MLX-LM + Qwen 2.5 7B)..."
 
 uv run --with mlx-lm python -m mlx_lm.lora \
-    --model Qwen/Qwen2.5-7B-Instruct \
+    --model "$MODEL" \
     --train \
-    --data finetuning/data/ \
-    --iters 600 \
+    --data "$DATA_DIR" \
+    --iters "$ITERS" \
     --batch-size 1 \
     --learning-rate 1e-5 \
     --steps-per-report 10 \
     --steps-per-eval 50 \
-    --adapter-path finetuning/adapters.safetensors
+    --grad-checkpoint \
+    --max-seq-length 1024 \
+    --adapter-path "$ADAPTER_PATH"
 
 
-echo "✅ Training complete! Adapters saved in finetuning/adapters.safetensors"
+echo "✅ Training complete! Adapters saved in $ADAPTER_PATH"
 echo "💡 To use this model, you can merge or load the adapters in inference."

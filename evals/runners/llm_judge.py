@@ -133,7 +133,7 @@ async def judge_response(llm, test_case, agent_response):
 
 
 # --- Main Eval Loop ---
-async def run_eval(data_file: str = None, limit: int = None):
+async def run_eval(data_file: str = None, limit: int = None, output_file: str = None):
     print("=" * 60)
     print("🚀 STARTING LLM-JUDGE EVALUATION")
     print("=" * 60)
@@ -321,7 +321,12 @@ async def run_eval(data_file: str = None, limit: int = None):
     print("=" * 60)
 
     # Save Results
-    output_path = Path(__file__).parent.parent / "results" / "llm_judge_results.json"
+    if output_file:
+        output_path = Path(output_file)
+    else:
+        output_path = Path(__file__).parent.parent / "results" / "llm_judge_results.json"
+        
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=4, ensure_ascii=False)
     print(f"📝 Full results saved to {output_path}")
@@ -331,6 +336,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run LLM Judge Evaluation")
     parser.add_argument("--data", type=str, help="Path to test data JSON file")
     parser.add_argument("--limit", type=int, help="Limit number of test cases")
+    parser.add_argument("--output", type=str, help="Path to output results JSON file")
     args = parser.parse_args()
 
-    asyncio.run(run_eval(data_file=args.data, limit=args.limit))
+    asyncio.run(run_eval(data_file=args.data, limit=args.limit, output_file=args.output))
