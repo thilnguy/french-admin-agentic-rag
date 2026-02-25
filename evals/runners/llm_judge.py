@@ -162,7 +162,7 @@ async def run_eval(data_file: str = None, limit: int = None, output_file: str = 
     if data_file:
         data_path = Path(data_file)
     else:
-        data_path = Path(__file__).parent.parent / "data" / "benchmarks" / "ds_eval_9.8_blind_v1.json"
+        data_path = Path(__file__).parent.parent / "data" / "benchmarks" / "ds_eval_blind_9.8_gpt_4o.json"
     
     if not data_path.exists():
         print(f"❌ Data file not found: {data_path}")
@@ -324,7 +324,7 @@ async def run_eval(data_file: str = None, limit: int = None, output_file: str = 
     if output_file:
         output_path = Path(output_file)
     else:
-        output_path = Path(__file__).parent.parent / "results" / "llm_judge_results.json"
+        output_path = Path(__file__).parent.parent / "results" / "llm_judge_results_qwen2.5_7B_8bit.json"
         
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
