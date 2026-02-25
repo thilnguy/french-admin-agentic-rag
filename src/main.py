@@ -34,11 +34,8 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up — warming Qdrant client and embeddings model...")
     try:
         warmup_retriever()
-        # Flush Redis cache on startup to ensure prompt changes take effect immediately
-        await orchestrator.cache.flushdb()
-        logger.info("Redis cache flushed on startup.")
     except Exception as e:
-        logger.warning(f"Warmup/Flush failed (services may not be ready): {e}")
+        logger.warning(f"Warmup failed (services may not be ready): {e}")
     logger.info("French Admin Agent ready.")
     yield
     logger.info("Shutting down — closing connections...")
