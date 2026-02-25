@@ -140,34 +140,18 @@ class ProcedureGuideAgent:
         global_rules = self.registry.build_global_rules_fragment()
 
         prompt = ChatPromptTemplate.from_template(
-            """User Query: {query}
-Context from official documents:
-{context}
+            """{persona}
+            User Query: {query}
+            Context from official documents:
+            {context}
+            User Profile (already known): {profile}
 
-User Profile (already known — DO NOT ask for these again): {profile}
+            {topic_rules}
 
-ROLE: You are a French Administration Assistant. Reason step-by-step before answering.
-
-{topic_rules}
-
-{global_rules}
-
-RESPONSE STRUCTURE (respond in {user_language}):
-**[DONNER]** (or equivalent): MANDATORY. Summarize the GENERAL procedure found in the context.
-   - You MUST provide this summary BEFORE asking questions.
-   - If context is empty, say "I found no specific procedure, but..."
-
-**[EXPLIQUER]** (or equivalent): Explain that the procedure VARIES based on valid conditions.
-
-**[DEMANDER]** (or equivalent):
-   - Ask 2-3 specific TARGETED questions from the VARIABLES list above.
-   - Do NOT ask for information already in the profile.
-
-LANGUAGE RULE:
-- Respond ENTIRELY in {user_language}.
-- Use localized tags (e.g. **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[YÊU CẦU]** for Vietnamese).
-- ⛔ DO NOT mix languages.
-"""
+            {global_rules}
+            
+            Respond in {user_language}.
+            """
         )
         chain = prompt | self.llm | StrOutputParser()
         return await self._run_chain(
@@ -179,6 +163,7 @@ LANGUAGE RULE:
                 "user_language": state.user_profile.language or "fr",
                 "topic_rules": topic_fragment,
                 "global_rules": global_rules,
+                "persona": self.registry.persona,
             },
         )
 
@@ -198,36 +183,18 @@ LANGUAGE RULE:
         global_rules = self.registry.build_global_rules_fragment()
 
         prompt = ChatPromptTemplate.from_template(
-            """User Query: {query}
-User Location: {user_location}
-Context from official documents:
-{context}
+            """{persona}
+            User Query: {query}
+            User Location: {user_location}
+            Context from official documents:
+            {context}
 
-ROLE: You are a French Administration Assistant. Reason step-by-step before answering.
+            {topic_rules}
 
-{topic_rules}
-
-{global_rules}
-
-DEADLINE ANALYSIS: If Context mentions time limits, compare with user's duration of stay.
-If remaining time < 3 months, start [EXPLIQUER] with "⚠️ [URGENT]".
-
-ALLOWED EXTERNAL KNOWLEDGE:
-- Geography (e.g., Vietnam → Non-EU) and EU/EEE classification.
-- Ignore context that contradicts User Profile.
-
-RESPONSE STRUCTURE (respond in {user_language}):
-**[DONNER]** (or equivalent): Provide the procedure steps from Context (with citations).
-   - If procedure is online, include the relevant link.
-   - If User Location known, mention local authorities.
-
-**[EXPLIQUER]** (or equivalent): Explain branching logic if any.
-
-**[DEMANDER]** (or equivalent): Ask 2-3 TARGETED questions from the VARIABLES list above.
-   - EXCEPTION: If Context fully answers the question (fact-based), answer directly without [DEMANDER].
-
-LANGUAGE: Respond ENTIRELY in {user_language}. Use localized tags. Do NOT mix languages.
-"""
+            {global_rules}
+            
+            Respond in {user_language}.
+            """
         )
         chain = prompt | self.llm | StrOutputParser()
         return await self._run_chain(
@@ -239,6 +206,7 @@ LANGUAGE: Respond ENTIRELY in {user_language}. Use localized tags. Do NOT mix la
                 "user_location": state.user_profile.location or "votre département",
                 "topic_rules": topic_fragment,
                 "global_rules": global_rules,
+                "persona": self.registry.persona,
             },
         )
 

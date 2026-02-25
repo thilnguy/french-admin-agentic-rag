@@ -91,6 +91,7 @@ class TopicRegistry:
             self.topics[key] = TopicRules(key, data)
         
         self.global_rules = raw.get("global_rules", {})
+        self.persona = raw.get("persona", "")
         
         # Build keyword index for fast topic detection
         self._keyword_index: Dict[str, str] = {}

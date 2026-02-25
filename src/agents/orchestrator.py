@@ -312,18 +312,12 @@ class AdminOrchestrator:
             )
             global_rules = topic_registry.build_global_rules_fragment()
 
-            system_prompt = f"""You are a French Administration Assistant. Reason step-by-step before answering.
-Your task is to answer accurately based on CONTEXT and HISTORY.
-
-STRICT RESPONSE STRUCTURE:
-**[DONNER]**: Direct answer or status.
-**[EXPLIQUER]**: Details, criteria, and legal basis.
-**[DEMANDER]**: Mandatory clarification.
-
-{topic_fragment}
-
-{global_rules}
-"""
+            system_prompt = f"""{topic_registry.persona}
+            
+            {topic_fragment}
+            
+            {global_rules}
+            """
 
             messages = [SystemMessage(content=system_prompt)]
 
