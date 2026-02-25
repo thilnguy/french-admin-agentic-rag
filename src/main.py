@@ -34,8 +34,11 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up — warming Qdrant client and embeddings model...")
     try:
         warmup_retriever()
+        # Flush Redis cache on startup to ensure prompt changes take effect immediately
+        await orchestrator.cache.flushdb()
+        logger.info("Redis cache flushed on startup.")
     except Exception as e:
-        logger.warning(f"Warmup failed (services may not be ready): {e}")
+        logger.warning(f"Warmup/Flush failed (services may not be ready): {e}")
     logger.info("French Admin Agent ready.")
     yield
     logger.info("Shutting down — closing connections...")
@@ -123,11 +126,16 @@ async def health_check():
     qdrant_ok = False
     try:
         q = QdrantClient(
-            host=settings.QDRANT_HOST, port=settings.QDRANT_PORT, timeout=3
+            host=settings.QDRANT_HOST,
+            port=settings.QDRANT_PORT,
+            api_key=settings.QDRANT_API_KEY,
+            https=False,
+            timeout=3,
         )
         q.get_collections()
         qdrant_ok = True
-    except Exception:
+    except Exception as e:
+        logger.error(f"Health check Qdrant failed: {e}")
         pass
 
     status = "healthy" if (redis_ok and qdrant_ok) else "degraded"

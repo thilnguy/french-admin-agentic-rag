@@ -11,7 +11,8 @@ def get_llm(temperature: float = 0.2, model_override: str = None):
             model=model_override or settings.LOCAL_LLM_MODEL,
             temperature=temperature,
             openai_api_key="local-placeholder",
-            base_url=settings.LOCAL_LLM_URL
+            base_url=settings.LOCAL_LLM_URL,
+            model_kwargs={"stop": ["<|im_end|>", "<|endoftext|>"]}
         )
     
     return ChatOpenAI(

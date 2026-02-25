@@ -1,0 +1,321 @@
+# ============================================================================
+# Topic Registry — Single Source of Truth for Agent Decision Rules
+# ============================================================================
+# This file centralizes all topic-specific rules that were previously
+# scattered across orchestrator.py, procedure_agent.py, and guardrails.py.
+#
+# HOW IT WORKS:
+# 1. IntentClassifier determines the broad intent (SIMPLE_QA, COMPLEX_PROCEDURE, etc.)
+# 2. TopicDetector maps the query to a topic key from this file
+# 3. Only the RELEVANT topic's rules are injected into the prompt
+#
+# ADDING A NEW TOPIC:
+# Just add a new entry below. No need to touch any prompt strings.
+# ============================================================================
+
+topics:
+  immigration:
+    display_name: "Immigration & Visa"
+    description: "Visa renewals, residence permits, family reunification, naturalization, Passeport Talent"
+    default_step: CLARIFICATION
+    mandatory_variables:
+      - name: nationality
+        why: "Determines EU/Non-EU pathway and applicable bilateral agreements"
+      - name: visa_type
+        why: "Different visa types have completely different renewal procedures"
+      - name: family_situation
+        why: "Required for 10-year residence card and family reunification"
+      - name: years_of_residence
+        why: "Eligibility thresholds differ (3 vs 5 vs 10 years)"
+    conditional_variables:
+      - name: contract_extension_proof
+        when: "Passeport Talent renewal"
+        why: "Convention d'accueil is mandatory for researcher visa renewal"
+      - name: expiry_date
+        when: "Any renewal"
+        why: "Must renew 2 months before expiration"
+    exemplar:
+      input: "Comment renouveler mon passeport talent 'chercheur' ?"
+      output: |
+        **[DONNER]**: Vous devez demander le renouvellement 2 mois avant l'expiration.
+        **[EXPLIQUER]**: La procédure nécessite une convention d'accueil signée.
+        **[DEMANDER]**: Avez-vous votre convention d'accueil signée par votre employeur ?
+    guardrail_keywords:
+      - "visa"
+      - "titre de séjour"
+      - "residence permit"
+      - "passeport talent"
+      - "naturalization"
+      - "family reunification"
+      - "carte de résident"
+
+  labor:
+    display_name: "Work & Labor Rights"
+    description: "Employment disputes, unpaid wages, chômage technique, strikes, employer conflicts"
+    default_step: CLARIFICATION
+    mandatory_variables:
+      - name: contract_type
+        why: "CDI vs CDD affects rights and procedures significantly"
+      - name: company_size
+        why: "Mandatory for chômage technique eligibility and thresholds"
+      - name: proof_of_hours
+        why: "Essential evidence for unpaid wage disputes (Prud'hommes)"
+    conditional_variables:
+      - name: region
+        when: "Strike-related queries"
+        why: "Compensation varies by affected region and transport line"
+      - name: line_used
+        when: "Transport strike refund"
+        why: "Determines eligibility for Navigo refund"
+      - name: period_of_strike
+        when: "Strike refund"
+        why: "Must match IDFM's declared refund period"
+    exemplar:
+      input: "Mon employeur ne me paie pas mes heures supplémentaires, que faire ?"
+      output: |
+        **[DONNER]**: Envoyez une mise en demeure par LRAR à votre employeur.
+        **[EXPLIQUER]**: Si cela échoue, vous pouvez saisir les Prud'hommes.
+        **[DEMANDER]**: Avez-vous des preuves de présence pour ces heures ?
+    guardrail_keywords:
+      - "employeur"
+      - "heures supplémentaires"
+      - "Prud'hommes"
+      - "chômage technique"
+      - "partial activity"
+      - "strike"
+      - "grève"
+
+  taxes:
+    display_name: "Taxes & Fiscal"
+    description: "Income tax, donations, inheritance, IFI, local taxes, tax credits"
+    default_step: CLARIFICATION
+    mandatory_variables:
+      - name: annual_income
+        why: "Determines tax bracket and eligibility for deductions/credits"
+      - name: fiscal_residence
+        why: "France vs abroad changes the entire tax regime"
+      - name: family_composition
+        why: "Number of parts fiscales affects calculation significantly"
+    conditional_variables:
+      - name: amount
+        when: "Donations/gifts"
+        why: "100,000€ per child per 15 years is the tax-free threshold"
+      - name: last_donation_date
+        when: "Donations/gifts"
+        why: "15-year cycle determines if abattement is available"
+      - name: child_age
+        when: "Childcare tax credit"
+        why: "Only children under 6 qualify for the credit"
+    exemplar:
+      input: "Tôi muốn tặng tiền cho con cái, có phải nộp thuế không?"
+      output: |
+        **[CUNG CẤP]**: Bạn có thể tặng tối đa 100.000€ mỗi 15 năm không thuế cho mỗi con.
+        **[GIẢI THÍCH]**: Trên mức đó sẽ bị đánh thuế theo biểu thuế luỹ tiến.
+        **[YÊU CẦU]**: Số tiền bạn muốn tặng là bao nhiêu? Lần tặng gần nhất là khi nào?
+    guardrail_keywords:
+      - "impôts"
+      - "tax"
+      - "donation"
+      - "succession"
+      - "IFI"
+      - "crédit d'impôt"
+      - "thuế"
+
+  identity:
+    display_name: "Identity & Civil Registry"
+    description: "Passports, ID cards, birth registration, marriage, lost documents, criminal records"
+    default_step: CLARIFICATION
+    mandatory_variables:
+      - name: place_of_birth
+        why: "Determines which Mairie handles the registration"
+      - name: marital_status
+        why: "Affects required documents for birth/marriage registration"
+      - name: emergency_level
+        why: "Determines if consulate can assist remotely or requires in-person visit"
+    conditional_variables:
+      - name: type_of_offense
+        when: "Criminal record (Casier Judiciaire)"
+        why: "Determines automatic expiry timeline"
+      - name: time_passed
+        when: "Criminal record"
+        why: "Some records expire automatically after a set period"
+    exemplar:
+      input: "How do I register a birth in France?"
+      output: |
+        **[GIVE]**: Declare within 5 days at the Mairie of the place of birth.
+        **[EXPLAIN]**: You need the doctor's certificate and parents' ID.
+        **[ASK]**: Where was the birth? What is the parents' marital status?
+    guardrail_keywords:
+      - "passport"
+      - "birth"
+      - "naissance"
+      - "casier judiciaire"
+      - "criminal record"
+      - "hộ chiếu"
+      - "identity"
+
+  social:
+    display_name: "Social Benefits & Welfare"
+    description: "AAH, RSA, Chèque Énergie, retirement, disability, housing aid (CAF)"
+    default_step: CLARIFICATION
+    mandatory_variables:
+      - name: income_level
+        why: "Most social benefits are means-tested"
+      - name: disability_percentage
+        why: "AAH requires minimum 80% disability (or 50-79% with work restriction)"
+      - name: age
+        why: "Determines retirement eligibility and specific benefit thresholds"
+    conditional_variables:
+      - name: income_declared
+        when: "Chèque Énergie"
+        why: "Attributed automatically based on declared tax income"
+      - name: employment_status
+        when: "RSA, AAH"
+        why: "Working while receiving benefits affects calculation"
+    exemplar:
+      input: "Tôi muốn xin trợ cấp AAH nhưng tôi đang đi làm."
+      output: |
+        **[CUNG CẤP]**: AAH có thể kết hợp với thu nhập từ việc làm nhưng sẽ bị khấu trừ.
+        **[GIẢI THÍCH]**: Bạn cần khai báo thu nhập hàng quý (DTR).
+        **[YÊU CẦU]**: Thu nhập hàng quý của bạn là bao nhiêu? Tỷ lệ khuyết tật?
+    guardrail_keywords:
+      - "AAH"
+      - "RSA"
+      - "chèque énergie"
+      - "retraite"
+      - "retirement"
+      - "disability"
+      - "CAF"
+
+  health:
+    display_name: "Healthcare & Insurance"
+    description: "Health insurance, carte vitale, cross-border workers (Frontalier), CPAM"
+    default_step: CLARIFICATION
+    mandatory_variables:
+      - name: residence_location
+        why: "Determines if French or foreign health system applies"
+      - name: employment_status
+        why: "Salaried vs self-employed vs student → different registration"
+      - name: job_type
+        why: "Cross-border (Frontalier) status enables S1 form"
+    exemplar:
+      input: "Can I keep my French health insurance if I move to Germany?"
+      output: |
+        **[GIVE]**: Cross-border workers can retain French insurance via the S1 form.
+        **[EXPLAIN]**: If you fully relocate, you switch to the German system (SGB).
+        **[ASK]**: Will you reside in France and work in Germany (Frontalier)?
+    guardrail_keywords:
+      - "health insurance"
+      - "carte vitale"
+      - "CPAM"
+      - "assurance maladie"
+      - "frontalier"
+      - "S1 form"
+
+  housing:
+    display_name: "Housing & Tenant Rights"
+    description: "Tenant eviction, building permits, landlord disputes, trêve hivernale"
+    default_step: CLARIFICATION
+    mandatory_variables:
+      - name: pool_size
+        why: "Determines if déclaration préalable or permis de construire needed"
+      - name: has_court_order
+        why: "Eviction requires judicial process"
+      - name: current_month
+        why: "Trêve hivernale protects tenants Nov-Mar"
+    conditional_variables:
+      - name: location
+        when: "Building permits"
+        why: "Local PLU rules vary significantly"
+    exemplar:
+      input: "Tôi bị chủ nhà đuổi ra khỏi nhà ngay lập tức, họ có quyền không?"
+      output: |
+        **[CUNG CẤP]**: Không, chủ nhà phải tuân thủ quy trình tòa án.
+        **[GIẢI THÍCH]**: Có Trêve hivernale cấm trục xuất từ tháng 11 đến tháng 3.
+        **[YÊU CẦU]**: Hiện tại là tháng mấy? Bạn có nhận được lệnh tòa không?
+    guardrail_keywords:
+      - "housing"
+      - "tenant"
+      - "landlord"
+      - "eviction"
+      - "permis de construire"
+      - "trêve hivernale"
+      - "chủ nhà"
+
+  daily_life:
+    display_name: "Daily Life & Transport"
+    description: "Navigo pass, driving licenses, vehicle registration, school insurance, Crit'Air"
+    default_step: RETRIEVAL  # Mostly factual answers
+    mandatory_variables:
+      - name: activity_type
+        why: "Assurance scolaire mandatory only for extracurricular activities"
+    conditional_variables:
+      - name: line_used
+        when: "Navigo refund"
+        why: "Must match affected area"
+      - name: period_of_strike
+        when: "Navigo refund"
+        why: "Must match IDFM declared period"
+      - name: license_category
+        when: "Driving license questions"
+        why: "B-license vs C/D determines commercial driving eligibility"
+    exemplar:
+      input: "What is l'assurance scolaire and is it mandatory?"
+      output: |
+        **[GIVE]**: Not mandatory for regular school hours, but required for field trips.
+        **[EXPLAIN]**: It covers liability and personal injury during school activities.
+        **[ASK]**: What type of school activity do you need it for?
+    guardrail_keywords:
+      - "Navigo"
+      - "driving license"
+      - "permis de conduire"
+      - "school insurance"
+      - "assurance scolaire"
+      - "Crit'Air"
+      - "SNCF"
+      - "RATP"
+
+  education:
+    display_name: "Education & Student Affairs"
+    description: "School registration, student permits, university admin, student work rights, scholarships"
+    default_step: RETRIEVAL  # Student work rights are fact-based
+    mandatory_variables: []
+    force_retrieval_patterns:
+      - "student work"
+      - "étudiant travailler"
+      - "964 hours"
+    exemplar:
+      input: "Can a student work in France?"
+      output: |
+        **[GIVE]**: Yes, students can work up to 964 hours per year (60% of full-time).
+        **[EXPLAIN]**: This applies to all valid student visa holders.
+    guardrail_keywords:
+      - "student"
+      - "étudiant"
+      - "scholarship"
+      - "bourse"
+      - "university"
+
+# ============================================================================
+# GLOBAL RULES — Applied to ALL topics
+# ============================================================================
+global_rules:
+  response_structure:
+    - "Always include all 3 blocks: [DONNER], [EXPLIQUER], [DEMANDER]"
+    - "Respond entirely in the user's detected language"
+    - "Use localized tags (e.g., [CUNG CẤP], [GIẢI THÍCH], [YÊU CẦU] for Vietnamese)"
+  
+  grounding:
+    - "NEVER invent specific numbers not present in the retrieved context"
+    - "ONLY cite figures that appear verbatim in the context"
+    - "If no specific figure, say 'le montant exact dépend de votre situation'"
+  
+  questioning:
+    - "Ask 2-3 TARGETED questions based on the topic's mandatory_variables"
+    - "NEVER ask for information already in the user profile"
+    - "NEVER ask generic questions like 'Do you need more help?'"
+    - "NEVER ask for filler info (phone numbers, emails)"
+  
+  anti_hallucination:
+    - "Never assume nationality based on query language"
+    - "Never assume residency status without explicit mention"

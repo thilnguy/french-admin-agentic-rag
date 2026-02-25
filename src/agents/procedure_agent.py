@@ -13,6 +13,7 @@ from src.agents.state import AgentState, UserProfile
 from src.utils.llm_factory import get_llm
 from skills.legal_retriever.main import retrieve_legal_info
 from src.utils.logger import logger
+from src.rules.registry import topic_registry
 from src.utils import metrics
 import time
 
@@ -20,10 +21,10 @@ import time
 class ProcedureGuideAgent:
     def __init__(self):
         self.llm = get_llm(temperature=0.2)
+        self.registry = topic_registry
 
         # Step Analyzer: Determines the current stage of the procedure
-        # Restored to d2414c8 logic — simple and effective.
-        # Key insight: DO NOT use CLARIFICATION for general/fact-based questions.
+        # Uses topic registry's default_step instead of hardcoded topic lists.
         self.step_analyzer_prompt = ChatPromptTemplate.from_template(
             """You are a French Administrative Procedure Guide.
             Analyze the conversation to determine the next step.
@@ -31,26 +32,25 @@ class ProcedureGuideAgent:
             User Query: {query}
             Profile: {user_profile}
             History: {history}
+            Topic: {topic_name} (default step: {default_step})
 
             Possible Steps:
-            1. CLARIFICATION: Use this when the procedure has CONDITIONAL BRANCHES based on user profile.
-               - Use this for: visa renewal, healthcare registration, tax declaration, family reunification, naturalization, DRIVING LICENSE EXCHANGE.
-               - These procedures ALWAYS depend on: nationality, residence status, visa type, employment status, income source, foreign license status.
-               - Use CLARIFICATION even if the question is general (e.g., "How do I register for healthcare?").
-               - DO NOT use this if the profile already has all needed info.
-               - DO NOT use this if the query is a direct answer to a previous agent question.
+            1. CLARIFICATION: The procedure has CONDITIONAL BRANCHES based on user profile.
+               - Use when key variables are MISSING (see below).
+               - DO NOT use if the profile already has all needed info.
+               - DO NOT use if the query is a direct answer to a previous agent question.
 
-            2. RETRIEVAL: Use ONLY for truly fact-based questions with a SINGLE universal answer (or very minor variations).
-               - Examples: "How much does a passport cost?", "How long does naturalization take?", "Can a student work in France?"
-               - RULES FOR STUDENTS: "Can I work with a student visa?" is ALWAYS RETRIEVAL (Answer: Yes, 964 hours).
+            2. RETRIEVAL: Truly fact-based questions with a SINGLE universal answer.
+               - Examples: "How much does a passport cost?", "Can a student work?"
                - RULES FOR COSTS: "How much is X?" is ALWAYS RETRIEVAL.
 
             3. EXPLANATION: We have the procedure content and profile is complete.
             4. COMPLETED: Procedure finished.
 
-            CRITICAL RULE: When in doubt between CLARIFICATION and RETRIEVAL, choose CLARIFICATION, UNLESS it is about Student Work Rights or Costs.
-            A HYBRID response (context + clarifying question) is always better than a pure answer.
+            Missing variables for this topic:
+            {missing_variables}
 
+            CRITICAL RULE: When in doubt, choose CLARIFICATION (unless factual/cost question).
             Return ONLY the step name."""
         )
 
@@ -81,10 +81,15 @@ class ProcedureGuideAgent:
         retrieval_query = core_goal or query
         logger.info(f"ProcedureAgent retrieval anchored to: {retrieval_query}")
 
+        # Detect topic from registry (used by step analyzer and prompt building)
+        detected_topic = self.registry.detect_topic(query, getattr(state, "intent", None))
+        state.metadata["detected_topic"] = detected_topic
+        logger.info(f"ProcedureAgent detected topic: {detected_topic}")
+
         import asyncio
 
         step_task = self._determine_step(
-            query, state.user_profile.model_dump(), history_str
+            query, state.user_profile.model_dump(), history_str, detected_topic
         )
         docs_task = retrieve_legal_info(retrieval_query, domain="procedure")
 
@@ -100,13 +105,24 @@ class ProcedureGuideAgent:
         return await self._explain_procedure(query, state, docs)
 
     async def _determine_step(
-        self, query: str, user_profile: dict, history: str
+        self, query: str, user_profile: dict, history: str, topic_key: str = "daily_life"
     ) -> str:
+        topic_rules = self.registry.get_rules(topic_key)
+        missing = topic_rules.get_missing_variables(user_profile) if topic_rules else []
+        missing_str = topic_rules.format_variable_list(missing) if topic_rules and missing else "All variables known."
+
         chain = (self.step_analyzer_prompt | self.llm | StrOutputParser()).with_config(
             {"tags": ["internal"]}
         )
         return await self._run_chain(
-            chain, {"query": query, "user_profile": user_profile, "history": history}
+            chain, {
+                "query": query,
+                "user_profile": user_profile,
+                "history": history,
+                "topic_name": topic_rules.display_name if topic_rules else "General",
+                "default_step": topic_rules.default_step if topic_rules else "CLARIFICATION",
+                "missing_variables": missing_str,
+            }
         )
 
     async def _ask_clarification(
@@ -114,8 +130,14 @@ class ProcedureGuideAgent:
     ) -> str:
         context_summary = ""
         if docs:
-            # Increased to 1500 to ensure enough context for the summary
             context_summary = "\n".join([d["content"][:1500] for d in docs[:3]])
+
+        # Get topic-specific rules from registry
+        topic_key = state.metadata.get("detected_topic", "daily_life")
+        topic_fragment = self.registry.build_prompt_fragment(
+            topic_key, state.user_profile.model_dump(), query
+        )
+        global_rules = self.registry.build_global_rules_fragment()
 
         prompt = ChatPromptTemplate.from_template(
             """User Query: {query}
@@ -123,35 +145,12 @@ Context from official documents:
 {context}
 
 User Profile (already known — DO NOT ask for these again): {profile}
- 
+
 ROLE: You are a French Administration Assistant. Reason step-by-step before answering.
-        
-STRICT RESPONSE STRUCTURE:
-**[DONNER]**: Preliminary status based on current info.
-**[EXPLIQUER]**: Why you need more info.
-**[DEMANDER]**: You MUST ask for 2-3 specific missing details based on the TOPIC:
-   - IMMIGRATION: Nationality, Visa Type, Expiry Date, AND 'Family situation' (for 10-year residency).
-   - VISA RENEWALS (Passeport Talent): 'Convention d'accueil' or 'Contract extension proof'.
-   - WORK/LABOR: Contract type (CDI/CDD), Proof of hours (for unpaid wages), Company size (mandatory for chômage technique), Region/Line (mandatory for strikes).
-   - TAXES: Annual Income, Fiscal residence, Family composition.
-   - TRANSPORT/DAILY LIFE: 'Line used' and 'Period of the strike' (for refunds). 'Activity type' (for insurance).
-   - SOCIAL/HEALTH: Disability percentage (for AAH), Age, Employment status.
-   - FAMILY/BIRTH: Marital status (mandatory for birth registration), Place of birth (mandatory), Urgency/Emergency level (mandatory for lost documents).
 
-STRICT MANDATE: ONLY ask for variables relevant to the detected topic. Do NOT ask for 'Nationality' unless it is an IMMIGRATION query. DO NOT ask conversational questions (e.g., 'Have you talked to your boss?'). Always ask for the technical variables above.
-        
-STRICT GROUNDING RULES (SAFETY CRITICAL):
-⛔ NEVER invent specific numbers (costs, income thresholds, timelines) not present in the Context above.
-⛔ If the Context does not mention a specific figure, say "le montant exact dépend de votre situation, vérifiez sur service-public.fr".
-✅ ONLY cite figures that appear verbatim in the Context section above.
+{topic_rules}
 
-STRATEGIC THINKING (Internal Monologue):
-1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Visa Type, Duration of Stay, Employment Status).
-2. Check User Profile: Identify which of these are MISSING.
-3. Decision: YOU MUST ASK for 2-3 specific MISSING variables. Generic questions like "Do you need more help?" are FORBIDDEN.
-4. EXCEPTION: If the user provides a direct answer to an earlier [DEMANDER], you must proceed to [DONNER] + [EXPLIQUER] for that new info, then ASK the NEXT set of variables.
-   - If variables are MISSING → Ask the MOST CRITICAL missing variable in [DEMANDER].
-   - If variables are PRESENT → Just Answer directly.
+{global_rules}
 
 RESPONSE STRUCTURE (respond in {user_language}):
 **[DONNER]** (or equivalent): MANDATORY. Summarize the GENERAL procedure found in the context.
@@ -161,14 +160,12 @@ RESPONSE STRUCTURE (respond in {user_language}):
 **[EXPLIQUER]** (or equivalent): Explain that the procedure VARIES based on valid conditions.
 
 **[DEMANDER]** (or equivalent):
-   - Ask 2-3 specific TARGETED questions to narrow down the case.
-   - MUST ASK for: Region/Line/Company Size (Labor), Place of Birth/Marital Status (Identity), or Contract Extension (Visas) if applicable to the topic.
-   - Do NOT ask for information already in the profile: {profile}
-   - STRICTLY FORBIDDEN: Generic questions.
+   - Ask 2-3 specific TARGETED questions from the VARIABLES list above.
+   - Do NOT ask for information already in the profile.
 
 LANGUAGE RULE:
 - Respond ENTIRELY in {user_language}.
-- Use localized tags: **[DONNER]**, **[EXPLIQUER]**, **[DEMANDER]** (e.g. **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[YÊU CẦU]** for Vietnamese).
+- Use localized tags (e.g. **[CUNG CẤP]**, **[GIẢI THÍCH]**, **[YÊU CẦU]** for Vietnamese).
 - ⛔ DO NOT mix languages.
 """
         )
@@ -180,6 +177,8 @@ LANGUAGE RULE:
                 "profile": state.user_profile.model_dump(),
                 "context": context_summary,
                 "user_language": state.user_profile.language or "fr",
+                "topic_rules": topic_fragment,
+                "global_rules": global_rules,
             },
         )
 
@@ -191,80 +190,43 @@ LANGUAGE RULE:
 
         context = "\n\n".join([d["content"][:2000] for d in docs])
 
+        # Get topic-specific rules from registry
+        topic_key = state.metadata.get("detected_topic", "daily_life")
+        topic_fragment = self.registry.build_prompt_fragment(
+            topic_key, state.user_profile.model_dump(), query
+        )
+        global_rules = self.registry.build_global_rules_fragment()
+
         prompt = ChatPromptTemplate.from_template(
             """User Query: {query}
 User Location: {user_location}
 Context from official documents:
 {context}
-        ROLE: You are a French Administration Assistant. Reason step-by-step before answering.
-        
-        STRICT RESPONSE STRUCTURE:
-        **[DONNER]**: The main procedure steps.
-        **[EXPLIQUER]**: Details, documents, and legal criteria.
-        **[DEMANDER]**: Mandatory clarification (e.g., specific location or user's next availability).
-        
-        CRITICAL LANGUAGE RULE:
-You MUST respond ENTIRELY in {user_language}.
-- If {user_language} is Vietnamese -> Respond in VIETNAMESE.
-- If {user_language} is English -> Respond in ENGLISH.
-- If {user_language} is French -> Respond in FRENCH.
-- Do NOT mix languages. Do NOT use French tags like [DONNER] if the user language is Vietnamese.
 
-STRICT GROUNDING RULES (SAFETY CRITICAL):
-⛔ NEVER invent specific numbers (costs, income thresholds, timelines, form numbers) not present in the Context above.
-⛔ If the Context does not mention a specific figure, say "le montant exact dépend de votre situation" and cite service-public.fr.
-✅ ONLY cite figures that appear verbatim in the Context section above.
-✅ For every key fact, cite: [Source: service-public.fr/...]
+ROLE: You are a French Administration Assistant. Reason step-by-step before answering.
 
-STRATEGIC THINKING (Internal Monologue — do NOT output):
-1. Analyze Context: Identify "Decision Variables" (e.g., Nationality, Age, Visa Type).
-   - FAMILY REUNIFICATION: Priority is "Nationality" AND "Residence Status" (18 months?).
-   - TAX RULE: Priority is "Residence Status" AND "Income Sources". You MUST ask for these if missing.
-   - HEALTHCARE RULE: Priority is "Residence Status" AND "Employment Status".
-   - DRIVING LICENSE: Priority is "Residency Status" AND "Foreign License Status".
-   - ⛔ **ANTI-HALLUCINATION**: NEVER assume nationality or status based on query language.
+{topic_rules}
 
-2. **DEADLINE ANALYSIS (URGENCY CHECK)**:
-   - READ the Context to find specific TIME LIMITS (e.g., "1 year to exchange", "register within 3 months").
-   - COMPARE with User Profile "Duration of Stay".
-   - **MATH & LOGIC**:
-     - Convert both to Months (e.g., 1 year = 12 months).
-     - Calculate: Remaining Time = Deadline - Duration of Stay.
-     - IF Remaining Time < 3 months: YOU MUST TRIGGER **ALERT MODE**.
-   - IF User is OVER the deadline: TRIGGER EXPIRED WARNING.
+{global_rules}
 
-3. Check Query: Did the user provide these variables?
+DEADLINE ANALYSIS: If Context mentions time limits, compare with user's duration of stay.
+If remaining time < 3 months, start [EXPLIQUER] with "⚠️ [URGENT]".
 
-4. Decision:
-   - If variables are MISSING → Use [DEMANDER] to ask ONE targeted question.
-   - **CRITICAL**: You MUST explain WHY you are asking.
-   - If variables are PRESENT → Just Answer directly.
-
-    **ALLOWED EXTERNAL KNOWLEDGE**:
-    - You MAY use your internal knowledge of geography (Vietnam -> Non-EU).
-    - If "Nationality" is known, IMMEDIATELY decide if it is EU/EEE or Non-EU.
-
-    **CONTEXT FILTERING**:
-    - IGNORE information that explicitly contradicts the User Profile.
+ALLOWED EXTERNAL KNOWLEDGE:
+- Geography (e.g., Vietnam → Non-EU) and EU/EEE classification.
+- Ignore context that contradicts User Profile.
 
 RESPONSE STRUCTURE (respond in {user_language}):
-**[DONNER]** (or equivalent: [GIVE], [CUNG CẤP]): Provide the GENERAL rule/cost/timeline (from Context only, with citations).
-   - **MANDATORY**: If the procedure is online, INJECT the link: `https://permisdeconduire.ants.gouv.fr` (for driving license) or `https://administration-etrangers-en-france.interieur.gouv.fr` (for residence).
-   - **PERSONALIZATION**: If User Location is known (e.g. Lyon), mention specific local authorities (e.g. "Préfecture de Lyon", "Cour d'appel de Lyon" for translators).
+**[DONNER]** (or equivalent): Provide the procedure steps from Context (with citations).
+   - If procedure is online, include the relevant link.
+   - If User Location known, mention local authorities.
 
-**[EXPLIQUER]** (or equivalent: [EXPLAIN], [GIẢI THÍCH]): Explain branching logic if any.
-   - **ALERT MODE**: If Urgency Check triggered, YOU MUST START this section with "⚠️ **[URGENT]**: Vous avez moins de X mois!" (translated).
+**[EXPLIQUER]** (or equivalent): Explain branching logic if any.
 
-**[DEMANDER]** (or equivalent: [ASK], [YÊU CẦU]):
-   - Ask 2-3 TARGETED questions based on the document's conditional logic.
-   - MANDATORY SUB-TOPIC VARIABLES:
-     * Labor/Strike: Region, Company Size, Affect Line.
-     * Identity/Birth: Place of Birth, Marital Status of parents.
-     * Immigration/Passeport Talent: New Convention d'accueil status.
-   - STRICTLY FORBIDDEN: Generic questions like "Do you need more help?".
-   - STRICTLY FORBIDDEN: Asking for info already in the profile.
+**[DEMANDER]** (or equivalent): Ask 2-3 TARGETED questions from the VARIABLES list above.
+   - EXCEPTION: If Context fully answers the question (fact-based), answer directly without [DEMANDER].
 
-EXCEPTION: If the Context fully and directly answers the question (fact-based, or same answer for all groups like 'Students can work'), just ANSWER it directly. Do NOT add [DEMANDER].
+LANGUAGE: Respond ENTIRELY in {user_language}. Use localized tags. Do NOT mix languages.
 """
         )
         chain = prompt | self.llm | StrOutputParser()
@@ -275,6 +237,8 @@ EXCEPTION: If the Context fully and directly answers the question (fact-based, o
                 "context": context,
                 "user_language": state.user_profile.language or "fr",
                 "user_location": state.user_profile.location or "votre département",
+                "topic_rules": topic_fragment,
+                "global_rules": global_rules,
             },
         )
 

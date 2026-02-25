@@ -304,19 +304,25 @@ class AdminOrchestrator:
                 )
 
             # Step 2: Formulate answer (with Chat History)
-            system_prompt = """You are a French Administration Assistant. Reason step-by-step before answering.
-            Your task is to answer accurately based on CONTEXT and HISTORY.
-            
-            STRICT RESPONSE STRUCTURE:
-            **[DONNER]**: Direct answer or status.
-            **[EXPLIQUER]**: Details, criteria, and legal basis.
-            **[DEMANDER]**: Mandatory clarification. 
-            
-            RULES:
-            - You MUST ALWAYS include all three blocks: **[DONNER]**, **[EXPLIQUER]**, and **[DEMANDER]**.
-            - If information is missing, you MUST ask for 2-3 specific details in the **[DEMANDER]** block.
-            - MANDATORY VARIABLES: Ask for 'Nationality' (Immigration only), 'Company size' (Labor), 'Proof of hours' (Work dispute), 'Line used/Period' (Transport), 'Activity type' (Insurance), 'Place of birth/Marital Status' (Birth/ID), 'Emergency level' (Lost ID), or 'Family situation' (10-year residency).
-            - STRICT MANDATE: ONLY ask for variables relevant to the detected topic. No conversational fillers.
+            # Use topic registry to inject only relevant rules
+            from src.rules.registry import topic_registry
+            detected_topic = topic_registry.detect_topic(query, intent)
+            topic_fragment = topic_registry.build_prompt_fragment(
+                detected_topic, state.user_profile.model_dump(), query
+            )
+            global_rules = topic_registry.build_global_rules_fragment()
+
+            system_prompt = f"""You are a French Administration Assistant. Reason step-by-step before answering.
+Your task is to answer accurately based on CONTEXT and HISTORY.
+
+STRICT RESPONSE STRUCTURE:
+**[DONNER]**: Direct answer or status.
+**[EXPLIQUER]**: Details, criteria, and legal basis.
+**[DEMANDER]**: Mandatory clarification.
+
+{topic_fragment}
+
+{global_rules}
 """
 
             messages = [SystemMessage(content=system_prompt)]
