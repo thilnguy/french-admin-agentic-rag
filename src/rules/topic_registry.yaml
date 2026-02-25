@@ -34,12 +34,17 @@ topics:
       - name: expiry_date
         when: "Any renewal"
         why: "Must renew 2 months before expiration"
-    exemplar:
-      input: "Comment renouveler mon passeport talent 'chercheur' ?"
-      output: |
-        **[DONNER]**: Vous devez demander le renouvellement 2 mois avant l'expiration.
-        **[EXPLIQUER]**: La procédure nécessite une convention d'accueil signée.
-        **[DEMANDER]**: Avez-vous votre convention d'accueil signée par votre employeur ?
+    exemplars:
+      - input: "Comment renouveler mon passeport talent 'chercheur' ?"
+        output: |
+          **[DONNER]**: Vous devez demander le renouvellement 2 mois avant l'expiration.
+          **[EXPLIQUER]**: La procédure nécessite une convention d'accueil signée.
+          **[DEMANDER]**: Avez-vous votre convention d'accueil signée par votre employeur ?
+      - input: "Tôi muốn đăng ký thẻ cư trú 10 năm sau khi đã ở Pháp 3 năm với diện Passeport Talent."
+        output: |
+          **[CUNG CẤP]**: Thẻ 10 năm thường yêu cầu 5 năm cư trú, nhưng Passeport Talent có điều kiện riêng.
+          **[GIẢI THÍCH]**: Bạn cần kiểm tra diện đóng góp đặc biệt hoặc có gia đình là người Pháp.
+          **[YÊU CẦU]**: Tình trạng gia đình của bạn như thế nào? Bạn đã ở Pháp bao nhiêu năm chính xác?
     guardrail_keywords:
       - "visa"
       - "titre de séjour"
@@ -70,12 +75,17 @@ topics:
       - name: period_of_strike
         when: "Strike refund"
         why: "Must match IDFM's declared refund period"
-    exemplar:
-      input: "Mon employeur ne me paie pas mes heures supplémentaires, que faire ?"
-      output: |
-        **[DONNER]**: Envoyez une mise en demeure par LRAR à votre employeur.
-        **[EXPLIQUER]**: Si cela échoue, vous pouvez saisir les Prud'hommes.
-        **[DEMANDER]**: Avez-vous des preuves de présence pour ces heures ?
+    exemplars:
+      - input: "Mon employeur ne me paie pas mes heures supplémentaires, que faire ?"
+        output: |
+          **[DONNER]**: Envoyez une mise en demeure par LRAR à votre employeur.
+          **[EXPLIQUER]**: Si cela échoue, vous pouvez saisir les Prud'hommes.
+          **[DEMANDER]**: Quel est votre type de contrat (CDI/CDD) ? Avez-vous des preuves de présence ?
+      - input: "What are the rules for 'chômage technique' during a flood?"
+        output: |
+          **[GIVE]**: The employer can trigger 'activité partielle'. Employees receive ~70% of gross salary.
+          **[EXPLAIN]**: The state compensates the employer via a specific mechanism.
+          **[ASK]**: What is the size of your company? In which region are you located?
     guardrail_keywords:
       - "employeur"
       - "heures supplémentaires"
@@ -106,12 +116,17 @@ topics:
       - name: child_age
         when: "Childcare tax credit"
         why: "Only children under 6 qualify for the credit"
-    exemplar:
-      input: "Tôi muốn tặng tiền cho con cái, có phải nộp thuế không?"
-      output: |
-        **[CUNG CẤP]**: Bạn có thể tặng tối đa 100.000€ mỗi 15 năm không thuế cho mỗi con.
-        **[GIẢI THÍCH]**: Trên mức đó sẽ bị đánh thuế theo biểu thuế luỹ tiến.
-        **[YÊU CẦU]**: Số tiền bạn muốn tặng là bao nhiêu? Lần tặng gần nhất là khi nào?
+    exemplars:
+      - input: "Tôi muốn tặng tiền cho con cái, có phải nộp thuế không?"
+        output: |
+          **[CUNG CẤP]**: Bạn có thể tặng tối đa 100.000€ mỗi 15 năm không thuế cho mỗi con.
+          **[GIẢI THÍCH]**: Trên mức đó sẽ bị đánh thuế theo biểu thuế luỹ tiến.
+          **[YÊU CẦU]**: Số tiền bạn muốn tặng là bao nhiêu? Lần tặng gần nhất là khi nào?
+      - input: "Est-ce que je peux déduire les frais de garde d'enfants de mes impôts ?"
+        output: |
+          **[DONNER]**: Oui, un crédit d'impôt existe pour les frais de garde hors domicile.
+          **[EXPLIQUER]**: Le plafond est de 3 500€ par enfant et s'applique aux enfants de moins de 6 ans.
+          **[DEMANDER]**: Quel est l'âge de votre enfant ? Quel est le montant total des frais de garde ?
     guardrail_keywords:
       - "impôts"
       - "tax"
@@ -139,12 +154,17 @@ topics:
       - name: time_passed
         when: "Criminal record"
         why: "Some records expire automatically after a set period"
-    exemplar:
-      input: "How do I register a birth in France?"
-      output: |
-        **[GIVE]**: Declare within 5 days at the Mairie of the place of birth.
-        **[EXPLAIN]**: You need the doctor's certificate and parents' ID.
-        **[ASK]**: Where was the birth? What is the parents' marital status?
+    exemplars:
+      - input: "How do I register a birth in France?"
+        output: |
+          **[GIVE]**: Declare within 5 days at the Mairie of the place of birth.
+          **[EXPLAIN]**: You need the doctor's certificate and parents' ID.
+          **[ASK]**: Where was the birth? What is the parents' marital status?
+      - input: "Tôi bị mất hộ chiếu Việt Nam tại Nice, tôi có phải lên Paris không?"
+        output: |
+          **[CUNG CẤP]**: Bạn cần trình báo cảnh sát Pháp tại Nice trước.
+          **[GIẢI THÍCH]**: Sau đó liên hệ ĐSQ tại Paris. ĐSQ có thể hỗ trợ qua bưu điện tùy trường hợp.
+          **[YÊU CẦU]**: Mức độ khẩn cấp như thế nào? Bạn có cần hộ chiếu ngay để đi lại không?
     guardrail_keywords:
       - "passport"
       - "birth"
@@ -172,12 +192,22 @@ topics:
       - name: employment_status
         when: "RSA, AAH"
         why: "Working while receiving benefits affects calculation"
-    exemplar:
-      input: "Tôi muốn xin trợ cấp AAH nhưng tôi đang đi làm."
-      output: |
-        **[CUNG CẤP]**: AAH có thể kết hợp với thu nhập từ việc làm nhưng sẽ bị khấu trừ.
-        **[GIẢI THÍCH]**: Bạn cần khai báo thu nhập hàng quý (DTR).
-        **[YÊU CẦU]**: Thu nhập hàng quý của bạn là bao nhiêu? Tỷ lệ khuyết tật?
+    exemplars:
+      - input: "Tôi muốn xin trợ cấp AAH nhưng tôi đang đi làm."
+        output: |
+          **[CUNG CẤP]**: AAH có thể kết hợp với thu nhập từ việc làm nhưng sẽ bị khấu trừ.
+          **[GIẢI THÍCH]**: Bạn cần khai báo thu nhập hàng quý (DTR).
+          **[YÊU CẦU]**: Thu nhập hàng quý của bạn là bao nhiêu? Tỷ lệ khuyết tật?
+      - input: "Comment obtenir le 'Chèque Énergie' ?"
+        output: |
+          **[DONNER]**: Le chèque énergie est attribué automatiquement selon vos revenus déclarés aux impôts.
+          **[EXPLIQUER]**: Il n'y a pas de démarche à faire. Si vous y avez droit, il sera envoyé à votre domicile.
+          **[DEMANDER]**: Avez-vous déclaré vos revenus aux impôts cette année ?
+      - input: "Comment faire ma demande de retraite si j'ai travaillé à l'étranger ?"
+        output: |
+          **[DONNER]**: La France a des accords avec de nombreux pays pour la totalisation des périodes.
+          **[EXPLIQUER]**: Vous devez déclarer vos périodes travaillées via le formulaire E202 (Europe) ou selon la convention bilatérale.
+          **[DEMANDER]**: Dans quels pays avez-vous travaillé ? Quel est votre âge actuel ?
     guardrail_keywords:
       - "AAH"
       - "RSA"

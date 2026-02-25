@@ -25,7 +25,12 @@ class TopicRules:
         self.default_step = data.get("default_step", "CLARIFICATION")
         self.mandatory_variables = data.get("mandatory_variables", [])
         self.conditional_variables = data.get("conditional_variables", [])
-        self.exemplar = data.get("exemplar", {})
+        # Support both 'exemplars' (list) and legacy 'exemplar' (dict)
+        raw_exemplars = data.get("exemplars", [])
+        if not raw_exemplars:
+            single = data.get("exemplar", {})
+            raw_exemplars = [single] if single else []
+        self.exemplars = raw_exemplars
         self.guardrail_keywords = data.get("guardrail_keywords", [])
         self.force_retrieval_patterns = data.get("force_retrieval_patterns", [])
     
@@ -57,14 +62,16 @@ class TopicRules:
             lines.append(f"- {var['name']}: {var['why']}")
         return "\n".join(lines)
     
-    def format_exemplar(self) -> str:
-        """Formats the exemplar into a prompt-friendly string."""
-        if not self.exemplar:
+    def format_exemplars(self) -> str:
+        """Formats all exemplars into a few-shot prompt block."""
+        if not self.exemplars:
             return ""
-        return f"""EXAMPLE for this topic:
-Input: {self.exemplar.get('input', '')}
-Expected output:
-{self.exemplar.get('output', '')}"""
+        lines = ["FEW-SHOT EXAMPLES for this topic:"]
+        for i, ex in enumerate(self.exemplars, 1):
+            lines.append(f"\n--- Example {i} ---")
+            lines.append(f"Input: {ex.get('input', '')}")
+            lines.append(f"Output:\n{ex.get('output', '')}")
+        return "\n".join(lines)
 
 
 class TopicRegistry:
@@ -148,7 +155,7 @@ TOPIC: {rules.display_name}
 VARIABLES YOU MUST ASK FOR (if not already known):
 {rules.format_variable_list(all_vars) if all_vars else "All key variables are already known. Provide a direct answer."}
 
-{rules.format_exemplar()}
+{rules.format_exemplars()}
 """
         return fragment.strip()
     
