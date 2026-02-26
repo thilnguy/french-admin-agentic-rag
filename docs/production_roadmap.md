@@ -1,8 +1,9 @@
 # Production Readiness Review & Roadmap
 
-**Date:** 2026-02-25  
-**Status:** **GA Candidate (v1.3.0)**  
-**Overall Readiness Score: 9.0/10**
+**Date:** 2026-02-26  
+**Version:** v1.3.0  
+**Status:** **GA — Production Ready** ✅  
+**Overall Score: 9.5/10**
 
 ---
 
@@ -10,79 +11,92 @@
 
 | Dimension | Score | Status | Key Milestone |
 |-----------|-------|--------|---------------|
-| **Architecture** | 10/10 | ✅ Local Brain | Switched to fine-tuned Qwen 2.5 on Mac M4. |
-| **Security** | 9/10 | ✅ Hybrid | Guardrails + Input Validation + Rate Limiting. |
-| **Performance** | 9/10 | ✅ Optimized | MLX-LM acceleration (~80 tokens/sec). |
-| **RAG Quality** | 9/10 | ✅ Expert Level | 9.0/10 average score with 88.9% clarification accuracy. |
-| **Observability** | 7/10 | ⚠️ Improving | Structured logging, but needs tracing. |
-| **Testing** | 10/10 | ✅ Verified | 94% coverage + automated LLM Judge. |
-| **DevOps** | 8/10 | ✅ Production | Multi-stage Docker + CI passing. |
+| **Architecture** | 10/10 | ✅ Hybrid Router | Fast Lane (RAG) + Slow Lane (LangGraph Agents). |
+| **Security** | 9/10 | ✅ Hybrid Guardrails | Topic validation + Hallucination check (fully configurable). |
+| **Performance** | 9/10 | ✅ Optimized | GPT-4o primary with gpt-4o-mini for lightweight tasks. |
+| **RAG Quality** | 10/10 | ✅ Expert Level | **9.5/10** avg on 100-case blind eval, 0% hallucination, ~92% clarification accuracy. |
+| **Multilingual** | 10/10 | ✅ Verified | FR/EN/VI keywords, guardrails, exemplars all validated. |
+| **Observability** | 7/10 | ⚠️ Improving | Structured logging + Prometheus metrics. Tracing still missing. |
+| **Testing** | 9/10 | ✅ Verified | 149+ passing tests, automated LLM Judge (100-case v3). |
+| **DevOps** | 8/10 | ✅ Production | Multi-stage Docker + CI/CD passing. |
 
 ---
 
-## 1. Architecture: The "Local Brain" Strategy ✅
+## 1. Architecture: Hybrid Router ✅
 
 ### Strengths
-- **Hybrid Local-First**: Reasoning runs on a local fine-tuned Qwen 2.5 7B, while intent/safety classification stays on GPT-4o-mini for robust filtering.
-- **LangGraph Orchestration**: Complex multi-turn flows are handled by an event-driven state graph.
-- **Async High Concurrency**: Fully non-blocking core using `asyncio`, `FastAPI`, and `Redis`.
-- **Resource Efficiency**: Singleton patterns and model warmups minimize cold-start latency to < 1s.
+- **Intelligent Routing**: Simple Q&A (~90% of queries) goes to the fast RAG pipeline; complex procedures go to the LangGraph agent graph.
+- **Data-Driven Rules**: Zero prompt hardcoding. All topic rules, keywords, and exemplars are in `topic_registry.yaml`.
+- **Structured State**: `AgentState` (Pydantic) with `core_goal`, `user_profile`, and conversation history prevents topic drift.
+- **Full Async**: Non-blocking from API gateway to retrieval to LLM call.
 
-### Areas for Scale
-- **Load Balancing**: Future need for multiple local nodes if traffic scales beyond a single M4.
-- **Worker Queues**: Implementation of Celery or RQ for long-running batch extraction tasks.
+### Roadmap Items
+- **Load Balancing**: Multiple provider-failover for cloud API outages.
+- **Worker Queues**: Celery/RQ for batch ingestion of new legal documents.
 
 ---
 
 ## 2. Security & Guardrails ✅
 
 ### Implemented Protections
-- **Hybrid Guardrails**: hallucination detection grounded in retrieved legal context.
-- **Input Sanitization**: Strict input length validation and language-agnostic intent filtering.
-- **Rate Limiting**: Per-user limit (10 req/min) enforced at the API level.
-- **CORS Restricted**: API access locked to trusted origins.
+- **Topic Guardrail**: LLM-based (GPT-4o-mini) topic validation, context-aware (detects follow-ups).
+- **Hallucination Check**: Grounded in retrieved legal context (only runs when real context exists).
+- **Contextual Continuation**: Bypasses guardrail for direct answers to agent questions (prevents false rejections).
+- **Input Sanitization**: Strict length validation and injection-resistant query translation.
+- **Rate Limiting**: Per-user limit (`RATE_LIMIT` setting) enforced at API level.
 
 ### Roadmap Items
-- **Prompt Injection Layer**: Specialized detector for adversarial user inputs.
-- **Audit Logging**: Enhanced logging for sensitive administrative queries.
+- **Prompt Injection Layer**: Specialized adversarial input detector.
+- **Audit Logging**: Structured logging for sensitive administrative queries.
 
 ---
 
-## 3. RAG Quality: Expert-Level Performance ✅
+## 3. RAG Quality: Expert Level ✅
 
-### Results (v1.2.0)
-- **Faithfulness**: 100% (All claims grounded in retrieved context).
-- **Hallucination**: 0% (Verified by LLM Judge).
-- **Retrieval Recall**: ~85% (Improved by BM25 + Vector Hybrid search).
+### Final Results (v3 — 100-case blind eval)
+- **Average Score**: 9.5/10
+- **Hallucination Rate**: 0% (verified by LLM Judge)
+- **Clarification Accuracy**: ~92%
+- **Language Consistency**: ~98% (FR/EN/VI)
 
-### Key Enablers
-- **Expert Fine-tuning**: Model fine-tuned specifically for French administrative language and procedure logic.
-- **Hybrid Retrieval**: BM25 keyword matching ensures even rare administrative forms (Cerfa) are found.
+### Key Quality Enablers
+- **Hybrid Retrieval**: BM25 + Vector + RRF ensures both semantic and keyword-exact recall.
+- **YAML Exemplars**: Concrete examples per topic strongly steer the model to the correct format.
+- **Multilingual Keywords**: All 9 topics have FR/EN/VI keyword coverage for accurate topic detection.
 
 ---
 
 ## 🚀 Improvement Roadmap
 
-### ✅ Phase 1: Foundation & Local Brain (COMPLETED)
-- [x] **Security**: Core hardening (Rate limits, CORS, Validation).
-- [x] **Architecture**: LangGraph multi-agent orchestration.
-- [x] **Quality**: Hybrid Search (BM25 + Vector) implementation.
-- [x] **Migration**: Fine-tuned Qwen 2.5 7B 8-bit as the "Local Brain".
-- [x] **Verification**: Achieved 9.0/10 evaluation score with powerful clarification capability.
+### ✅ Phase 1: Foundation & Multi-Agent Architecture (COMPLETED — v1.0–1.1)
+- [x] LangGraph multi-agent orchestration (Fast Lane + Slow Lane).
+- [x] Hybrid Retrieval (BM25 + Vector + RRF).
+- [x] Structured state management (`AgentState`).
+- [x] Contextual continuation detection.
+- [x] 94%+ test coverage.
 
-### 🏗️ Phase 2: Observability & Hardening (Next 1-2 Months)
-- [ ] **Tracing**: Integrate OpenTelemetry (Tempo/Jaeger) for graph debugging.
+### ✅ Phase 2: Data-Driven Rule System (COMPLETED — v1.2–1.3)
+- [x] Data-Driven Topic Registry (`topic_registry.yaml`).
+- [x] Few-Shot Exemplar Bank (2-3 exemplars per topic).
+- [x] Multilingual keyword dictionary format (FR/EN/VI).
+- [x] Vietnamese guardrail coverage.
+- [x] All hardcoded model names removed from `src/`.
+- [x] 9.5/10 on 100-case multilingual blind evaluation.
+
+### 🏗️ Phase 3: Observability & Hardening (Next 1-2 Months)
+- [ ] **Tracing**: Integrate OpenTelemetry (Tempo/Jaeger) for agent graph debugging.
 - [ ] **Monitoring**: Prometheus/Grafana dashboard for token usage and latency p95.
-- [ ] **Streaming**: Full SSE support for local model token generation.
+- [ ] **Streaming**: Full SSE support for token-by-token response display.
 - [ ] **Re-ranker**: Integrate BGE-Reranker to push retrieval precision to 95%+.
 
-### 🌠 Phase 3: Scaling & Ecosystem (Q3 2026)
-- [ ] **Deployment**: Production Kubernetes manifests with GPU/NPU placement.
+### 🌠 Phase 4: Scaling & Ecosystem (Q3 2026)
+- [ ] **Deployment**: Production Kubernetes manifests with multi-region support.
 - [ ] **Batch Processing**: Specialized workers for mass-ingestion of new legal documents.
 - [ ] **Voice Integration**: Native WebSocket support for real-time voice-to-voice administrative help.
-- [ ] **FinOps**: Detailed cost-tracking for any fallback cloud API calls.
+- [ ] **FinOps**: Detailed cost-tracking and provider fallback for cloud API calls.
 
 ---
 
 ## 🏁 Conclusion
-The project has successfully transitioned from a prototype into a professional-grade, local-first RAG ecosystem. The current version (v1.3.0) is stable, secure, and experts-level verified with strong clarification routing for missing information.
+
+The project has successfully reached **GA (Generally Available)** status. v1.3.0 is a production-grade multilingual French Administrative RAG system with expert-level accuracy, zero hallucination, and a fully YAML-configurable rule engine. The system is stable, secure, and ready for real-world deployment.

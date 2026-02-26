@@ -12,7 +12,7 @@ async def test_orchestrator_routes_to_fast_lane_simple_qa():
     with (
         patch("src.agents.orchestrator.redis.Redis"),
         patch("src.agents.orchestrator.ChatOpenAI"),
-        patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
+        patch("src.agents.orchestrator.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.intent_classifier.intent_classifier.classify",
             new_callable=AsyncMock,
@@ -73,15 +73,10 @@ async def test_orchestrator_routes_to_fast_lane_simple_qa():
         response = await orchestrator.handle_query("Simple question", "en")
 
         # Verify
-        # mock_classify.assert_called_once() # Removed as pipeline handles it
-        # orchestrator.llm.ainvoke.assert_called_once() # Logic changed, check result
         mock_get_pipeline.assert_called_once()
         mock_pipeline.run.assert_awaited_once()
         mock_retriever.assert_called_once()
         assert response == "Translated content"
-
-        # Verify we did NOT use AgentGraph (can't easily verify 'not imported',
-        # but we can verify legacy path was taken by checking LLM usage which might differ in graph)
 
 
 @pytest.mark.asyncio
@@ -90,7 +85,7 @@ async def test_orchestrator_routes_to_agent_graph_complex():
     with (
         patch("src.agents.orchestrator.redis.Redis"),
         patch("src.agents.orchestrator.ChatOpenAI"),
-        patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
+        patch("src.agents.orchestrator.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.intent_classifier.intent_classifier.classify",
             new_callable=AsyncMock,
@@ -148,8 +143,7 @@ async def test_orchestrator_routes_to_agent_graph_complex():
         mock_memory.load_agent_state = AsyncMock(return_value=state)
         mock_memory.save_agent_state = AsyncMock()
 
-        # Mock Graph Response
-        # Graph returns state dict with messages
+        # Mock Graph Response (graph returns state dict with messages)
         final_messages = [
             HumanMessage(content="users query"),
             AIMessage(content="Graph response"),
@@ -160,7 +154,6 @@ async def test_orchestrator_routes_to_agent_graph_complex():
         response = await orchestrator.handle_query("Complex task", "fr")
 
         # Verify
-        # mock_classify.assert_called_once() # Handled by pipeline
         mock_agent_graph.ainvoke.assert_called_once()
         assert response == "Graph response"
 

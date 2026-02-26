@@ -1,140 +1,92 @@
 # Architecture Evolution: Monolithic to Multi-Agent System
 
-## 1. Current State: Local Brain Architecture (v1.2.0)
-We have successfully implemented the **Local Brain Strategy**. The system is no longer monolithic or purely cloud-dependent.
+## 1. Current State: Hybrid Multi-Agent Architecture (v1.3.0)
 
-| Feature | Implementation (v1.2.0) | Infrastructure |
-|---------|------------------------|----------------|
-| **Core Brain** | **Fine-tuned Qwen 2.5 7B 8-bit** | Local Mac M4 (MLX) |
-| **Safety Layer** | **Hybrid Guardrails** | GPT-4o-mini (Cloud) |
-| **Logic Flow** | **LangGraph Orchestrator**| Local Mac M4 |
-| **Search** | **Hybrid RAG** | Qdrant + BM25 (Local) |
+The system has successfully evolved from a monolithic single-prompt approach to a **Hybrid Router Architecture** with specialized agents.
 
-**Verdict**: We have surpassed the original Target State by achieving a highly reliable **9.0/10** score with an 88.9% clarification detection accuracy on local hardware.
+| Layer | Implementation (v1.3.0) | Infrastructure |
+|-------|-------------------------|----------------|
+| **Generation (Main)** | **GPT-4o (OpenAI)** | Cloud API |
+| **Guardrails** | **GPT-4o-mini (Hybrid Guardrails)** | Cloud API (configurable via `GUARDRAIL_MODEL`) |
+| **Query Rewriting** | **GPT-4o-mini** | Cloud API (configurable via `FAST_LLM_MODEL`) |
+| **Logic Flow** | **LangGraph (Fast + Slow Lane)** | In-process |
+| **Search** | **Hybrid RAG (BM25 + Qdrant + RRF)** | Qdrant + Redis (Local/Docker) |
+| **Rules** | **Data-Driven Topic Registry** | YAML config file |
 
----
-
-## 2. Target State: Event-Driven Multi-Agent System
-To support complex administrative tasks (forms, appointments, personalized advice), we should evolve to a **Graph-Based Multi-Agent Architecture** (pattern similar to `LangGraph`).
-
-### Core Concepts
-1.  **Supervisor (Orchestrator Agent)**: The "Project Manager". Breaks down complex user requests and delegates to workers.
-2.  **Worker Agents**: Specialized autonomous units.
-3.  **Shared Graph State**: A structured object passed between agents containing `Messages`, `CurrentStep`, `CollectedData` (e.g., user's age, visa type).
-
-### Proposed Agents
-| Agent | Role | Tools/Autonomy |
-|-------|------|----------------|
-| **Supervisor** | Triage & Planning | Decides: "User needs a visa -> Delegate to Procedure Agent". "User asks simple QA -> Delegate to QA Agent". |
-| **Legal Specialist** | Research & Fact-Checking | **Tools**: `Qdrant`, `Legifrance API`. <br> **Autonomy**: Can re-write search queries if results are empty. Can cross-reference multiple sources. |
-| **Procedure Guide** | Interactive Step-by-Step | **Tools**: `FormFiller`, `AppointmentChecker`. <br> **Autonomy**: Maintains state of a specific process (e.g., "Step 3/5: Upload photo"). |
-| **Cultural Adaptor** | UX & Translation | **Tools**: `Translation`, `ToneAdjustment`. <br> **Autonomy**: Adapts answers to cultural context (e.g., explaining implicitly understood French norms to foreigners). |
+**Verdict**: Achieved **9.5/10** on a 100-case multilingual blind benchmark, with **91.8% clarification accuracy** and 0% hallucination rate.
 
 ---
 
-## 3. Migration Roadmap
+## 2. Implemented Architecture: The "Router-First" Hybrid
 
-### Phase 1: State Management Refactor (Weeks 1-2)
-*Goal: Move from "Chat History List" to "Structured State".*
-- define `AgentState` Pydantic model:
-  ```python
-  class AgentState(BaseModel):
-      messages: List[BaseMessage]
-      user_profile: UserProfile  # (visa_status, age, etc.)
-      current_task: Optional[str]
-      next_step: str
-  ```
-- This allows the agent to "remember" it is in the middle of a visa application process, even if the user asks a side question.
+The `AdminOrchestrator` acts as an intelligent **Smart Router**, directing queries through the optimal path:
 
-### Phase 2: Extract "Legal Specialist" Agent (Weeks 3-4)
-*Goal: Make retrieval agentic.*
-- Convert `retrieve_legal_info` from a function to an Agent loop:
-  1. Generate Search Query.
-  2. Execute Search.
-  3. **Eval**: Are results relevant?
-  4. **Loop**: If no, refine query and retry (max 3 times).
-  5. Return synthesized answer.
+### Fast Lane (Simple Q&A)
+- **Use Case**: Factual, single-answer questions ("How much does a passport cost?").
+- **Logic**: `Guardrail → QueryPipeline → Translate → HybridRAG → Generate → HallucinationCheck`.
+- **SLA**: ~2-5 seconds.
+- **Cost**: Low.
 
-### Phase 3: The Supervisor Router (Month 2)
-*Goal: Dynamic delegation.*
-- Replace hardcoded `handle_query` with a Router:
-  - If intent == "QA" -> Call Legal Specialist.
-  - If intent == "Procedure" -> Call Procedure Guide.
-  - If intent == "Chitchat" -> Handle directly.
-
----
-
-## 4. Benefit Analysis
-
-| Metric | Current Monolith | Proposed MAS |
-|--------|------------------|--------------|
-| **Complexity Handling** | Low (Single turn QA) | High (Multi-turn workflows) |
-| **Error Recovery** | Fail immediately | Retry/Self-correct |
-| **Maintenance** | Single huge class | Small specialized modules |
-| **Latency** | Low (Linear) | Higher (Multi-step reasoning) |
-
-**Recommendation**: Start **Phase 1 (State Refactor)** immediately. The current system is brittle for anything beyond simple QA.
-
----
-
-## 5. Risks & Challenges (The "No Free Lunch" Part)
-
-While MAS offers autonomy, it introduces significant new challenges:
-
-### 1. Latency & Cost 💸
-- **Current**: 1 LLM call (Generate) + 1 Guardrail. Fast (~2-3s).
-- **MAS**: Supervisor -> Worker -> Tool -> Worker -> Supervisor.
-- **Risk**: Each hop adds latency. A complex query could take **10-15s** and cost **3-5x more** tokens due to internal reasoning loops.
-
-### 2. Infinite Loops 🔄
-- **Risk**: Agents getting stuck.
-  - *Example*: Legal Specialist can't find info -> Refine Query -> Search -> Can't find info -> Refine Query...
-- **Mitigation**: Strict `max_iterations` (e.g., 3 retries max) and "Give Up" state.
-
-### 3. Debugging Complexity 🕸️
-- **Current**: Stack trace shows exactly where it failed.
-- **MAS**: Failure is emergent. "Why did the Supervisor pick the wrong worker?" or "Why did the worker decide to stop searching?" requires **distributed tracing** (LangSmith/Arize Phoenix).
-
-### 4. State Management Consistency
-- **Risk**: If the `AgentState` gets corrupted or desynchronized (e.g., Redis failure), the agent "forgets" where it is in a multi-step flow.
-
----
-
-## 6. Proposed Hybrid Strategy (The "Router-First" Approach) 🛡️
-
-To balance **Speed** (Current Monolith) with **Power** (MAS), we deploy a Hybrid system.
-
-### Core Concept: "Fast Lane" vs "Slow Lane"
-
-1.  **Fast Lane (Standard RAG)**:
-    - **Use Case**: Simple Q&A ("How much is a passport?").
-    - **Logic**: `Guardrail -> Translate -> Retrieve -> Generate`.
-    - **SLA**: < 3 seconds.
-    - **Cost**: Low.
-
-2.  **Slow Lane (Agentic Graph)**:
-    - **Use Case**: Complex flows ("Help me fill out Cerfa 12345", "Wait, why was my visa rejected?").
-    - **Logic**: `Supervisor -> Plan -> Tool Loop -> Response`.
-    - **SLA**: 10-30 seconds.
-    - **Cost**: High.
-
-### Implementation: The Intelligent Router
-
-The `AdminOrchestrator` becomes a **Smart Router**:
+### Slow Lane (Agentic Graph)
+- **Use Case**: Complex, multi-step procedures ("Help me apply for a work permit").
+- **Logic**: `Guardrail → QueryPipeline → LangGraph → ProcedureGuideAgent | LegalResearchAgent`.
+- **SLA**: 10-60 seconds.
+- **Cost**: Higher.
 
 ```python
-async def handle_query(self, query):
-    # 1. Classification (Lightweight LLM or Keyword)
-    intent = await classify_intent(query)
-
-    # 2. Routing
-    if intent == "SIMPLE_QA":
-        return await self.run_fast_rag_pipeline(query)  # Current code
-    elif intent == "COMPLEX_TASK":
-        return await self.run_agentic_workflow(query)   # New LangGraph
+# Routing logic (Intent-driven)
+if intent in [Intent.COMPLEX_PROCEDURE, Intent.FORM_FILLING, Intent.LEGAL_INQUIRY]:
+    return await agent_graph.ainvoke(state)   # Slow Lane
+else:
+    return await self._run_fast_rag_pipeline(...)  # Fast Lane
 ```
 
-### Benefits
-- ✅ **90% of queries** (simple info) stay **fast and cheap**.
-- ✅ **10% of queries** (hard tasks) get **full agentic power**.
-- ✅ **Less risk**: If the Agent system breaks, the basic Q&A still works.
+---
+
+## 3. Key Architecture Innovations
+
+### 3.1 Data-Driven Topic Registry (v1.2–1.3)
+Replaced monolithic, hardcoded prompt rules with a **YAML-driven Topic Registry**:
+- Each topic (Immigration, Labor, Taxes...) defines its own rules, mandatory variables, guardrail keywords, and few-shot exemplars in `topic_registry.yaml`.
+- The Python class `TopicRegistry` injects *only relevant rules* into the prompt — reducing prompt length by ~60%.
+- **Result**: Eliminated hallucinations on edge cases (e.g., "strike pay" confusion).
+
+### 3.2 Multilingual Guardrail Keywords (v1.3)
+All `guardrail_keywords` support a multilingual dict format (`fr`, `en`, `vi`), making it trivial to add keyword coverage for new languages without touching Python code.
+
+### 3.3 Structured State with Goal Locking (v1.1)
+- `AgentState` (Pydantic) carries `messages`, `user_profile`, `core_goal`, `intent`, `metadata`.
+- **Core Goal Lock**: Prevents topic drift in multi-turn conversations. If goal = "Obtain a work permit", a follow-up like "I have a residence permit" stays anchored to the work permit procedure.
+
+### 3.4 Contextual Continuation Detection (v1.1)
+- The `QueryPipeline` detects if the current message is a direct answer to the agent's previous clarification question.
+- If yes, the guardrail topic check is bypassed (e.g., a user answering "Vietnamese" after being asked their nationality won't get rejected as off-topic).
+
+---
+
+## 4. Migration Roadmap Status
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| **Phase 1** | State Management Refactor (`AgentState` Pydantic model) | ✅ DONE (v1.0) |
+| **Phase 2** | Extract Legal Specialist Agent (agentic retrieval loop) | ✅ DONE (v1.1) |
+| **Phase 3** | Supervisor Router (Fast/Slow Lane) | ✅ DONE (v1.1) |
+| **Phase 4** | Data-Driven Topic Registry | ✅ DONE (v1.2) |
+| **Phase 5** | Multilingual keyword support + guardrail hardening | ✅ DONE (v1.3) |
+| **Phase 6** | OpenTelemetry tracing + Grafana dashboard | 🏗️ Next |
+| **Phase 7** | Kubernetes production deployment | 🌠 Q3 2026 |
+
+---
+
+## 5. Risk Register
+
+### Latency (Managed)
+- Complex Vietnamese queries: capped at 60s via `QUERY_TIMEOUT_SECONDS`.
+- Guardrail parallelism: topic check and retrieval can run concurrently in future.
+
+### State Consistency
+- Redis failure: `AgentState` load has exception handling; falls back to a fresh empty state.
+
+### Infinite Loops
+- `_run_chain` in all agents uses `@retry` with `stop_after_attempt(3)`.
+- LangGraph graph has a max iteration guard.

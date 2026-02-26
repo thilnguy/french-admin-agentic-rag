@@ -1,5 +1,6 @@
 import hashlib
-import redis.asyncio as redis  # Use async redis
+import time
+import redis.asyncio as redis
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from tenacity import (
@@ -15,8 +16,12 @@ from src.config import settings
 from src.utils.logger import logger
 from src.utils import metrics
 from src.agents.graph import agent_graph
+from src.agents.intent_classifier import Intent
+from src.rules.registry import topic_registry
+from src.shared.guardrails import guardrail_manager
+from src.shared.query_pipeline import get_query_pipeline
+from src.shared.language_resolver import language_resolver
 from src.utils.llm_factory import get_llm
-import time
 
 
 
@@ -84,12 +89,6 @@ class AdminOrchestrator:
         Main orchestration logic with Guardrails, Caching, and Query Translation.
         Uses AgentState for structured context management.
         """
-        # Cache Key based on query, language, AND session_id
-        # Including session_id prevents cross-session cache contamination
-        # (e.g., eval test cases sharing cached responses from other sessions)
-        from src.shared.guardrails import guardrail_manager
-        from src.shared.query_pipeline import get_query_pipeline
-        from src.shared.language_resolver import language_resolver
 
         # LOAD STATE (Structured State Management)
         state = await self.memory.load_agent_state(session_id)
@@ -196,17 +195,12 @@ class AdminOrchestrator:
         # Language normalization (already handled by extraction logic above)
         full_lang = effective_lang
 
-        # ROUTER LOGIC: Fast Lane vs Slow Lane
-        # If intent is complex, delegate to AgentGraph
-        from src.agents.intent_classifier import Intent
-
         if intent in [
             Intent.COMPLEX_PROCEDURE,
             Intent.FORM_FILLING,
             Intent.LEGAL_INQUIRY,
         ]:
             logger.info(f"Routing to AgentGraph for intent: {intent}")
-            # from src.agents.graph import agent_graph (Moved to top-level)
 
             # We need to ensure state has the latest query in messages for the graph to see it?
             # actually our graph nodes read state.messages[-1].content
@@ -303,9 +297,7 @@ class AdminOrchestrator:
                     [f"Source {d['source']}: {d['content']}" for d in context]
                 )
 
-            # Step 2: Formulate answer (with Chat History)
-            # Use topic registry to inject only relevant rules
-            from src.rules.registry import topic_registry
+            # Step 2: Formulate answer (inject topic-specific rules from registry)
             detected_topic = topic_registry.detect_topic(query, intent)
             topic_fragment = topic_registry.build_prompt_fragment(
                 detected_topic, state.user_profile.model_dump(), query

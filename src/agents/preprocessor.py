@@ -9,8 +9,9 @@ from src.utils.logger import logger
 
 class QueryRewriter:
     def __init__(self):
+        # Uses the FAST_LLM_MODEL setting (default: gpt-4o-mini) — cheap & fast for query rewriting.
         self.llm = ChatOpenAI(
-            model="gpt-4o-mini",  # Fast & Cheap for rewriting
+            model=settings.FAST_LLM_MODEL,
             temperature=0,
             api_key=settings.OPENAI_API_KEY,
         )

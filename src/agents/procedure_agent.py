@@ -54,8 +54,6 @@ class ProcedureGuideAgent:
             Return ONLY the step name."""
         )
 
-        # Legacy placeholder (kept for safety)
-        self.clarification_prompt = ChatPromptTemplate.from_template("...")
 
     @retry(
         wait=wait_exponential(multiplier=1, min=2, max=10),
@@ -67,7 +65,7 @@ class ProcedureGuideAgent:
         start_time = time.time()
         result = await chain.ainvoke(input_data)
         duration = time.time() - start_time
-        metrics.LLM_REQUEST_DURATION.labels(model="gpt-4o").observe(duration)
+        metrics.LLM_REQUEST_DURATION.labels(model=self.llm.model_name).observe(duration)
         return result
 
     async def run(self, query: str, state: AgentState) -> str:

@@ -12,8 +12,9 @@ class GuardrailManager:
     def __init__(self):
         # Always use a robust model for Guardrails to prevent false refusals,
         # especially for non-French languages or complex logic.
+        # Model is configurable via GUARDRAIL_MODEL setting (default: gpt-4o-mini).
         self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
+            model=settings.GUARDRAIL_MODEL,
             temperature=0,
             api_key=settings.OPENAI_API_KEY
         )
