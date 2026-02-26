@@ -101,6 +101,14 @@ class AdminOrchestrator:
         span.set_attribute("query", query)
         span.set_attribute("session", session_id)
 
+        # 0: Injection Guard
+        from src.shared.injection_guard import injection_guard
+        is_safe, reason = injection_guard.validate_query(query)
+        if not is_safe:
+            metrics.GUARDRAIL_REJECTIONS.labels(reason="Prompt Injection").inc()
+            logger.warning(f"Injection blocked for session {session_id}")
+            return f"Demande bloquée : {reason}"
+
         # LOAD STATE (Structured State Management)
         state = await self.memory.load_agent_state(session_id)
         chat_history = state.messages
@@ -417,6 +425,16 @@ class AdminOrchestrator:
         span = trace.get_current_span()
         span.set_attribute("query", query)
         span.set_attribute("session", session_id)
+
+        # 0: Injection Guard
+        from src.shared.injection_guard import injection_guard
+        is_safe, reason = injection_guard.validate_query(query)
+        if not is_safe:
+            metrics.GUARDRAIL_REJECTIONS.labels(reason="Prompt Injection").inc()
+            logger.warning(f"Injection blocked for session {session_id}")
+            yield {"type": "token", "content": f"\n\n[Warning: Demande bloquée] {reason}"}
+            yield {"type": "status", "content": "Génération terminée."}
+            return
 
         # Cache Key — include session_id to prevent cross-session contamination
         cache_key = f"agent_res:{hashlib.md5((query + user_lang + session_id).encode()).hexdigest()}"
