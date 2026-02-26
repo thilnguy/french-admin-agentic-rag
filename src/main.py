@@ -222,12 +222,13 @@ async def chat_stream(
     query = chat_request.query
     language = chat_request.language
     session_id = chat_request.session_id
+    model = chat_request.model
     
-    logger.info(f"Received stream request: {query} [{language}]")
+    logger.info(f"Received stream request: {query} [{language}] model={model}")
 
     async def event_generator():
         try:
-            async for event in orchestrator.stream_query(query, language, session_id):
+            async for event in orchestrator.stream_query(query, language, session_id, model):
                 # SSE format: data: <json>\n\n
                 import json
 

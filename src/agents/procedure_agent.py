@@ -20,7 +20,7 @@ import time
 
 class ProcedureGuideAgent:
     def __init__(self):
-        self.llm = get_llm(temperature=0.2, streaming=True)
+        # We no longer instantiate self.llm globally
         self.registry = topic_registry
 
         # Step Analyzer: Determines the current stage of the procedure
@@ -60,12 +60,12 @@ class ProcedureGuideAgent:
         stop=stop_after_attempt(3),
         retry=retry_if_exception_type(Exception),
     )
-    async def _run_chain(self, chain, input_data):
+    async def _run_chain(self, chain, input_data, model_name: str = "unknown"):
         """Wrapper for LCEL chain invocations with retry."""
         start_time = time.time()
         result = await chain.ainvoke(input_data)
         duration = time.time() - start_time
-        metrics.LLM_REQUEST_DURATION.labels(model=self.llm.model_name).observe(duration)
+        metrics.LLM_REQUEST_DURATION.labels(model=model_name).observe(duration)
         return result
 
     async def run(self, query: str, state: AgentState) -> str:
@@ -87,7 +87,7 @@ class ProcedureGuideAgent:
         import asyncio
 
         step_task = self._determine_step(
-            query, state.user_profile.model_dump(), history_str, detected_topic
+            query, state.user_profile.model_dump(), history_str, detected_topic, state=state
         )
         docs_task = retrieve_legal_info(retrieval_query, domain="procedure")
 
@@ -100,7 +100,7 @@ class ProcedureGuideAgent:
             return await self._ask_clarification(query, state, docs)
 
         # Pre-Synthesis Verification (Groundedness Check)
-        is_grounded = await self._verify_groundedness(query, docs, state.user_profile.model_dump())
+        is_grounded = await self._verify_groundedness(query, docs, state.user_profile.model_dump(), state=state)
         if not is_grounded:
             logger.warning(f"Groundedness check failed for query: {query}. Falling back to CLARIFICATION.")
             # Inject a system prompt note to force a fallback question
@@ -110,7 +110,7 @@ class ProcedureGuideAgent:
         # For RETRIEVAL or EXPLANATION or default w/ docs
         return await self._explain_procedure(query, state, docs)
 
-    async def _verify_groundedness(self, query: str, docs: List[Dict], user_profile: dict) -> bool:
+    async def _verify_groundedness(self, query: str, docs: List[Dict], user_profile: dict, state: AgentState = None) -> bool:
         """
         Fast check to ensure the retrieved context is actually relevant to the query.
         Prevents hallucinated answers when RAG retrieval fails.
@@ -118,13 +118,8 @@ class ProcedureGuideAgent:
         if not docs:
             return False
 
-        # Use the fast, cheap model for verification
-        from langchain_openai import ChatOpenAI
-        fast_llm = ChatOpenAI(
-            model=settings.FAST_LLM_MODEL,
-            temperature=0,
-            api_key=settings.OPENAI_API_KEY,
-        )
+        model_override = state.metadata.get("model") if state else None
+        fast_llm = get_llm(temperature=0, model_override=model_override)
 
         context_summary = "\n".join([d["content"][:500] for d in docs[:3]])
         
@@ -157,13 +152,16 @@ class ProcedureGuideAgent:
             return True
 
     async def _determine_step(
-        self, query: str, user_profile: dict, history: str, topic_key: str = "daily_life"
+        self, query: str, user_profile: dict, history: str, topic_key: str = "daily_life", state: AgentState = None
     ) -> str:
         topic_rules = self.registry.get_rules(topic_key)
         missing = topic_rules.get_missing_variables(user_profile) if topic_rules else []
         missing_str = topic_rules.format_variable_list(missing) if topic_rules and missing else "All variables known."
 
-        chain = (self.step_analyzer_prompt | self.llm | StrOutputParser()).with_config(
+        model_override = state.metadata.get("model") if state else None
+        llm = get_llm(temperature=0.2, streaming=True, model_override=model_override)
+
+        chain = (self.step_analyzer_prompt | llm | StrOutputParser()).with_config(
             {"tags": ["internal"]}
         )
         return await self._run_chain(
@@ -174,7 +172,8 @@ class ProcedureGuideAgent:
                 "topic_name": topic_rules.display_name if topic_rules else "General",
                 "default_step": topic_rules.default_step if topic_rules else "CLARIFICATION",
                 "missing_variables": missing_str,
-            }
+            },
+            model_name=getattr(llm, "model_name", "unknown")
         )
 
     async def _ask_clarification(
@@ -218,7 +217,10 @@ class ProcedureGuideAgent:
             Respond in {user_language}.
             """
         )
-        chain = (prompt | self.llm | StrOutputParser()).with_config(
+        model_override = state.metadata.get("model") if state else None
+        llm = get_llm(temperature=0.2, streaming=True, model_override=model_override)
+
+        chain = (prompt | llm | StrOutputParser()).with_config(
             {"tags": ["final_answer"]}
         )
         return await self._run_chain(
@@ -233,6 +235,7 @@ class ProcedureGuideAgent:
                 "fallback_instruction": fallback_instruction,
                 "persona": self.registry.persona,
             },
+            model_name=getattr(llm, "model_name", "unknown")
         )
 
     async def _explain_procedure(
@@ -264,7 +267,10 @@ class ProcedureGuideAgent:
             Respond in {user_language}.
             """
         )
-        chain = (prompt | self.llm | StrOutputParser()).with_config(
+        model_override = state.metadata.get("model") if state else None
+        llm = get_llm(temperature=0.2, streaming=True, model_override=model_override)
+
+        chain = (prompt | llm | StrOutputParser()).with_config(
             {"tags": ["final_answer"]}
         )
         return await self._run_chain(
@@ -278,6 +284,7 @@ class ProcedureGuideAgent:
                 "global_rules": global_rules,
                 "persona": self.registry.persona,
             },
+            model_name=getattr(llm, "model_name", "unknown")
         )
 
 

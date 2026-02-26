@@ -16,7 +16,7 @@ class Intent(str, Enum):
 
 class IntentClassifier:
     def __init__(self):
-        self.llm = get_llm(temperature=0)
+        # We no longer instantiate self.llm globally
 
 
         system_prompt = """You are an intent classifier for a French Administration Assistant.
@@ -40,11 +40,14 @@ class IntentClassifier:
             [("system", system_prompt), ("human", "{query}")]
         )
 
-        self.chain = self.prompt | self.llm
+        # Chain is built dynamically
+        pass
 
-    async def classify(self, query: str) -> str:
+    async def classify(self, query: str, model_override: str = None) -> str:
         try:
-            response = await self.chain.ainvoke({"query": query})
+            llm = get_llm(temperature=0, model_override=model_override)
+            chain = self.prompt | llm
+            response = await chain.ainvoke({"query": query})
             intent = response.content.strip().upper()
             if intent in Intent.__members__:
                 return intent

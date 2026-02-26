@@ -74,6 +74,7 @@ class QueryPipeline:
         chat_history: list,
         current_goal: str | None = None,
         user_profile_dict: dict | None = None,
+        model_override: str | None = None,
     ) -> PipelineResult:
         """
         Execute all preprocessing steps and return a PipelineResult.
@@ -91,7 +92,7 @@ class QueryPipeline:
         new_core_goal = current_goal
         try:
             extracted_goal = await self._goal_extractor.extract_goal(
-                query, chat_history, current_goal
+                query, chat_history, current_goal, model_override=model_override
             )
             if extracted_goal and extracted_goal != current_goal:
                 new_core_goal = extracted_goal
@@ -106,6 +107,7 @@ class QueryPipeline:
                 chat_history,
                 core_goal=new_core_goal,
                 user_profile=user_profile_dict,
+                model_override=model_override,
             )
             logger.info(f"QueryPipeline: Rewritten → {rewritten_query}")
         except Exception as e:
@@ -135,7 +137,7 @@ class QueryPipeline:
             )
         else:
             try:
-                intent = await self._intent_classifier.classify(rewritten_query)
+                intent = await self._intent_classifier.classify(rewritten_query, model_override=model_override)
                 logger.info(f"QueryPipeline: Intent → {intent}")
             except Exception as e:
                 logger.error(f"QueryPipeline: Intent classification failed: {e}")
@@ -143,7 +145,7 @@ class QueryPipeline:
 
         # Step 5: Profile extraction (always on original query for clean language signal)
         try:
-            extracted_data = await self._profile_extractor.extract(query, chat_history)
+            extracted_data = await self._profile_extractor.extract(query, chat_history, model_override=model_override)
         except Exception as e:
             logger.error(f"QueryPipeline: Profile extraction failed: {e}")
             extracted_data = {}

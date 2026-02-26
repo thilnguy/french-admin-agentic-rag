@@ -65,33 +65,36 @@ class AdminOrchestrator:
         stop=stop_after_attempt(3),
         retry=retry_if_exception_type(Exception),
     )
-    async def _call_llm(self, messages: list):
+    async def _call_llm(self, messages: list, llm=None):
         """Wrapper for LLM calls with retry logic."""
+        if llm is None:
+            llm = self.llm
         span = trace.get_current_span()
-        span.set_attribute("llm.model", self.llm.model_name)
+        span.set_attribute("llm.model", llm.model_name)
         
         start_time = time.time()
-        response = await self.llm.ainvoke(messages)
+        response = await llm.ainvoke(messages)
         duration = time.time() - start_time
 
         # Record Latency
-        metrics.LLM_REQUEST_DURATION.labels(model=self.llm.model_name).observe(duration)
+        metrics.LLM_REQUEST_DURATION.labels(model=llm.model_name).observe(duration)
 
         # Record Tokens
         if response.response_metadata and "token_usage" in response.response_metadata:
             usage = response.response_metadata["token_usage"]
             metrics.LLM_TOKEN_USAGE.labels(
-                model=self.llm.model_name, type="prompt"
+                model=llm.model_name, type="prompt"
             ).inc(usage.get("prompt_tokens", 0))
             metrics.LLM_TOKEN_USAGE.labels(
-                model=self.llm.model_name, type="completion"
+                model=llm.model_name, type="completion"
             ).inc(usage.get("completion_tokens", 0))
 
         return response
 
     @tracer.start_as_current_span("orchestrator_handle_query")
     async def handle_query(
-        self, query: str, user_lang: str = None, session_id: str = "default_session"
+        self, query: str, user_lang: str = None, session_id: str = "default_session",
+        model_override: str = None
     ):
         """
         Main orchestration logic with Guardrails, Caching, and Query Translation.
@@ -137,6 +140,7 @@ class AdminOrchestrator:
             chat_history=chat_history,
             current_goal=state.core_goal,
             user_profile_dict=state.user_profile.model_dump(exclude_none=True),
+            model_override=model_override,
         )
 
         # Update state from pipeline results
@@ -247,6 +251,7 @@ class AdminOrchestrator:
                     target_language="French",
                 )
             state.metadata["retrieval_query_fr"] = retrieval_query_fr
+            state.metadata["model"] = model_override
 
             # Invoke Graph
             # Graph returns a dict with key "messages" containing the response (AIMessage)
@@ -360,7 +365,8 @@ class AdminOrchestrator:
                 )
             )
 
-            french_answer_msg = await self._call_llm(messages)
+            llm = get_llm(temperature=0.2, streaming=True, model_override=model_override)
+            french_answer_msg = await self._call_llm(messages, llm)
             internal_answer = french_answer_msg.content
 
             # Guardrail 2: Hallucination Check (Query + Context + History aware)
@@ -428,7 +434,8 @@ class AdminOrchestrator:
 
     @tracer.start_as_current_span("orchestrator_stream_query")
     async def stream_query(
-        self, query: str, user_lang: str = "fr", session_id: str = "default_session"
+        self, query: str, user_lang: str = "fr", session_id: str = "default_session",
+        model_override: str = None
     ):
         """
         Streaming version of handle_query. yields JSON events:
@@ -483,6 +490,7 @@ class AdminOrchestrator:
             chat_history=chat_history,
             current_goal=state.core_goal,
             user_profile_dict=state.user_profile.model_dump(exclude_none=True),
+            model_override=model_override
         )
 
         if pr.new_core_goal and pr.new_core_goal != state.core_goal:
@@ -559,6 +567,7 @@ class AdminOrchestrator:
                     target_language="French",
                 )
             state.metadata["retrieval_query_fr"] = retrieval_query_fr
+            state.metadata["model"] = model_override
 
             # Stream events from Graph filtering for 'final_answer' tagged LLM runs
             async for event in agent_graph.astream_events(state, version="v2"):
@@ -602,11 +611,10 @@ class AdminOrchestrator:
                 HumanMessage(content=f"Context: {context_text}\n\nQuestion in {effective_lang}: {query}")
             )
 
-            # We need streaming=True on self.llm to astream
-            self.llm.streaming = True
+            llm = get_llm(temperature=0.2, streaming=True, model_override=model_override)
             
             yield {"type": "status", "content": "Génération de la réponse..."}
-            async for chunk in self.llm.astream(messages):
+            async for chunk in llm.astream(messages):
                 content = chunk.content
                 if content:
                     internal_answer += content

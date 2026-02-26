@@ -18,8 +18,8 @@ from src.utils.logger import logger
 
 class LegalResearchAgent:
     def __init__(self):
-        self.llm = get_llm(temperature=0, streaming=True)
-        self.llm_fast = get_llm(temperature=0)
+        # We no longer instantiate self.llm globally to support dynamic model switching per request
+        pass
 
 
         # 1. Query Refiner: Optimizes user query for vector search
@@ -96,17 +96,17 @@ class LegalResearchAgent:
         docs = await retrieve_legal_info(query, domain="general")
         
         # Pre-Synthesis Verification (Groundedness Check)
-        is_grounded = await self._verify_groundedness(query, docs, state.user_profile.model_dump())
+        is_grounded = await self._verify_groundedness(query, docs, state.user_profile.model_dump(), state=state)
         if not is_grounded:
             logger.warning(f"Groundedness check failed in LegalAgent for query: {query}. Triggering fallback.")
-            return await self._ask_clarification_fallback(query, user_lang)
+            return await self._ask_clarification_fallback(query, user_lang, state=state)
 
         context = self._format_docs(docs)
 
         # Step 2: Synthesize
-        return await self._synthesize_answer(query, context, user_lang)
+        return await self._synthesize_answer(query, context, user_lang, state=state)
 
-    async def _verify_groundedness(self, query: str, docs: List[Dict], user_profile: dict) -> bool:
+    async def _verify_groundedness(self, query: str, docs: List[Dict], user_profile: dict, state: AgentState = None) -> bool:
         if not docs:
             return False
 
@@ -128,7 +128,10 @@ class LegalResearchAgent:
             Evaluation (YES/NO):"""
         )
         
-        chain = prompt | self.llm_fast | StrOutputParser()
+        model_override = state.metadata.get("model") if state else None
+        llm_fast = get_llm(temperature=0, model_override=model_override)
+
+        chain = prompt | llm_fast | StrOutputParser()
         try:
             result = await chain.ainvoke({
                 "query": query,
@@ -140,7 +143,7 @@ class LegalResearchAgent:
             logger.error(f"Groundedness check failed: {e}. Defaulting to True to avoid blocking.")
             return True
 
-    async def _ask_clarification_fallback(self, query: str, user_lang: str) -> str:
+    async def _ask_clarification_fallback(self, query: str, user_lang: str, state: AgentState = None) -> str:
         """Fallback response when retrieved documents are irrelevant."""
         prompt = ChatPromptTemplate.from_template(
             """You are a French Administration Assistant.
@@ -158,19 +161,27 @@ class LegalResearchAgent:
             Respond in {user_language}.
             """
         )
-        chain = (prompt | self.llm | StrOutputParser()).with_config({"tags": ["final_answer"]})
+        model_override = state.metadata.get("model") if state else None
+        llm = get_llm(temperature=0, streaming=True, model_override=model_override)
+
+        chain = (prompt | llm | StrOutputParser()).with_config({"tags": ["final_answer"]})
         return await self._run_chain(chain, {"query": query, "user_language": user_lang})
 
-    async def _refine_query(self, query: str) -> str:
+    async def _refine_query(self, query: str, state: AgentState = None) -> str:
         # Optimization: Use llm_fast (gpt-4o-mini)
-        chain = self.refiner_prompt | self.llm_fast | StrOutputParser()
+        model_override = state.metadata.get("model") if state else None
+        llm_fast = get_llm(temperature=0, model_override=model_override)
+        chain = self.refiner_prompt | llm_fast | StrOutputParser()
         return await self._run_chain(chain, {"query": query})
 
-    async def _synthesize_answer(self, query: str, context: str, user_lang: str) -> str:
+    async def _synthesize_answer(self, query: str, context: str, user_lang: str, state: AgentState = None) -> str:
         if not context:
             return "Je n'ai trouvé aucune information officielle correspondante dans ma base de données."
 
-        chain = (self.synthesis_prompt | self.llm | StrOutputParser()).with_config(
+        model_override = state.metadata.get("model") if state else None
+        llm = get_llm(temperature=0, streaming=True, model_override=model_override)
+
+        chain = (self.synthesis_prompt | llm | StrOutputParser()).with_config(
             {"tags": ["final_answer"]}
         )
         result = await self._run_chain(

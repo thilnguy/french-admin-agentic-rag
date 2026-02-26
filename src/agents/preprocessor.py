@@ -9,13 +9,7 @@ from src.utils.logger import logger
 
 class QueryRewriter:
     def __init__(self):
-        # Uses the FAST_LLM_MODEL setting (default: gpt-4o-mini) — cheap & fast for query rewriting.
-        self.llm = ChatOpenAI(
-            model=settings.FAST_LLM_MODEL,
-            temperature=0,
-            api_key=settings.OPENAI_API_KEY,
-        )
-
+        # We no longer instantiate self.llm globally
         self.prompt = ChatPromptTemplate.from_template(
             """You are a Goal-Anchored Query Rewriter for a French Administration Bot.
             Your task is to rewrite the CURRENT QUERY into a precise, standalone search query.
@@ -46,7 +40,8 @@ class QueryRewriter:
             Rewritten Standalone Query:"""
         )
 
-        self.chain = self.prompt | self.llm | StrOutputParser()
+        # Chain creation is moved to the execute method to allow dynamic LLM selection
+        pass
 
     async def rewrite(
         self,
@@ -54,6 +49,7 @@ class QueryRewriter:
         history: list,
         core_goal: str = None,
         user_profile: dict = None,
+        model_override: str = None,
     ) -> str:
         """
         Rewrites valid conversational queries, anchored to the core goal.
@@ -68,7 +64,9 @@ class QueryRewriter:
         goal_str = core_goal if core_goal else "Not yet determined"
 
         try:
-            return await self.chain.ainvoke(
+            llm = get_llm(temperature=0, model_override=model_override)
+            chain = self.prompt | llm | StrOutputParser()
+            return await chain.ainvoke(
                 {
                     "history": history_str,
                     "query": query,
@@ -87,7 +85,6 @@ query_rewriter = QueryRewriter()
 
 class ProfileExtractor:
     def __init__(self):
-        self.llm = get_llm(temperature=0)
         # We use JsonOutputParser with the Pydantic model
         self.parser = JsonOutputParser(pydantic_object=UserProfile)
 
@@ -141,9 +138,10 @@ class ProfileExtractor:
             JSON Output:"""
         )
 
-        self.chain = self.prompt | self.llm | self.parser
+        # Chain creation moved
+        pass
 
-    async def extract(self, query: str, history: list) -> dict:
+    async def extract(self, query: str, history: list, model_override: str = None) -> dict:
         """
         Extracts user profile fields. Returns a dict of found fields.
         """
@@ -155,7 +153,9 @@ class ProfileExtractor:
 
         try:
             # Run extraction
-            data = await self.chain.ainvoke({"history": history_str, "query": query})
+            llm = get_llm(temperature=0, model_override=model_override)
+            chain = self.prompt | llm | self.parser
+            data = await chain.ainvoke({"history": history_str, "query": query})
 
             # Defensive fix: If detection is 'fr' but query is clearly English keywords, force 'en'
             if data and data.get("language") == "fr":
@@ -187,8 +187,6 @@ class GoalExtractor:
     """Extracts and maintains the user's core goal across the conversation."""
 
     def __init__(self):
-        self.llm = get_llm(temperature=0)
-
         self.prompt = ChatPromptTemplate.from_template(
             """You are a Goal Extractor for a French Administration Bot.
             Identify the user's PRIMARY administrative goal from the conversation.
@@ -212,10 +210,11 @@ class GoalExtractor:
             Core Goal (or null):"""
         )
 
-        self.chain = self.prompt | self.llm | StrOutputParser()
+        # Chain creation is dynamic
+        pass
 
     async def extract_goal(
-        self, query: str, history: list, current_goal: str = None
+        self, query: str, history: list, current_goal: str = None, model_override: str = None
     ) -> str:
         """
         Extracts or confirms the user's core goal.
@@ -225,7 +224,9 @@ class GoalExtractor:
         goal_str = current_goal if current_goal else "None"
 
         try:
-            result = await self.chain.ainvoke(
+            llm = get_llm(temperature=0, model_override=model_override)
+            chain = self.prompt | llm | StrOutputParser()
+            result = await chain.ainvoke(
                 {
                     "history": history_str,
                     "query": query,
