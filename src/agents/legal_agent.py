@@ -18,7 +18,7 @@ from src.utils.logger import logger
 
 class LegalResearchAgent:
     def __init__(self):
-        self.llm = get_llm(temperature=0)
+        self.llm = get_llm(temperature=0, streaming=True)
         self.llm_fast = get_llm(temperature=0)
 
 
@@ -111,7 +111,9 @@ class LegalResearchAgent:
         if not context:
             return "Je n'ai trouvé aucune information officielle correspondante dans ma base de données."
 
-        chain = self.synthesis_prompt | self.llm | StrOutputParser()
+        chain = (self.synthesis_prompt | self.llm | StrOutputParser()).with_config(
+            {"tags": ["final_answer"]}
+        )
         result = await self._run_chain(
             chain, {"query": query, "context": context, "user_language": user_lang}
         )

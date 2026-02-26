@@ -20,7 +20,7 @@ import time
 
 class ProcedureGuideAgent:
     def __init__(self):
-        self.llm = get_llm(temperature=0.2)
+        self.llm = get_llm(temperature=0.2, streaming=True)
         self.registry = topic_registry
 
         # Step Analyzer: Determines the current stage of the procedure
@@ -151,7 +151,9 @@ class ProcedureGuideAgent:
             Respond in {user_language}.
             """
         )
-        chain = prompt | self.llm | StrOutputParser()
+        chain = (prompt | self.llm | StrOutputParser()).with_config(
+            {"tags": ["final_answer"]}
+        )
         return await self._run_chain(
             chain,
             {
@@ -194,7 +196,9 @@ class ProcedureGuideAgent:
             Respond in {user_language}.
             """
         )
-        chain = prompt | self.llm | StrOutputParser()
+        chain = (prompt | self.llm | StrOutputParser()).with_config(
+            {"tags": ["final_answer"]}
+        )
         return await self._run_chain(
             chain,
             {
