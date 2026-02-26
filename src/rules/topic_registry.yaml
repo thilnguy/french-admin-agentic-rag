@@ -46,13 +46,9 @@ topics:
           **[GIẢI THÍCH]**: Bạn cần kiểm tra diện đóng góp đặc biệt hoặc có gia đình là người Pháp.
           **[YÊU CẦU]**: Tình trạng gia đình của bạn như thế nào? Bạn đã ở Pháp bao nhiêu năm chính xác?
     guardrail_keywords:
-      - "visa"
-      - "titre de séjour"
-      - "residence permit"
-      - "passeport talent"
-      - "naturalization"
-      - "family reunification"
-      - "carte de résident"
+      fr: ["visa", "titre de séjour", "passeport talent", "naturalisation", "regroupement familial", "carte de résident"]
+      en: ["visa", "residence permit", "naturalization", "family reunification"]
+      vi: ["thẻ cư trú", "visa", "quốc tịch"]
 
   labor:
     display_name: "Work & Labor Rights"
@@ -75,6 +71,11 @@ topics:
       - name: period_of_strike
         when: "Strike refund"
         why: "Must match IDFM's declared refund period"
+    # CRITICAL FACTUAL RULE — DO NOT CONTRADICT
+    factual_rules:
+      - topic: "strike pay"
+        rule: "During a legal strike, an employer IS LEGALLY ALLOWED to withhold salary for hours not worked. This is the correct French legal position (Article L2511-1 Code du Travail). Do NOT state the opposite."
+        keywords: ["grève", "strike", "salaire grève", "retenue salaire"]
     exemplars:
       - input: "Mon employeur ne me paie pas mes heures supplémentaires, que faire ?"
         output: |
@@ -86,14 +87,20 @@ topics:
           **[GIVE]**: The employer can trigger 'activité partielle'. Employees receive ~70% of gross salary.
           **[EXPLAIN]**: The state compensates the employer via a specific mechanism.
           **[ASK]**: What is the size of your company? In which region are you located?
+      - input: "Em là người tị nạn và đang làm việc mà không có hợp đồng. Em có thể yêu cầu tiền lương chưa được trả không?"
+        output: |
+          **[CUNG CẤP]**: Có, bạn có quyền yêu cầu tiền lương chưa được trả dù không có hợp đồng chính thức, vì quyền lao động áp dụng cho tất cả mọi người.
+          **[GIẢI THÍCH]**: Bạn có thể nộp khiếu nại lên Prud'hommes. Tình trạng tị nạn không ảnh hưởng đến quyền đòi lương.
+          **[YÊU CẦU]**: Bạn có bằng chứng về số giờ đã làm (tin nhắn, email, nhân chứng) không? Quy mô công ty như thế nào?
+      - input: "Je participe à une grève mais mon employeur menace de ne pas payer mes heures."
+        output: |
+          **[DONNER]**: En cas de grève légale, l'employeur PEUT légalement retenir le salaire des heures non travaillées — c'est la règle du droit français (Art. L2511-1 du Code du Travail).
+          **[EXPLIQUER]**: La retenue de salaire est proportionnelle aux heures d'absence dues à la grève, pas aux heures travaillées. Certains accords de branche prévoient des compensations.
+          **[DEMANDER]**: Quel est votre type de contrat ? Avez-vous un accord de branche ou une convention collective ?
     guardrail_keywords:
-      - "employeur"
-      - "heures supplémentaires"
-      - "Prud'hommes"
-      - "chômage technique"
-      - "partial activity"
-      - "strike"
-      - "grève"
+      fr: ["employeur", "heures supplémentaires", "Prud'hommes", "chômage technique", "grève", "retenue salaire", "activité partielle"]
+      en: ["strike", "partial activity", "unpaid wages", "employer dispute"]
+      vi: ["tiền lương", "hợp đồng lao động", "lương", "khiếu nại", "làm việc"]
 
   taxes:
     display_name: "Taxes & Fiscal"
@@ -128,13 +135,9 @@ topics:
           **[EXPLIQUER]**: Le plafond est de 3 500€ par enfant et s'applique aux enfants de moins de 6 ans.
           **[DEMANDER]**: Quel est l'âge de votre enfant ? Quel est le montant total des frais de garde ?
     guardrail_keywords:
-      - "impôts"
-      - "tax"
-      - "donation"
-      - "succession"
-      - "IFI"
-      - "crédit d'impôt"
-      - "thuế"
+      fr: ["impôts", "donation", "succession", "IFI", "crédit d'impôt", "héritage"]
+      en: ["tax", "donation", "inheritance", "tax credit"]
+      vi: ["thuế", "tặng tiền", "thừa kế"]
 
   identity:
     display_name: "Identity & Civil Registry"
@@ -166,13 +169,9 @@ topics:
           **[GIẢI THÍCH]**: Sau đó liên hệ ĐSQ tại Paris. ĐSQ có thể hỗ trợ qua bưu điện tùy trường hợp.
           **[YÊU CẦU]**: Mức độ khẩn cấp như thế nào? Bạn có cần hộ chiếu ngay để đi lại không?
     guardrail_keywords:
-      - "passport"
-      - "birth"
-      - "naissance"
-      - "casier judiciaire"
-      - "criminal record"
-      - "hộ chiếu"
-      - "identity"
+      fr: ["passeport", "naissance", "casier judiciaire", "mariage", "carte d'identité", "carte de résident", "titre de voyage"]
+      en: ["passport", "birth", "criminal record", "identity", "marriage", "refugee card"]
+      vi: ["hộ chiếu", "kết hôn", "giấy khai sinh"]
 
   social:
     display_name: "Social Benefits & Welfare"
@@ -209,17 +208,13 @@ topics:
           **[EXPLIQUER]**: Vous devez déclarer vos périodes travaillées via le formulaire E202 (Europe) ou selon la convention bilatérale.
           **[DEMANDER]**: Dans quels pays avez-vous travaillé ? Quel est votre âge actuel ?
     guardrail_keywords:
-      - "AAH"
-      - "RSA"
-      - "chèque énergie"
-      - "retraite"
-      - "retirement"
-      - "disability"
-      - "CAF"
+      fr: ["AAH", "RSA", "chèque énergie", "retraite", "CAF", "allocation"]
+      en: ["disability benefit", "retirement", "social benefit"]
+      vi: ["trợ cấp", "hưu trí", "khữu tật"]
 
   health:
     display_name: "Healthcare & Insurance"
-    description: "Health insurance, carte vitale, cross-border workers (Frontalier), CPAM"
+    description: "Health insurance, carte vitale, cross-border workers (Frontalier), CPAM, dual nationals"
     default_step: CLARIFICATION
     mandatory_variables:
       - name: residence_location
@@ -228,32 +223,40 @@ topics:
         why: "Salaried vs self-employed vs student → different registration"
       - name: job_type
         why: "Cross-border (Frontalier) status enables S1 form"
-    exemplar:
-      input: "Can I keep my French health insurance if I move to Germany?"
-      output: |
-        **[GIVE]**: Cross-border workers can retain French insurance via the S1 form.
-        **[EXPLAIN]**: If you fully relocate, you switch to the German system (SGB).
-        **[ASK]**: Will you reside in France and work in Germany (Frontalier)?
+    exemplars:
+      - input: "Can I keep my French health insurance if I move to Germany?"
+        output: |
+          **[GIVE]**: Cross-border workers can retain French insurance via the S1 form.
+          **[EXPLAIN]**: If you fully relocate, you switch to the German system (SGB).
+          **[ASK]**: Will you reside in France and work in Germany (Frontalier)?
+      - input: "Tôi làm việc bán thời gian, bảo hiểm y tế có khác không?"
+        output: |
+          **[CUNG CẤP]**: Có, người làm việc bán thời gian có thể được hưởng bảo hiểm y tế Pháp (Sécurité Sociale) nếu làm đủ điều kiện.
+          **[GIẢI THÍCH]**: Điều kiện phụ thuộc vào số giờ làm việc, nơi cư trú và loại hợp đồng. Người làm bán thời gian xuyên biên giới có thể cần form S1.
+          **[YÊU CẦU]**: Bạn cư trú ở Pháp hay nước khác? Bạn là nhân viên theo hợp đồng hay tự kinh doanh?
+      - input: "Can dual nationals access healthcare in both countries seamlessly?"
+        output: |
+          **[GIVE]**: Dual nationals typically use the health system of their country of residence. France uses the Sécurité Sociale system.
+          **[EXPLAIN]**: Cross-border arrangements (like the S1 form) may allow some dual coverage, but this depends on your employment location and bilateral agreements.
+          **[ASK]**: Where do you currently reside? Are you employed in France or abroad?
     guardrail_keywords:
-      - "health insurance"
-      - "carte vitale"
-      - "CPAM"
-      - "assurance maladie"
-      - "frontalier"
-      - "S1 form"
+      fr: ["assurance maladie", "carte vitale", "CPAM", "frontalier", "sécurité sociale"]
+      en: ["health insurance", "S1 form", "cross-border healthcare", "dual national healthcare"]
+      vi: ["bảo hiểm y tế", "sức khỏe", "bảo hiểm", "y tế"]
 
   housing:
     display_name: "Housing & Tenant Rights"
     description: "Tenant eviction, building permits, landlord disputes, trêve hivernale"
     default_step: CLARIFICATION
     mandatory_variables:
-      - name: pool_size
-        why: "Determines if déclaration préalable or permis de construire needed"
       - name: has_court_order
         why: "Eviction requires judicial process"
       - name: current_month
         why: "Trêve hivernale protects tenants Nov-Mar"
     conditional_variables:
+      - name: pool_size
+        when: "Building permits for pools"
+        why: "Determines if déclaration préalable or permis de construire needed"
       - name: location
         when: "Building permits"
         why: "Local PLU rules vary significantly"
@@ -264,13 +267,9 @@ topics:
         **[GIẢI THÍCH]**: Có Trêve hivernale cấm trục xuất từ tháng 11 đến tháng 3.
         **[YÊU CẦU]**: Hiện tại là tháng mấy? Bạn có nhận được lệnh tòa không?
     guardrail_keywords:
-      - "housing"
-      - "tenant"
-      - "landlord"
-      - "eviction"
-      - "permis de construire"
-      - "trêve hivernale"
-      - "chủ nhà"
+      fr: ["logement", "loyer", "locataire", "propriétaire", "expulsion", "permis de construire", "trêve hivernale"]
+      en: ["housing", "tenant", "landlord", "eviction", "building permit"]
+      vi: ["chủ nhà", "tiền thuê", "xuất cư"]
 
   daily_life:
     display_name: "Daily Life & Transport"
@@ -289,21 +288,19 @@ topics:
       - name: license_category
         when: "Driving license questions"
         why: "B-license vs C/D determines commercial driving eligibility"
-    exemplar:
-      input: "What is l'assurance scolaire and is it mandatory?"
-      output: |
-        **[GIVE]**: Not mandatory for regular school hours, but required for field trips.
-        **[EXPLAIN]**: It covers liability and personal injury during school activities.
-        **[ASK]**: What type of school activity do you need it for?
+      - name: former_country
+        when: "Driving license exchange"
+        why: "France only exchanges licenses from specific non-EU countries"
+    exemplars:
+      - input: "I have a UK driving license and live in France. Do I need to exchange it?"
+        output: |
+          **[GIVE]**: You may need to exchange your license if you reside in France for more than one year.
+          **[EXPLAIN]**: The rules depend on whether the UK license was issued before or after Brexit and your residency status.
+          **[ASK]**: When did you move to France? Did you obtain your license before Jan 2021?
     guardrail_keywords:
-      - "Navigo"
-      - "driving license"
-      - "permis de conduire"
-      - "school insurance"
-      - "assurance scolaire"
-      - "Crit'Air"
-      - "SNCF"
-      - "RATP"
+      fr: ["Navigo", "permis de conduire", "assurance scolaire", "Crit'Air", "SNCF", "RATP", "carte grise"]
+      en: ["driving license", "school insurance", "vehicle registration"]
+      vi: ["bằng lái xe", "bảo hiểm học đưởng"]
 
   education:
     display_name: "Education & Student Affairs"
@@ -320,11 +317,9 @@ topics:
         **[GIVE]**: Yes, students can work up to 964 hours per year (60% of full-time).
         **[EXPLAIN]**: This applies to all valid student visa holders.
     guardrail_keywords:
-      - "student"
-      - "étudiant"
-      - "scholarship"
-      - "bourse"
-      - "university"
+      fr: ["étudiant", "bourse", "université", "inscription scolaire"]
+      en: ["student", "scholarship", "university", "student visa"]
+      vi: ["sinh viên", "học bổng", "trường đại học"]
 
 # ============================================================================
 # PERSONA — Applied to all agent responses

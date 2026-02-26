@@ -1,0 +1,174 @@
+[
+  {
+    "question": "Mon visa actuel expire bientôt et je suis réfugié. Quelle est la procédure pour le renouveler?",
+    "category": "immigration",
+    "ground_truth": "[DONNER] Vous avez le droit de renouveler votre visa en tant que réfugié. [EXPLIQUER] Vous devez fournir une preuve de votre statut de réfugié et respecter les délais de renouvellement. [DEMANDER] Veuillez indiquer votre situation familiale et le type de visa que vous détenez.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "family_situation",
+      "visa_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Je suis ressortissant de deux pays et souhaite renouveler mon visa Passeport Talent. Quelle nationalité dois-je utiliser?",
+    "category": "immigration",
+    "ground_truth": "[DONNER] Vous pouvez choisir la nationalité qui vous offre le processus le plus simple. [EXPLIQUER] Les règles peuvent varier selon les accords bilatéraux avec la France. [DEMANDER] Veuillez indiquer votre situation familiale et le nombre d'années de résidence.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "family_situation",
+      "years_of_residence"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Em là người tị nạn và đang làm việc mà không có hợp đồng. Em có thể yêu cầu tiền lương chưa được trả không?",
+    "category": "labor",
+    "ground_truth": "[CUNG CẤP] Em có quyền yêu cầu trả lương ngay cả khi không có hợp đồng chính thức. [GIẢI THÍCH] Luật bảo vệ người lao động áp dụng cho tất cả mọi người, kể cả người tị nạn. [YÊU CẦU] Em có thể cung cấp 'contract_type', 'company_size', và 'proof_of_hours' không?",
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "contract_type",
+      "company_size",
+      "proof_of_hours"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Công ty lớn không trả lương cho em trong tháng qua. Làm thế nào để khiếu nại?",
+    "category": "labor",
+    "ground_truth": "[CUNG CẤP] Em có thể nộp đơn khiếu nại lên Sở lao động hoặc tòa án lao động. [GIẢI THÍCH] Công ty lớn phải tuân theo các quy định về trả lương. [YÊU CẦU] 'contract_type' và 'proof_of_hours' cần được cung cấp.",
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "contract_type",
+      "proof_of_hours"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je participe à une grève mais mon employeur menace de ne pas payer mes heures. Quels sont mes droits?",
+    "category": "labor",
+    "ground_truth": "[DONNER] Pendant une grève légale, l'employeur peut retenir le salaire pour le temps non travaillé. [EXPLIQUER] Cependant, des menaces ou des représailles peuvent être illégales. [DEMANDER] Veuillez fournir 'contract_type' et 'company_size'.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "contract_type",
+      "company_size"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi định chuyển đến Pháp với một hợp đồng làm việc giữa chừng, tôi cần lưu ý gì về thuế?",
+    "category": "taxes",
+    "ground_truth": {
+      "CUNG CẤP": "Bạn cần lưu ý các quy định về thuế cho người nước ngoài tại Pháp.",
+      "GIẢI THÍCH": "Việc đóng thuế phụ thuộc vào 'fiscal_residence' và ngày bắt đầu cư trú tại Pháp.",
+      "YÊU CẦU": "Xin vui lòng cho biết 'annual_income' và 'family_composition' để có thông tin chi tiết hơn."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "annual_income",
+      "family_composition"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Chồng tôi là người Việt Nam, chúng tôi kết hôn tại Pháp. How do I register our marriage in Vietnam?",
+    "category": "identity",
+    "ground_truth": "[CUNG CẤP] Bạn cần nộp giấy chứng nhận kết hôn của Pháp tại cơ quan đăng ký dân sự Việt Nam. [GIẢI THÍCH] Quá trình này có thể yêu cầu công chứng và dịch thuật. [YÊU CẦU] Bạn có thể cho biết nơi sinh, tình trạng hôn nhân và mức độ khẩn cấp của yêu cầu không?",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "place_of_birth",
+      "emergency_level"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je suis un réfugié reconnu en France, comment puis-je obtenir une carte d'identité?",
+    "category": "identity",
+    "ground_truth": "[DONNER] En tant que réfugié reconnu, vous pouvez demander une carte de résident qui servira également de pièce d'identité. [EXPLIQUER] Les réfugiés ont le droit de demander des documents d'identité en France. [DEMANDER] Veuillez préciser votre lieu de naissance, statut marital et le niveau d'urgence.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "place_of_birth",
+      "marital_status",
+      "emergency_level"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Please help me with the registration of my marriage which took place in a country where I hold no citizenship.",
+    "category": "identity",
+    "ground_truth": "[GIVE] You will need to register your marriage with the civil registry in your country of citizenship. [EXPLAIN] In cases where marriage occurs in a third country, additional documentation may be required. [ASK] What is your place of birth, marital status, and the level of urgency?",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "place_of_birth",
+      "marital_status",
+      "emergency_level"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Ma mère a 65 ans et habite à l'étranger. Peut-elle bénéficier de la retraite française ?",
+    "category": "social",
+    "ground_truth": "[DONNER] Les résidents à l'étranger peuvent avoir accès à la retraite française sous certaines conditions. [EXPLIQUER] Cela dépend souvent de leur historique de cotisations et de l'âge. [DEMANDER] Pouvez-vous préciser son historique de cotisations et son pourcentage d'invalidité si applicable ?",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "disability_percentage"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Can dual nationals access healthcare in both countries seamlessly?",
+    "category": "health",
+    "ground_truth": "[GIVE] Dual nationals may access healthcare in both countries but must comply with each nation's regulations. [EXPLAIN] Benefits depend on your residence location and employment status. [ASK] Can you specify 'residence_location' and 'job_type'?",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "residence_location",
+      "job_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Tôi làm việc bán thời gian, bảo hiểm y tế có khác không?",
+    "category": "health",
+    "ground_truth": "[CUNG CẤP] Bảo hiểm y tế có thể khác nhau đối với công việc bán thời gian. [GIẢI THÍCH] Điều này phụ thuộc vào tình trạng công việc và nơi cư trú. [YÊU CẦU] Xin vui lòng cho biết 'residence_location' và 'employment_status'.",
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "residence_location",
+      "employment_status"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Người làm việc xuyên biên giới có cần phải đóng bảo hiểm y tế ở cả hai nước không?",
+    "category": "health",
+    "ground_truth": "[CUNG CẤP] Người làm việc xuyên biên giới có thể phải tuân theo quy định bảo hiểm y tế của cả hai nước. [GIẢI THÍCH] Điều này phụ thuộc vào nơi cư trú và tình trạng việc làm của bạn. [YÊU CẦU] Vui lòng cung cấp 'residence_location' và 'employment_status'.",
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "residence_location",
+      "employment_status"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Làm thế nào bảo hiểm y tế của tôi sẽ bị ảnh hưởng khi tôi trở thành công dân kép?",
+    "category": "health",
+    "ground_truth": "[CUNG CẤP] Là công dân kép, bảo hiểm y tế của bạn có thể bị ảnh hưởng tùy thuộc vào quy định của mỗi nước. [GIẢI THÍCH] Điều này phụ thuộc vào nơi cư trú và tình trạng công việc của bạn. [YÊU CẦU] Vui lòng cung cấp thông tin về 'residence_location' và 'job_type'.",
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "residence_location",
+      "job_type"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "My landlord and I are having a dispute over the maintenance of the property. Can they evict me in March without a court order?",
+    "category": "housing",
+    "ground_truth": {
+      "GIVE": "No, in France, even after the trêve hivernale, a landlord cannot evict a tenant without a court order.",
+      "EXPLAIN": "Disputes need to be resolved legally, and eviction requires a court's intervention to proceed.",
+      "ASK": ""
+    },
+    "expected_behavior": "DIRECT",
+    "critical_missing_info": [],
+    "language": "en"
+  }
+]

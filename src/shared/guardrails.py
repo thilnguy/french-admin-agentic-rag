@@ -45,15 +45,16 @@ class GuardrailManager:
             Your only job is to decide if the query is RELEVANT to French administrative tasks or the current conversation.
 
             RULES:
-            1. If the query is about French procedures, law, public services, identity documents, transport (Navigo, SNCF, RATP, driving licenses, vehicle registration, Crit'Air), civil registry (birth/death/marriage), or legal records (Casier Judiciaire/Criminal Record), it is APPROVED.
+            1. If the query is about French procedures, law, public services, identity documents, transport (Navigo, SNCF, RATP, driving licenses, vehicle registration, Crit'Air), civil registry (birth/death/marriage/kết hôn/mariage), or legal records (Casier Judiciaire/Criminal Record), it is APPROVED.
             2. If the query is about TAXES in France (Impôts, donations, inheritance/succession, IFI, local taxes, tax-free gifts), it is APPROVED.
             3. If the query is about EDUCATION in France (School registration, Assurance scolaire, student aid, bourses, university admin), it is APPROVED.
             4. If the query involves FOREIGN DOCUMENTS being used for French procedures (e.g., "Can I use my UK license?", "Is my US diploma valid?"), it is APPROVED.
-            5. If the query is about LABOR rights, strikes, chômage technique, employer disputes, or natural disaster compensation (floods, etc.), it is APPROVED.
+            5. If the query is about LABOR rights, strikes, chômage technique, employer disputes, or natural disaster compensation (floods, etc.), it is APPROVED. This includes Vietnamese queries about wages (lương, tiền lương), work contracts (hợp đồng lao động), or working without a contract.
             6. Housing rights, tenant/landlord disputes, social benefits (CAF, AAH, RSA, Chèque Énergie, Retirement) are APPROVED.
             7. Embassy/consular procedures, visa applications, and administrative certificates are APPROVED.
             8. Conversational follow-ups, meta-questions, or personal introductions in an admin context are APPROVED.
-            9. UNRELATED topics (cooking, celebrities, general sports, non-French law unrelated to residency) are REJECTED.
+            9. HEALTHCARE and health insurance are ALWAYS APPROVED, including queries in Vietnamese (bảo hiểm y tế, sức khỏe) or English about dual-national/cross-border healthcare coverage.
+            10. UNRELATED topics (cooking, celebrities, general sports, non-French law unrelated to residency) are REJECTED.
 
             CRITICAL: Your job is ONLY to validate the TOPIC, not to answer the question. 
             Do NOT say 'REJECTED: It is not possible to do X'. Only say REJECTED if the topic is completely unrelated to French law or administration.

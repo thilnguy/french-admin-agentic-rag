@@ -31,7 +31,16 @@ class TopicRules:
             single = data.get("exemplar", {})
             raw_exemplars = [single] if single else []
         self.exemplars = raw_exemplars
-        self.guardrail_keywords = data.get("guardrail_keywords", [])
+        # Support both formats:
+        #   flat list:  ["employeur", "strike", "tiền lương"]
+        #   multilingual dict: {fr: [...], en: [...], vi: [...]}
+        raw_keywords = data.get("guardrail_keywords", [])
+        if isinstance(raw_keywords, dict):
+            self.guardrail_keywords = [
+                kw for lang_kws in raw_keywords.values() for kw in lang_kws
+            ]
+        else:
+            self.guardrail_keywords = raw_keywords
         self.force_retrieval_patterns = data.get("force_retrieval_patterns", [])
     
     def get_missing_variables(self, user_profile: dict) -> List[dict]:

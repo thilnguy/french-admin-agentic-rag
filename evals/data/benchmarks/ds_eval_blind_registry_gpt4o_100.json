@@ -1,0 +1,1429 @@
+[
+  {
+    "question": "Je suis un travailleur frontalier avec une double nationalité, comment renouveler mon visa de travail?",
+    "category": "immigration",
+    "ground_truth": {
+      "DONNER": "Pour renouveler un visa de travail en tant que travailleur frontalier avec une double nationalité, vous devez suivre les procédures spécifiques à votre situation.",
+      "EXPLIQUER": "Les travailleurs frontaliers avec une double nationalité peuvent avoir des règles particulières selon les accords bilatéraux.",
+      "DEMANDER": "Veuillez préciser votre 'nationalité' et 'years_of_residence' pour plus de détails."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "nationality",
+      "years_of_residence"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi có thể nộp đơn xin thường trú sau khi đã sống ở Pháp 3 năm không?",
+    "category": "immigration",
+    "ground_truth": {
+      "CUNG CẤP": "Bạn có thể nộp đơn xin thường trú nếu đáp ứng được các yêu cầu về tình trạng nhập cư và năm cư trú.",
+      "GIẢI THÍCH": "Việc xin thường trú có thể phụ thuộc vào loại visa và tình hình gia đình của bạn.",
+      "YÊU CẦU": "Vui lòng cung cấp 'visa_type' và 'family_situation' để biết thêm thông tin."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "visa_type",
+      "family_situation"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Can a refugee apply for family reunification in France?",
+    "category": "immigration",
+    "ground_truth": {
+      "GIVE": "Yes, refugees can apply for family reunification under certain conditions.",
+      "EXPLAIN": "Family reunification for refugees is subject to meeting specific criteria and providing necessary documentation.",
+      "ASK": "Please specify your 'nationality' and 'years_of_residence' to provide precise guidance."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "nationality",
+      "years_of_residence"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis en train de changer de contrat. Mon Passeport Talent est-il toujours valable?",
+    "category": "immigration",
+    "ground_truth": {
+      "DONNER": "Votre Passeport Talent peut rester valable si le changement de contrat respecte certaines conditions.",
+      "EXPLIQUER": "Le changement d'emploi doit être notifié aux autorités et peut nécessiter un amendement de votre visa.",
+      "DEMANDER": "Veuillez préciser votre 'visa_type' et 'years_of_residence' pour plus d'informations."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "visa_type",
+      "years_of_residence"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Nếu tôi có hai quốc tịch, tôi cần gì để gia hạn visa tại Pháp?",
+    "category": "immigration",
+    "ground_truth": {
+      "CUNG CẤP": "Với hai quốc tịch, có thể có những điều kiện đặc biệt khi gia hạn visa.",
+      "GIẢI THÍCH": "Điều này phụ thuộc vào loại visa bạn đang sử dụng và tình hình gia đình của bạn.",
+      "YÊU CẦU": "Vui lòng cung cấp 'visa_type' và 'family_situation'."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "visa_type",
+      "family_situation"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "What documents are needed for naturalization if I've been a resident for five years?",
+    "category": "immigration",
+    "ground_truth": {
+      "GIVE": "For naturalization, you typically need proof of residence, identity, and language proficiency.",
+      "EXPLAIN": "Specific document requirements can vary based on your nationality and family situation.",
+      "ASK": "Please confirm your 'nationality' and 'family_situation' for detailed assistance."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "nationality",
+      "family_situation"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "J'ai besoin d'un permis de séjour pour un regroupement familial. Quelle est la procédure?",
+    "category": "immigration",
+    "ground_truth": {
+      "DONNER": "Pour obtenir un permis de séjour pour regroupement familial, vous devez soumettre une demande avec les documents requis.",
+      "EXPLIQUER": "La procédure varie selon votre situation familiale et la durée de votre résidence en France.",
+      "DEMANDER": "Veuillez indiquer votre 'nationalité' et 'years_of_residence'."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "nationality",
+      "years_of_residence"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Những yêu cầu nào cho việc gia hạn visa nếu tôi là người tị nạn?",
+    "category": "immigration",
+    "ground_truth": {
+      "CUNG CẤP": "Nếu bạn là người tị nạn, việc gia hạn visa sẽ có những điều kiện đặc biệt.",
+      "GIẢI THÍCH": "Thường cần có bằng chứng về tình trạng tị nạn và có thể cần tài liệu bổ sung.",
+      "YÊU CẦU": "Vui lòng cung cấp 'years_of_residence' và 'family_situation' để biết thêm chi tiết."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "years_of_residence",
+      "family_situation"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Can I apply for Passeport Talent if my contract is about to end?",
+    "category": "immigration",
+    "ground_truth": {
+      "GIVE": "You may apply for a Passeport Talent if you meet the eligibility criteria despite your contract ending.",
+      "EXPLAIN": "The application might require proof of new employment or other qualifications.",
+      "ASK": "Please specify your 'nationality' and 'visa_type' for tailored advice."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "nationality",
+      "visa_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis un travailleur transfrontalier, quelles sont les conditions pour renouveler mon permis de séjour?",
+    "category": "immigration",
+    "ground_truth": {
+      "DONNER": "Les travailleurs transfrontaliers peuvent renouveler leur permis de séjour sous certaines conditions spécifiques.",
+      "EXPLIQUER": "Ces conditions dépendent des accords bilatéraux entre les pays concernés.",
+      "DEMANDER": "Veuillez préciser votre 'years_of_residence' et 'family_situation'."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "years_of_residence",
+      "family_situation"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Cần gì để xin nhập quốc tịch nếu tôi đã sống ở Pháp 10 năm?",
+    "category": "immigration",
+    "ground_truth": {
+      "CUNG CẤP": "Bạn có thể xin nhập quốc tịch nếu đã sống ở Pháp 10 năm, nhưng cần đáp ứng một số điều kiện.",
+      "GIẢI THÍCH": "Điều này thường bao gồm khả năng ngôn ngữ và không có tiền án tiền sự.",
+      "YÊU CẦU": "Vui lòng cung cấp 'nationality' và 'family_situation' để biết thêm thông tin chi tiết."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "nationality",
+      "family_situation"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "My spouse is a French national, do I get any special consideration for my visa renewal?",
+    "category": "immigration",
+    "ground_truth": {
+      "GIVE": "Spouses of French nationals may have simplified procedures for visa renewal.",
+      "EXPLAIN": "This may include fewer requirements or faster processing, depending on your residence duration.",
+      "ASK": "Please provide your 'years_of_residence' and 'visa_type' to proceed."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "years_of_residence",
+      "visa_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis travailleur frontalier entre la France et la Suisse et j'ai un conflit avec mon employeur sur des heures non payées. Que puis-je faire?",
+    "category": "labor",
+    "ground_truth": {
+      "DONNER": "Vous pouvez déposer une plainte auprès de l'inspection du travail en France et consulter un avocat spécialisé dans le droit des travailleurs frontaliers.",
+      "EXPLIQUER": "Les travailleurs frontaliers ont des droits spécifiques en termes de protection sociale et de règlement de litiges.",
+      "DEMANDER": "Pouvez-vous préciser votre type de contrat et la taille de votre entreprise ?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "contract_type",
+      "company_size"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "My employer refuses to pay my wages after I reported unsafe working conditions. What are my options?",
+    "category": "labor",
+    "ground_truth": {
+      "GIVE": "You may file a complaint with the labor board and seek legal counsel for wage theft.",
+      "EXPLAIN": "Employers are obligated to provide a safe working environment and pay wages promptly.",
+      "ASK": "Could you provide details on your contract type and proof of hours worked?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "contract_type",
+      "proof_of_hours"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Tôi là công dân Pháp làm việc tại Việt Nam. Tôi có quyền đình công nếu công ty không trả lương?",
+    "category": "labor",
+    "ground_truth": {
+      "CUNG CẤP": "Có thể tổ chức đình công nếu tuân thủ pháp luật Việt Nam về lao động.",
+      "GIẢI THÍCH": "Quyền đình công phụ thuộc vào hợp đồng lao động và luật pháp địa phương.",
+      "YÊU CẦU": "Bạn có thể cung cấp loại hợp đồng và quy mô công ty không?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "contract_type",
+      "company_size"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je suis un réfugié travaillant en France sous un contrat de courte durée et je n'ai pas été payé depuis deux mois.",
+    "category": "labor",
+    "ground_truth": {
+      "DONNER": "Vous pouvez contacter les services d'aide aux réfugiés et l'inspection du travail pour assistance.",
+      "EXPLIQUER": "Les réfugiés ont des protections légales concernant le travail et les salaires.",
+      "DEMANDER": "Avez-vous des preuves des heures travaillées ?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "proof_of_hours"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "I'm a dual citizen working remotely for a French company while living in Vietnam. If I face an employment dispute, what jurisdiction applies?",
+    "category": "labor",
+    "ground_truth": {
+      "GIVE": "Typically, the law of the country where the contract is executed applies, which might be French law in this case.",
+      "EXPLAIN": "Remote work arrangements can complicate jurisdiction issues in employment disputes.",
+      "ASK": "Please specify your contract type and provide proof of hours worked."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "contract_type",
+      "proof_of_hours"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Công ty tôi đang trong tình trạng chômage technique. Tôi có thể nhận trợ cấp thất nghiệp không?",
+    "category": "labor",
+    "ground_truth": {
+      "CUNG CẤP": "Có khả năng nhận trợ cấp thất nghiệp nếu tình trạng ‘chômage technique’ được công nhận.",
+      "GIẢI THÍCH": "Chômage technique là khi công ty tạm dừng hoạt động mà không giải thể.",
+      "YÊU CẦU": "Bạn vui lòng cung cấp loại hợp đồng và quy mô công ty."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "contract_type",
+      "company_size"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Mon employeur ne m'a pas payé pour des heures supplémentaires. Quel recours ai-je?",
+    "category": "labor",
+    "ground_truth": {
+      "DONNER": "Vous pouvez déposer une plainte pour heures supplémentaires impayées auprès de l'inspection du travail.",
+      "EXPLIQUER": "Les heures supplémentaires doivent être payées conformément au Code du travail.",
+      "DEMANDER": "Pourriez-vous fournir une preuve des heures effectuées et le type de contrat?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "proof_of_hours",
+      "contract_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "I was working on a fixed-term contract and got terminated mid-contract without notice. What are my rights?",
+    "category": "labor",
+    "ground_truth": {
+      "GIVE": "You might be entitled to compensation for wrongful termination depending on the contract terms.",
+      "EXPLAIN": "Fixed-term contracts have specific rules regarding early termination.",
+      "ASK": "Could you provide the company size and proof of hours worked?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "company_size",
+      "proof_of_hours"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis doctorant avec un contrat de travail en France. Puis-je faire grève si le financement est retardé?",
+    "category": "labor",
+    "ground_truth": {
+      "DONNER": "En tant que doctorant salarié, vous avez le droit de faire grève sous certaines conditions.",
+      "EXPLIQUER": "Les doctorants avec un contrat de travail ont des droits similaires aux autres salariés.",
+      "DEMANDER": "Pouvez-vous indiquer la taille de l'établissement et le type de contrat exact ?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "company_size",
+      "contract_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi đang làm việc cho một công ty Pháp và bị sa thải vì lý do không rõ ràng. Tôi nên làm gì?",
+    "category": "labor",
+    "ground_truth": {
+      "CUNG CẤP": "Bạn có thể khởi kiện công ty nếu việc sa thải không tuân thủ pháp luật.",
+      "GIẢI THÍCH": "Pháp luật bảo vệ người lao động trước việc sa thải không có căn cứ.",
+      "YÊU CẦU": "Bạn vui lòng cung cấp loại hợp đồng và bằng chứng về giờ làm việc."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "contract_type",
+      "proof_of_hours"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "I suspect my employer is not reporting my full hours to avoid paying overtime. How can I address this?",
+    "category": "labor",
+    "ground_truth": {
+      "GIVE": "You can report the employer to the labor authorities for investigation.",
+      "EXPLAIN": "Employers are required by law to accurately report and compensate for all hours worked.",
+      "ASK": "Could you provide your contract type and company size?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "contract_type",
+      "company_size"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis un travailleur frontalier qui habite en France mais travaille en Suisse. Comment dois-je déclarer mes impôts?",
+    "category": "taxes",
+    "ground_truth": {
+      "DONNER": "Les travailleurs frontaliers doivent déclarer leurs revenus en France même si ces revenus sont perçus en Suisse.",
+      "EXPLIQUER": "En général, les travailleurs frontaliers paient leurs impôts dans le pays où ils résident, bien que cela puisse être influencé par des accords bilatéraux.",
+      "DEMANDER": "Veuillez indiquer votre composition de famille pour évaluer les déductions fiscales possibles."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "family_composition"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Một người tị nạn ở Pháp cần biết cách nộp thuế thu nhập không?",
+    "category": "taxes",
+    "ground_truth": {
+      "CUNG CẤP": "Người tị nạn có thể được yêu cầu nộp thuế nếu họ có thu nhập ở Pháp.",
+      "GIẢI THÍCH": "Thuế thu nhập phụ thuộc vào tình trạng cư trú và nguồn gốc của thu nhập.",
+      "YÊU CẦU": "Bạn có thể cung cấp thêm thông tin về thu nhập hàng năm và tình trạng cư trú tài chính của bạn không?"
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "annual_income",
+      "fiscal_residence"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "I'm a dual national living in Vietnam and France. How should I handle my inheritance tax obligations?",
+    "category": "taxes",
+    "ground_truth": {
+      "GIVE": "Inheritance tax obligations depend on your fiscal residence and where the assets are located.",
+      "EXPLAIN": "As a dual national, you may be subject to inheritance taxes in both countries, but treaties may affect this.",
+      "ASK": "Could you provide your fiscal residence and family composition to give a more detailed response?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "fiscal_residence",
+      "family_composition"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Ma mère, qui réside fiscalement à l'étranger, m'a fait une donation. Comment cela affecte-t-il mes impôts en France?",
+    "category": "taxes",
+    "ground_truth": {
+      "DONNER": "Les donations reçues de l'étranger peuvent être soumises à l'impôt en France.",
+      "EXPLIQUER": "Les modalités dépendent de votre résidence fiscale et des conventions fiscales internationales.",
+      "DEMANDER": "Pourriez-vous préciser votre revenu annuel pour calculer l'impact exact de cette donation?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "annual_income"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi làm việc bán thời gian và cư trú tại Việt Nam, nhưng có tài sản ở Pháp. Tôi có phải trả thuế tài sản ở Pháp không?",
+    "category": "taxes",
+    "ground_truth": {
+      "CUNG CẤP": "Bạn có thể phải trả thuế tài sản tại Pháp nếu giá trị tài sản vượt quá ngưỡng miễn thuế.",
+      "GIẢI THÍCH": "Việc áp dụng thuế tài sản phụ thuộc vào giá trị tài sản và tình trạng cư trú tài chính của bạn.",
+      "YÊU CẦU": "Bạn có thể cung cấp thêm thông tin về thu nhập hàng năm và thành phần gia đình không?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "annual_income",
+      "family_composition"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je suis en France avec un statut de réfugié et je veux comprendre mes droits pour les crédits d'impôt.",
+    "category": "taxes",
+    "ground_truth": {
+      "DONNER": "Les réfugiés en France peuvent avoir droit à certains crédits d'impôt comme les autres résidents fiscaux.",
+      "EXPLIQUER": "Les crédits d'impôt dépendent de votre situation financière et du type de dépenses engagées.",
+      "DEMANDER": "Merci de préciser votre revenu annuel et votre composition familiale pour un conseil détaillé."
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "annual_income",
+      "family_composition"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "I'm a foreign student in France. Do I need to pay local taxes?",
+    "category": "taxes",
+    "ground_truth": {
+      "GIVE": "Foreign students may be required to pay certain local taxes in France, such as the taxe d'habitation.",
+      "EXPLAIN": "Local taxes depend on the nature of your residence and the local municipal rules.",
+      "ASK": "Please provide your fiscal residence and annual income for a more precise evaluation."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "fiscal_residence",
+      "annual_income"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Tôi sống ở Pháp và nhận tiền thừa kế từ Việt Nam. Tôi nên làm gì với thuế?",
+    "category": "taxes",
+    "ground_truth": {
+      "CUNG CẤP": "Khoản thừa kế từ Việt Nam có thể phải chịu thuế thừa kế tại Pháp.",
+      "GIẢI THÍCH": "Việc đánh thuế phụ thuộc vào giá trị tài sản thừa kế và tình trạng cư trú tài chính của bạn.",
+      "YÊU CẦU": "Bạn có thể cung cấp thông tin về thu nhập hàng năm và thành phần gia đình được không?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "annual_income",
+      "family_composition"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je suis un retraité anglais vivant en France et je veux savoir si je dois payer l'IFI.",
+    "category": "taxes",
+    "ground_truth": {
+      "DONNER": "Les retraités vivant en France doivent payer l'IFI si la valeur de leur patrimoine dépasse un certain seuil.",
+      "EXPLIQUER": "L'Impôt sur la Fortune Immobilière (IFI) s'applique principalement au patrimoine immobilier en France.",
+      "DEMANDER": "Pourriez-vous préciser votre résidence fiscale et composition familiale pour une évaluation complète?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "fiscal_residence",
+      "family_composition"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "I have dual residency in France and the USA. How does this affect my tax obligations?",
+    "category": "taxes",
+    "ground_truth": {
+      "GIVE": "Dual residency may affect your tax obligations in both countries, especially if there's a tax treaty.",
+      "EXPLAIN": "You may be required to file taxes in both countries but may be eligible for credits or exclusions.",
+      "ASK": "Please provide your annual income and family composition to better understand your obligations."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "annual_income",
+      "family_composition"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Nếu tôi cư trú tài chính ở Pháp nhưng có thu nhập từ một công ty ở Việt Nam, tôi có cần khai báo thu nhập đó không?",
+    "category": "taxes",
+    "ground_truth": {
+      "CUNG CẤP": "Bạn cần phải khai báo thu nhập từ nước ngoài nếu bạn có cư trú tài chính tại Pháp.",
+      "GIẢI THÍCH": "Pháp đánh thuế trên cơ sở thu nhập toàn cầu cho cư dân tài chính.",
+      "YÊU CẦU": "Bạn có thể cung cấp thông tin về thu nhập hàng năm và thành phần gia đình không?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "annual_income",
+      "family_composition"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Tôi cần thay đổi thông tin trên giấy khai sinh vì tôi có hai quốc tịch.",
+    "category": "identity",
+    "ground_truth": "[CUNG CẤP] Bạn cần liên hệ với văn phòng hộ tịch nơi đăng ký giấy khai sinh. [GIẢI THÍCH] Trong trường hợp bạn có hai quốc tịch, có thể cần cung cấp bằng chứng về quốc tịch và giấy tờ nhân thân. [YÊU CẦU] Vui lòng cung cấp 'place_of_birth', 'marital_status', và 'emergency_level'.",
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "place_of_birth",
+      "marital_status",
+      "emergency_level"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "How can I update my marriage status on my ID card as a cross-border worker?",
+    "category": "identity",
+    "ground_truth": "[GIVE] You need to visit the civil registry office where your marriage is registered. [EXPLAIN] As a cross-border worker, additional documentation might be required to verify your status. [ASK] Please provide your 'place_of_birth', 'emergency_level'.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "place_of_birth",
+      "emergency_level"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je ne sais pas comment déclarer mon enfant né à l'étranger.",
+    "category": "identity",
+    "ground_truth": "[DONNER] Vous devez vous rendre au consulat de France du pays de naissance. [EXPLIQUER] Les enfants nés à l'étranger de parents français doivent être déclarés au consulat pour être enregistrés en France. [DEMANDER] Pouvez-vous fournir 'place_of_birth', 'marital_status', et 'emergency_level' ?",
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "place_of_birth",
+      "marital_status",
+      "emergency_level"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Quelles étapes dois-je suivre pour récupérer un passeport perdu?",
+    "category": "identity",
+    "ground_truth": "[DONNER] Déclarez la perte au commissariat local et faites une demande auprès de l'administration concernée. [EXPLIQUER] Il est essentiel de signaler la perte rapidement pour éviter toute utilisation frauduleuse. [DEMANDER] Indiquez 'place_of_birth' et 'emergency_level'.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "place_of_birth",
+      "emergency_level"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi muốn đăng ký kết hôn ở Pháp nhưng tôi là người tị nạn.",
+    "category": "identity",
+    "ground_truth": "[CUNG CẤP] Để đăng ký kết hôn, bạn cần liên hệ với chính quyền địa phương của nơi cư trú tại Pháp. [GIẢI THÍCH] Là người tị nạn, bạn có thể cần cung cấp giấy tờ chứng minh tình trạng cư trú của bạn. [YÊU CẦU] Xin vui lòng cung cấp 'place_of_birth', 'emergency_level'.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "place_of_birth",
+      "emergency_level"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "I lost my criminal record certificate and need a new one urgently.",
+    "category": "identity",
+    "ground_truth": "[GIVE] You should contact the police department where the original certificate was issued. [EXPLAIN] In urgent cases, you may request expedited processing. [ASK] Could you provide 'place_of_birth', 'marital_status'? ",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "place_of_birth",
+      "marital_status"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Comment puis-je obtenir un extrait de naissance alors que je suis actuellement à l'étranger?",
+    "category": "identity",
+    "ground_truth": "[DONNER] Vous pouvez demander un extrait de naissance en ligne via le site officiel de l'administration française. [EXPLIQUER] Même à l'étranger, vous avez accès aux services administratifs en ligne pour obtenir vos documents. [DEMANDER] Veuillez fournir 'marital_status', 'emergency_level'.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "marital_status",
+      "emergency_level"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "How do I request an ID card correction when my place of birth is incorrect?",
+    "category": "identity",
+    "ground_truth": "[GIVE] Visit the civil registry office to request a correction. [EXPLAIN] Corrections require providing evidence, such as a birth certificate, to verify the correct place of birth. [ASK] Please specify 'marital_status', 'emergency_level'.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "marital_status",
+      "emergency_level"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Tôi phải làm gì nếu mất giấy tờ tùy thân khi đang du lịch?",
+    "category": "identity",
+    "ground_truth": "[CUNG CẤP] Bạn nên báo cáo ngay cho công an địa phương và liên hệ với đại sứ quán hoặc lãnh sự quán của bạn. [GIẢI THÍCH] Việc này sẽ giúp bảo vệ bạn khỏi các hoạt động gian lận có thể xảy ra. [YÊU CẦU] Vui lòng cho biết 'place_of_birth', 'marital_status', 'emergency_level'.",
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "place_of_birth",
+      "marital_status",
+      "emergency_level"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je veux changer mon statut marital après un divorce international.",
+    "category": "identity",
+    "ground_truth": "[DONNER] Vous devez soumettre une demande auprès de l'état civil en France avec une copie du jugement de divorce. [EXPLIQUER] Un divorce international peut nécessiter des documents traduits officiellement pour mise à jour du statut. [DEMANDER] Indiquez 'place_of_birth', 'emergency_level'.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "place_of_birth",
+      "emergency_level"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Làm thế nào để tôi có thể ghi lại hôn nhân của mình với chính quyền Pháp khi sống ở nước ngoài?",
+    "category": "identity",
+    "ground_truth": "[CUNG CẤP] Bạn cần đăng ký tại đại sứ quán hoặc lãnh sự quán Pháp gần nhất. [GIẢI THÍCH] Điều này đảm bảo hôn nhân được công nhận hợp pháp tại Pháp. [YÊU CẦU] Cung cấp 'place_of_birth', 'emergency_level'.",
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "place_of_birth",
+      "emergency_level"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Est-ce qu'un travailleur frontalier belge peut recevoir le RSA tout en travaillant en France?",
+    "category": "social",
+    "ground_truth": {
+      "DONNER": "Un travailleur frontalier peut être éligible au RSA sous certaines conditions.",
+      "EXPLIQUER": "Le RSA est destiné à garantir un revenu minimal pour les personnes sans ressources. Pour les travailleurs frontaliers, l'éligibilité dépendra de la résidence fiscale et de la durée du travail en France.",
+      "DEMANDER": "Veuillez fournir votre niveau de revenus et votre âge pour une réponse plus précise."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "age"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi có thể nhận trợ cấp nhà ở CAF nếu tôi là người tị nạn không?",
+    "category": "social",
+    "ground_truth": {
+      "CUNG CẤP": "Người tị nạn có thể đủ điều kiện nhận trợ cấp nhà ở từ CAF.",
+      "GIẢI THÍCH": "Trợ cấp nhà ở từ CAF nhằm hỗ trợ chi phí nhà ở cho những người có thu nhập thấp và bao gồm cả người tị nạn.",
+      "YÊU CẦU": "Vui lòng cung cấp mức thu nhập và tỷ lệ khuyết tật của bạn để biết thêm thông tin chi tiết."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "disability_percentage"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Can someone with dual nationality (French and Mexican) apply for AAH while living in Mexico?",
+    "category": "social",
+    "ground_truth": {
+      "GIVE": "AAH is available to individuals who meet specific criteria, regardless of dual nationality.",
+      "EXPLAIN": "AAH is designed for people with disabilities. However, it is typically required for the applicant to reside in France.",
+      "ASK": "Please provide your income level and disability percentage to determine eligibility."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "disability_percentage"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Quelle est l'aide disponible pour un retraité avec un faible revenu vivant à la frontière franco-suisse?",
+    "category": "social",
+    "ground_truth": {
+      "DONNER": "Les retraités avec de faibles revenus peuvent prétendre à plusieurs aides.",
+      "EXPLIQUER": "En France, les retraités peuvent bénéficier de l'ASPA ou d'autres aides spécifiques selon leur situation géographique et le niveau de revenu.",
+      "DEMANDER": "Veuillez préciser votre niveau de revenu pour déterminer les aides précises disponibles."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Người lao động nước ngoài có đủ điều kiện nhận Chèque Énergie không?",
+    "category": "social",
+    "ground_truth": {
+      "CUNG CẤP": "Người lao động nước ngoài có thể không đủ điều kiện nhận Chèque Énergie nếu không phải là cư dân Pháp.",
+      "GIẢI THÍCH": "Chèque Énergie là một hỗ trợ do chính phủ Pháp cung cấp để giúp thanh toán hóa đơn năng lượng cho những người sống và cư trú tại Pháp.",
+      "YÊU CẦU": "Vui lòng cung cấp mức thu nhập và độ tuổi của bạn để xác minh tính đủ điều kiện."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "age"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je suis en situation de handicap et je vis au Vietnam, puis-je demander l'AAH?",
+    "category": "social",
+    "ground_truth": {
+      "DONNER": "L'AAH est généralement réservée aux résidents de France.",
+      "EXPLIQUER": "Bien que l'AAH soit destinée aux personnes handicapées, une résidence en France est généralement requise pour en bénéficier.",
+      "DEMANDER": "Veuillez fournir votre niveau de revenu et votre pourcentage de handicap pour des informations plus précises."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "disability_percentage"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "How to apply for housing aid if I have refugee status in France?",
+    "category": "social",
+    "ground_truth": {
+      "GIVE": "Refugees in France can apply for housing aid through CAF.",
+      "EXPLAIN": "CAF provides housing aid to individuals with low income, including refugees, to assist with housing expenses.",
+      "ASK": "Please provide your income level and age to determine the exact assistance available to you."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "age"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Un retraité belge vivant en France peut-il recevoir des aides sociales françaises?",
+    "category": "social",
+    "ground_truth": {
+      "DONNER": "Oui, un retraité belge vivant en France peut être éligible aux aides sociales françaises.",
+      "EXPLIQUER": "La résidence en France permet d'accéder à certaines aides, comme l'ASPA, à condition de respecter les critères de revenus.",
+      "DEMANDER": "Veuillez fournir votre niveau de revenu et votre âge pour une évaluation complète."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "age"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi có thể nhận RSA nếu tôi có quốc tịch kép (Pháp và Mỹ) nhưng sống tại Mỹ không?",
+    "category": "social",
+    "ground_truth": {
+      "CUNG CẤP": "RSA thường chỉ dành cho những người cư trú tại Pháp.",
+      "GIẢI THÍCH": "Mặc dù bạn có quốc tịch Pháp, cư trú tại Pháp là bắt buộc để được nhận RSA.",
+      "YÊU CẦU": "Vui lòng cung cấp mức thu nhập và độ tuổi của bạn để kiểm tra các điều kiện khác."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "age"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "What social benefits can a disabled person over 65 receive in France?",
+    "category": "social",
+    "ground_truth": {
+      "GIVE": "A disabled person over 65 in France can receive various benefits, including ASPA and AAH.",
+      "EXPLAIN": "Eligibility for these benefits depends on income level, disability percentage, and age.",
+      "ASK": "Please provide your income level and disability percentage to get a detailed assessment."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "disability_percentage"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je vis en France avec un permis de travail suisse, ai-je droit à des aides sociales françaises?",
+    "category": "social",
+    "ground_truth": {
+      "DONNER": "Il est possible d'être éligible à certaines aides sociales françaises.",
+      "EXPLIQUER": "Les droits dépendent de la résidence fiscale. Les aides comme le RSA et l'AAH requièrent généralement une résidence en France.",
+      "DEMANDER": "Veuillez fournir votre niveau de revenu, votre âge, et votre pourcentage de handicap pour une évaluation précise."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "income_level",
+      "age",
+      "disability_percentage"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Je suis travailleur frontalier en Suisse, comment fonctionne ma carte vitale?",
+    "category": "health",
+    "ground_truth": {
+      "DONNER": "En tant que travailleur frontalier en Suisse, vous bénéficiez de la couverture de l'assurance maladie suisse ou française selon votre choix.",
+      "EXPLIQUER": "La carte vitale en France est utilisée pour simplifier les remboursements des soins médicaux. Vous devez également vous enregistrer auprès de la CPAM.",
+      "DEMANDER": "Pour vous donner une réponse plus détaillée, pourriez-vous préciser votre statut d'emploi et votre type d'emploi?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "employment_status",
+      "job_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi là công dân Pháp làm việc ở Đức, tôi cần biết về bảo hiểm sức khỏe của mình.",
+    "category": "health",
+    "ground_truth": {
+      "CUNG CẤP": "Bạn có thể được bao phủ bởi hệ thống bảo hiểm y tế của Đức hoặc Pháp.",
+      "GIẢI THÍCH": "Công dân Pháp làm việc ở Đức cần chọn bảo hiểm phù hợp, thường là bảo hiểm tại quốc gia nơi bạn làm việc.",
+      "YÊU CẦU": "Vui lòng cung cấp thông tin về nơi cư trú và loại công việc của bạn để có thông tin chính xác hơn."
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "residence_location",
+      "job_type"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "I just moved to France and have dual nationality. How do I get insured?",
+    "category": "health",
+    "ground_truth": {
+      "GIVE": "As a new resident in France with dual nationality, you need to register with CPAM to obtain health insurance.",
+      "EXPLAIN": "Your eligibility for healthcare depends on your residence status and employment situation.",
+      "ASK": "Can you provide your employment status and job type for further assistance?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "employment_status",
+      "job_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis un réfugié en France, comment puis-je obtenir une carte vitale?",
+    "category": "health",
+    "ground_truth": {
+      "DONNER": "En tant que réfugié, vous avez droit à la couverture santé universelle en France.",
+      "EXPLIQUER": "Vous devez déposer une demande auprès de la CPAM pour obtenir votre carte vitale.",
+      "DEMANDER": "Veuillez indiquer votre lieu de résidence et statut d'emploi pour un conseil personnalisé."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "residence_location",
+      "employment_status"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Quels sont mes droits en tant que frontalier entre la France et l'Allemagne?",
+    "category": "health",
+    "ground_truth": {
+      "DONNER": "Les travailleurs frontaliers ont des droits spécifiques en matière de couverture santé.",
+      "EXPLIQUER": "Vous pouvez choisir entre l'assurance maladie française ou allemande.",
+      "DEMANDER": "Pour vous conseiller au mieux, pourriez-vous préciser votre statut d'emploi et votre lieu de résidence?"
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "employment_status",
+      "residence_location"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi đang làm việc tự do ở Pháp, tôi có thể sử dụng carte vitale không?",
+    "category": "health",
+    "ground_truth": {
+      "CUNG CẤP": "Người làm việc tự do ở Pháp có quyền truy cập vào hệ thống bảo hiểm y tế.",
+      "GIẢI THÍCH": "Bạn cần đăng ký với CPAM để có carte vitale và được bảo hiểm sức khỏe.",
+      "YÊU CẦU": "Vui lòng cho biết nơi cư trú của bạn để có thêm thông tin chi tiết."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "residence_location"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "I am a British citizen living in France and working remotely. How does my health insurance work?",
+    "category": "health",
+    "ground_truth": {
+      "GIVE": "As a British citizen residing in France and working remotely, you should register with CPAM for health insurance.",
+      "EXPLAIN": "Your insurance might be influenced by your residence and work status.",
+      "ASK": "Could you please confirm your job type for more specific guidance?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "job_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis étudiant vietnamien en France, comment puis-je obtenir une assurance santé?",
+    "category": "health",
+    "ground_truth": {
+      "DONNER": "Les étudiants étrangers peuvent s'inscrire à la sécurité sociale étudiante en France.",
+      "EXPLIQUER": "Cela vous permet de bénéficier de la couverture santé avec une carte vitale.",
+      "DEMANDER": "Pouvez-vous me dire votre lieu de résidence et votre type d'emploi si applicable?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "residence_location",
+      "job_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi là người lao động tự do sống ở biên giới Pháp và Đức, tôi có cần bảo hiểm y tế không?",
+    "category": "health",
+    "ground_truth": {
+      "CUNG CẤP": "Có, bạn cần có bảo hiểm y tế phù hợp khi sống và làm việc ở khu vực biên giới.",
+      "GIẢI THÍCH": "Bạn có thể chọn hệ thống bảo hiểm của Pháp hoặc Đức tùy thuộc vào nhu cầu của bạn.",
+      "YÊU CẦU": "Xin hãy cung cấp thông tin về nơi cư trú và tình trạng công việc của bạn để được hướng dẫn cụ thể."
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "residence_location",
+      "employment_status"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "As a Swiss citizen working in France, do I need a carte vitale?",
+    "category": "health",
+    "ground_truth": {
+      "GIVE": "Yes, as a Swiss citizen working in France, you should apply for a carte vitale for health coverage.",
+      "EXPLAIN": "This ensures you receive healthcare benefits under the French system.",
+      "ASK": "Could you provide your residence location and job type for more guidance?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "residence_location",
+      "job_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis un fonctionnaire français en poste à l'étranger, comment gérer ma couverture santé?",
+    "category": "health",
+    "ground_truth": {
+      "DONNER": "En tant que fonctionnaire français à l'étranger, vous devez vous assurer que votre couverture santé est maintenue.",
+      "EXPLIQUER": "En général, vous êtes couvert par votre employeur, mais vous devez vérifier les options disponibles.",
+      "DEMANDER": "Pouvez-vous confirmer votre lieu de résidence actuel et le type de poste que vous occupez?"
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "residence_location",
+      "job_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Mon propriétaire veut m'expulser en décembre, mais je suis un travailleur frontalier. Quelles sont mes options?",
+    "category": "housing",
+    "ground_truth": {
+      "DONNER": "En tant que travailleur frontalier, vous pouvez être soumis à des règles spécifiques selon votre statut.",
+      "EXPLIQUER": "La trêve hivernale interdit généralement les expulsions en France de novembre à mars sans une décision de justice.",
+      "DEMANDER": "Pouvez-vous confirmer si le propriétaire a une ordonnance du tribunal?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "has_court_order"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Chủ nhà của tôi đang cố gắng tăng tiền thuê vào giữa hợp đồng thuê của tôi. Tôi có quyền gì không?",
+    "category": "housing",
+    "ground_truth": {
+      "CUNG CẤP": "Giữa hợp đồng thuê, chủ nhà thường không thể tăng tiền thuê trừ khi có điều khoản trong hợp đồng cho phép.",
+      "GIẢI THÍCH": "Các quyền của bạn có thể khác nhau tùy theo pháp luật địa phương và điều khoản trong hợp đồng.",
+      "YÊU CẦU": "Vui lòng cho biết tháng hiện tại và nếu có lệnh của tòa án."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "current_month",
+      "has_court_order"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Can I be evicted in January without a court order?",
+    "category": "housing",
+    "ground_truth": {
+      "GIVE": "Generally, a landlord cannot evict a tenant without a court order, especially during the winter truce.",
+      "EXPLAIN": "This truce lasts from November to March, protecting tenants during colder months.",
+      "ASK": "Could you specify the pool size of your housing unit?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "pool_size"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis réfugié et on me menace d'expulsion sans décision judiciaire. Que devrais-je faire?",
+    "category": "housing",
+    "ground_truth": {
+      "DONNER": "En tant que réfugié, vous avez des protections particulières contre les expulsions illégales.",
+      "EXPLIQUER": "Aucune expulsion ne peut être effectuée sans décision judiciaire, en particulier pendant la trêve hivernale.",
+      "DEMANDER": "Pouvez-vous préciser le mois actuel?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "current_month"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "The landlord has a court order for eviction. Is it possible to delay this during the winter months?",
+    "category": "housing",
+    "ground_truth": {
+      "GIVE": "Yes, eviction can often be delayed during the winter truce with appropriate legal action.",
+      "EXPLAIN": "The winter truce is a period where evictions are typically halted from November to March.",
+      "ASK": "What is the current month for more precise advice?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "current_month"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Tôi có thể xin giấy phép xây dựng cho căn hộ của mình không?",
+    "category": "housing",
+    "ground_truth": {
+      "CUNG CẤP": "Việc xin giấy phép xây dựng thường yêu cầu phải có sự đồng ý của chủ nhà, đặc biệt là nếu nó liên quan đến thay đổi cấu trúc.",
+      "GIẢI THÍCH": "Nếu bạn không phải là chủ sở hữu căn hộ, bạn phải có sự chấp thuận từ chủ nhà hoặc bên cho thuê.",
+      "YÊU CẦU": "Xin vui lòng cho biết kích thước hồ bơi nếu có bất kỳ ảnh hưởng nào."
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "pool_size"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je suis en situation de double nationalité et je souhaite contester mon loyer. Quelles sont mes options?",
+    "category": "housing",
+    "ground_truth": {
+      "DONNER": "Avec une double nationalité, vous avez les mêmes droits que tout autre locataire en France.",
+      "EXPLIQUER": "Vous pouvez contester le loyer par l'intermédiaire d'un tribunal ou d'une commission de conciliation.",
+      "DEMANDER": "Pouvez-vous préciser la taille de votre logement?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "pool_size"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "In March, my landlord is threatening eviction without a court order. Can they do that?",
+    "category": "housing",
+    "ground_truth": {
+      "GIVE": "No, a landlord cannot evict a tenant without a court order, especially during the winter truce.",
+      "EXPLAIN": "The truce typically runs until the end of March, preventing evictions during this period.",
+      "ASK": "Is there a pool size or any specific characteristics of your housing that might affect your situation?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "pool_size"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Mon propriétaire a un ordre d'expulsion. Puis-je résister?",
+    "category": "housing",
+    "ground_truth": {
+      "DONNER": "Même avec un ordre d'expulsion, des mesures peuvent être prises pour retarder l'expulsion.",
+      "EXPLIQUER": "La trêve hivernale peut offrir une protection jusqu'en mars.",
+      "DEMANDER": "Veuillez préciser le mois actuel et la taille de votre logement."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "current_month",
+      "pool_size"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "I am a tenant and my landlord is asking for additional charges this winter. Is it legal?",
+    "category": "housing",
+    "ground_truth": {
+      "GIVE": "Additional charges must be justified and explicitly stated in the lease agreement.",
+      "EXPLAIN": "During the winter months, additional charges cannot be imposed without meeting legal requirements.",
+      "ASK": "What is the current month and are there additional facilities like a pool involved?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "current_month",
+      "pool_size"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Tôi có cần lệnh của tòa án để đuổi một người thuê nhà không trả tiền không?",
+    "category": "housing",
+    "ground_truth": {
+      "CUNG CẤP": "Có, bạn cần lệnh của tòa án để đuổi một người thuê nhà không trả tiền.",
+      "GIẢI THÍCH": "Pháp luật bảo vệ quyền lợi của người thuê nhà và yêu cầu có sự can thiệp của tòa án.",
+      "YÊU CẦU": "Xin vui lòng cho biết tháng hiện tại và kích thước hồ bơi nếu có."
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "current_month",
+      "pool_size"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je suis un travailleur frontalier avec une voiture immatriculée en Allemagne. Comment puis-je obtenir la vignette Crit'Air pour conduire en France?",
+    "category": "daily_life",
+    "ground_truth": {
+      "DONNER": "Pour obtenir la vignette Crit'Air pour un véhicule immatriculé en Allemagne, vous devez faire une demande en ligne sur le site officiel Crit'Air, en fournissant les détails du véhicule et un paiement par carte bancaire.",
+      "EXPLIQUER": "La vignette Crit'Air est nécessaire pour circuler dans certaines zones environnementales en France. Elle classe les véhicules selon leur niveau d’émissions polluantes.",
+      "DEMANDER": "Veuillez indiquer le type d'activité pour laquelle le véhicule est utilisé."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "What happens to my Navigo pass if I move from Paris to London for work but return every weekend?",
+    "category": "daily_life",
+    "ground_truth": {
+      "GIVE": "You can keep your Navigo pass active and use it when you return to Paris on weekends. Ensure your pass is topped up according to your travel needs.",
+      "EXPLAIN": "Navigo pass is designed for regular travelers within the Paris region and can be used flexibly for short stays.",
+      "ASK": "Please specify the activity type related to your Navigo pass usage."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Tôi đang sống ở Pháp theo diện tị nạn và cần làm lại bằng lái xe của mình. Tôi phải làm gì?",
+    "category": "daily_life",
+    "ground_truth": {
+      "CUNG CẤP": "Bạn cần liên hệ với cơ quan đăng ký lái xe địa phương và có thể cần phải vượt qua một số kỳ thi để chuyển đổi bằng lái xe nước ngoài của bạn thành bằng lái xe Pháp.",
+      "GIẢI THÍCH": "Những người tị nạn có thể cần chứng minh tình trạng cư trú hợp pháp và có thể phải tham gia các khóa học lái xe bổ sung.",
+      "YÊU CẦU": "Vui lòng cung cấp loại hoạt động liên quan đến bằng lái xe của bạn."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je suis citoyen français avec une double nationalité. Dois-je enregistrer ma voiture en France si je l'utilise principalement à l'étranger?",
+    "category": "daily_life",
+    "ground_truth": {
+      "DONNER": "Si votre véhicule est utilisé principalement à l'étranger, l'immatriculation française n'est pas obligatoire. Cependant, pour l'utiliser en France, assurez-vous qu'il respecte les réglementations locales.",
+      "EXPLIQUER": "Les citoyens français peuvent choisir de ne pas enregistrer leur véhicule en France si celui-ci est principalement utilisé dans un autre pays.",
+      "DEMANDER": "Précisez le type d'activité pour laquelle vous utilisez le véhicule."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "My French driving license is expiring soon and I'm currently living in Vietnam. How can I renew it?",
+    "category": "daily_life",
+    "ground_truth": {
+      "GIVE": "You need to contact the French consulate in Vietnam to inquire about the license renewal process while residing abroad.",
+      "EXPLAIN": "Renewing a French driving license from abroad may involve specific steps and proof of address.",
+      "ASK": "Please provide the activity type related to your driving license usage."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Mon enfant a une double nationalité et va à l'école en France. Quelle assurance scolaire est nécessaire?",
+    "category": "daily_life",
+    "ground_truth": {
+      "DONNER": "Pour un enfant scolarisé en France, l'assurance scolaire est recommandée pour couvrir les incidents survenus à l'école et durant les activités périscolaires.",
+      "EXPLIQUER": "Cette assurance n'est pas obligatoire mais fortement conseillée pour protéger l'enfant en cas de dommages matériels ou corporels.",
+      "DEMANDER": "Merci d'indiquer le type d'activité scolaire ou extra-scolaire de l'enfant."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi cần một Crit'Air cho xe của mình nhưng tôi không có giấy tờ định cư ở Pháp. Tôi phải làm gì?",
+    "category": "daily_life",
+    "ground_truth": {
+      "CUNG CẤP": "Bạn có thể mua Crit'Air online trên trang web chính thức, không cần giấy tờ cư trú nhưng cần thông tin đăng ký xe.",
+      "GIẢI THÍCH": "Crit'Air là bắt buộc để lái xe trong một số khu vực nhất định ở Pháp, với các cấp bậc dựa trên mức độ phát thải của xe.",
+      "YÊU CẦU": "Vui lòng cung cấp loại hoạt động liên quan đến việc sử dụng xe của bạn."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "I have a UK driving license but recently became a French resident. Do I need to change my license?",
+    "category": "daily_life",
+    "ground_truth": {
+      "GIVE": "As a new French resident, you may need to exchange your UK driving license for a French one after a certain period.",
+      "EXPLAIN": "Driving license exchange is often required when changing residency within the EU, but check specific rules post-Brexit.",
+      "ASK": "Please specify the activity type related to your driving license usage."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je veux utiliser mon passe Navigo pour des voyages occasionnels. Quelle option est la meilleure?",
+    "category": "daily_life",
+    "ground_truth": {
+      "DONNER": "Pour des voyages occasionnels, envisagez le Navigo Liberté+ qui est facturé à l'utilisation.",
+      "EXPLIQUER": "Cette option vous permet de voyager sans abonnement mensuel tout en bénéficiant de tarifs réduits.",
+      "DEMANDER": "Veuillez préciser le type d'activité pour lequel vous utiliserez le passe Navigo."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "What school insurance is needed for my child who is a foreign national attending a French school?",
+    "category": "daily_life",
+    "ground_truth": {
+      "GIVE": "School insurance is recommended, covering accidents during school and extracurricular activities.",
+      "EXPLAIN": "While not mandatory, school insurance is advised to protect against material and bodily harm.",
+      "ASK": "Please specify the activity type for which the school insurance is intended."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Tôi muốn biết liệu tôi có cần đăng ký lại xe ở Pháp nếu tôi chỉ ở đây trong vài tháng hay không.",
+    "category": "daily_life",
+    "ground_truth": {
+      "CUNG CẤP": "Nếu bạn chỉ tạm trú vài tháng, thông thường bạn không cần đăng ký lại xe, nhưng cần đảm bảo xe tuân theo các quy định địa phương.",
+      "GIẢI THÍCH": "Xe có thể bị yêu cầu đáp ứng các tiêu chuẩn nhất định khi sử dụng tại Pháp, ngay cả khi chỉ lưu trú ngắn hạn.",
+      "YÊU CẦU": "Vui lòng cung cấp loại hoạt động liên quan đến việc sử dụng xe của bạn."
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "activity_type"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Je suis un étudiant de double nationalité et je veux savoir comment cela affecte ma bourse en France.",
+    "category": "education",
+    "ground_truth": {
+      "DONNER": "En France, avoir une double nationalité peut influencer les critères d'éligibilité pour certaines bourses.",
+      "EXPLIQUER": "Il est important de vérifier les conditions spécifiques de chaque bourse, qui peuvent varier selon la nationalité.",
+      "DEMANDER": "Avez-vous déjà une bourse en cours ou s'agit-il d'une nouvelle demande?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "statut actuel de bourse"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "How can a cross-border worker apply for their child's school registration in France?",
+    "category": "education",
+    "ground_truth": {
+      "GIVE": "Cross-border workers can apply for their child's school registration in France by contacting the local education authority.",
+      "EXPLAIN": "The procedure may involve providing proof of employment and residency.",
+      "ASK": "Have you verified the specific requirements of the local education authority in your area?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "local education authority requirements"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Tôi cần gì để xin giấy phép làm việc cho sinh viên quốc tế tại Pháp?",
+    "category": "education",
+    "ground_truth": {
+      "CUNG CẤP": "Giấy phép làm việc cho sinh viên quốc tế tại Pháp có thể cần thẻ cư trú và giấy chứng nhận của trường đại học.",
+      "GIẢI THÍCH": "Sinh viên quốc tế thường bị giới hạn về số giờ làm việc mỗi tuần.",
+      "YÊU CẦU": "Bạn đã có thẻ cư trú chưa và bạn đang theo học chương trình nào?"
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "thẻ cư trú",
+      "chương trình học"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "My university is asking for a mid-year permit renewal, but I am in the middle of transferring to another institution.",
+    "category": "education",
+    "ground_truth": {
+      "GIVE": "You may need to provide documentation from both institutions.",
+      "EXPLAIN": "This situation can complicate the renewal process, but both universities should cooperate.",
+      "ASK": "Do you have a transfer approval letter from the new institution?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "transfer approval letter"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je suis réfugié et je souhaite m'inscrire à l'université en France. Quels documents dois-je préparer?",
+    "category": "education",
+    "ground_truth": {
+      "DONNER": "En tant que réfugié, vous devez préparer votre statut de réfugié reconnu et les documents académiques antérieurs.",
+      "EXPLIQUER": "L'université peut demander des traductions certifiées de vos diplômes.",
+      "DEMANDER": "Avez-vous déjà contacté le service des admissions pour les exigences spécifiques?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "contact service des admissions"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Sinh viên có thể làm việc bao nhiêu giờ một tuần ở Pháp?",
+    "category": "education",
+    "ground_truth": {
+      "CUNG CẤP": "Sinh viên quốc tế có thể làm việc tối đa 20 giờ một tuần trong năm học tại Pháp.",
+      "GIẢI THÍCH": "Trong các kỳ nghỉ, sinh viên có thể làm việc toàn thời gian.",
+      "YÊU CẦU": "Bạn đang theo học chương trình nào và bạn có giấy phép làm việc không?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "chương trình học",
+      "giấy phép làm việc"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "Mes enfants ont des nationalités différentes et je veux les inscrire dans le même établissement scolaire en France.",
+    "category": "education",
+    "ground_truth": {
+      "DONNER": "En France, la nationalité des enfants n'affecte pas leur capacité à être inscrits dans le même établissement scolaire.",
+      "EXPLIQUER": "Il est nécessaire de fournir des documents de résidence et d'inscription préalable.",
+      "DEMANDER": "Avez-vous déjà préparé les certificats de naissance de vos enfants?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "certificats de naissance"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Can I apply for a scholarship in France if I am currently on a student exchange program?",
+    "category": "education",
+    "ground_truth": {
+      "GIVE": "Yes, students on exchange programs can apply for scholarships in France.",
+      "EXPLAIN": "Eligibility might depend on the terms of your exchange program and the specific scholarship.",
+      "ASK": "Have you checked the specific scholarship's eligibility criteria?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "scholarship eligibility criteria"
+    ],
+    "language": "en"
+  },
+  {
+    "question": "Je n'ai pas de bac mais je veux m'inscrire à l'université française, est-ce possible?",
+    "category": "education",
+    "ground_truth": {
+      "DONNER": "Il est possible de s'inscrire à l'université en France sans bac via des parcours alternatifs.",
+      "EXPLIQUER": "Des dispositifs comme la validation des acquis peuvent être utilisés.",
+      "DEMANDER": "Avez-vous des expériences ou qualifications professionnelles à faire valoir?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "expériences professionnelles"
+    ],
+    "language": "fr"
+  },
+  {
+    "question": "Tôi có thể chuyển tiếp học bổng từ trường cũ sang trường mới không?",
+    "category": "education",
+    "ground_truth": {
+      "CUNG CẤP": "Việc chuyển tiếp học bổng từ trường này sang trường khác phụ thuộc vào quy định của từng học bổng.",
+      "GIẢI THÍCH": "Bạn cần kiểm tra với nhà tài trợ học bổng và trường mới.",
+      "YÊU CẦU": "Bạn đã liên hệ với nhà tài trợ học bổng chưa?"
+    },
+    "expected_behavior": "CLARIFY",
+    "critical_missing_info": [
+      "liên hệ nhà tài trợ học bổng"
+    ],
+    "language": "vi"
+  },
+  {
+    "question": "How do I get a student work permit if I am currently working part-time and enrolled in a distance learning program?",
+    "category": "education",
+    "ground_truth": {
+      "GIVE": "You may apply for a student work permit if your program is accredited and you meet the residency requirements.",
+      "EXPLAIN": "Distance learning may affect your eligibility depending on the program's intensity.",
+      "ASK": "Have you confirmed the accreditation status of your program?"
+    },
+    "expected_behavior": "HYBRID",
+    "critical_missing_info": [
+      "accreditation status of program"
+    ],
+    "language": "en"
+  }
+]
