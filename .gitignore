@@ -12,4 +12,6 @@ infrastructure/qdrant_storage/
 cv_*.tex
 # Temp audio files
 output_voice.mp3
-/tmp/tts_*
+# Logs and PID files
+*.log
+*.pid
