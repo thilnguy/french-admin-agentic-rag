@@ -22,6 +22,8 @@ from src.shared.guardrails import guardrail_manager
 from src.shared.query_pipeline import get_query_pipeline
 from src.shared.language_resolver import language_resolver
 from src.utils.llm_factory import get_llm
+from src.utils.tracing import tracer
+from opentelemetry import trace
 
 
 
@@ -56,6 +58,7 @@ class AdminOrchestrator:
             "vietnamese": "Vietnamese",
         }
 
+    @tracer.start_as_current_span("orchestrator_call_llm")
     @retry(
         wait=wait_exponential(multiplier=1, min=2, max=10),
         stop=stop_after_attempt(3),
@@ -63,6 +66,9 @@ class AdminOrchestrator:
     )
     async def _call_llm(self, messages: list):
         """Wrapper for LLM calls with retry logic."""
+        span = trace.get_current_span()
+        span.set_attribute("llm.model", self.llm.model_name)
+        
         start_time = time.time()
         response = await self.llm.ainvoke(messages)
         duration = time.time() - start_time
@@ -82,6 +88,7 @@ class AdminOrchestrator:
 
         return response
 
+    @tracer.start_as_current_span("orchestrator_handle_query")
     async def handle_query(
         self, query: str, user_lang: str = None, session_id: str = "default_session"
     ):
@@ -89,6 +96,9 @@ class AdminOrchestrator:
         Main orchestration logic with Guardrails, Caching, and Query Translation.
         Uses AgentState for structured context management.
         """
+        span = trace.get_current_span()
+        span.set_attribute("query", query)
+        span.set_attribute("session", session_id)
 
         # LOAD STATE (Structured State Management)
         state = await self.memory.load_agent_state(session_id)

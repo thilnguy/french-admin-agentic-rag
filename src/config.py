@@ -47,6 +47,15 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
 
+    # OpenTelemetry Tracing
+    OTEL_ENABLED: bool = False
+    OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4318/v1/traces"
+    OTEL_SERVICE_NAME: str = "french-admin-agent"
+
+    # Legal Data Update Pipeline (HuggingFace)
+    HF_DATASET_NAME: str = "your-hf-username/french-legal-data"
+    HUGGINGFACE_TOKEN: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )

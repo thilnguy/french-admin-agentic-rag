@@ -8,6 +8,9 @@ from src.utils.llm_factory import get_llm
 
 
 
+from src.utils.tracing import tracer
+from opentelemetry import trace
+
 class GuardrailManager:
     def __init__(self):
         # Always use a robust model for Guardrails to prevent false refusals,
@@ -20,9 +23,12 @@ class GuardrailManager:
         )
 
 
+    @tracer.start_as_current_span("guardrail_validate_topic")
     async def validate_topic(
         self, query: str, history: list = None
     ) -> Tuple[bool, str]:
+        span = trace.get_current_span()
+        span.set_attribute("query", query)
         """
         Ensures the query is related to French administration or law,
         considering conversation context for follow-up questions.
@@ -80,9 +86,13 @@ class GuardrailManager:
         reason = response.replace("REJECTED:", "").strip()
         return False, reason
 
+    @tracer.start_as_current_span("guardrail_check_hallucination")
     async def check_hallucination(
         self, context: str, answer: str, query: str = "", history: list = None
     ) -> bool:
+        span = trace.get_current_span()
+        span.set_attribute("query", query)
+        span.set_attribute("answer_length", len(answer))
         """
         Checks if the answer is grounded in the context, history, or the current query.
         """

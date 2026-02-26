@@ -50,6 +50,11 @@ app = FastAPI(title=settings.APP_NAME, version=settings.APP_VERSION, lifespan=li
 # Instrument the app (exposes /metrics)
 Instrumentator().instrument(app).expose(app)
 
+# OpenTelemetry Instrumentation
+if settings.OTEL_ENABLED:
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    FastAPIInstrumentor.instrument_app(app)
+
 # Rate Limiting
 limiter = Limiter(key_func=get_remote_address, default_limits=[settings.RATE_LIMIT])
 app.state.limiter = limiter
@@ -68,12 +73,32 @@ orchestrator = AdminOrchestrator()
 
 
 # Global Exception Handler
+import openai
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global Exception: {str(exc)}", exc_info=True)
+    
+    # Catch specific API errors from LLM providers
+    if isinstance(exc, openai.RateLimitError):
+        return JSONResponse(
+            status_code=429,
+            content={"detail": "Le service est surchargé (Rate Limit OpenAI). Veuillez réessayer dans quelques minutes."},
+        )
+    elif isinstance(exc, openai.APIConnectionError):
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "Erreur de connexion avec le service AI. Veuillez vérifier l'état du réseau."},
+        )
+    elif isinstance(exc, openai.AuthenticationError):
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Erreur d'authentification API. Veuillez vérifier votre clé API OpenAI."},
+        )
+        
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal Server Error. Please try again later."},
+        content={"detail": "Une erreur interne s'est produite. Veuillez réessayer plus tard."},
     )
 
 

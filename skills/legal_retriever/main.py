@@ -28,7 +28,14 @@ def _get_embeddings():
     return HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
 
 
+from src.utils.tracing import tracer
+from opentelemetry import trace
+
+@tracer.start_as_current_span("retrieve_legal_info")
 async def retrieve_legal_info(query: str, domain: str = "general", user_profile=None):
+    span = trace.get_current_span()
+    span.set_attribute("query", query)
+    span.set_attribute("domain", domain)
     """
     Retrieves information about French administrative procedures or legislation.
     domain: 'procedure' (service-public) or 'legislation' (legi) or 'general' (both)
@@ -62,36 +69,41 @@ async def retrieve_legal_info(query: str, domain: str = "general", user_profile=
     if not search_tasks:
         return []
 
-    start_time = time.time()
-    batch_results = await asyncio.gather(*search_tasks)
-    duration = time.time() - start_time
-    metrics.RAG_RETRIEVAL_LATENCY.labels(domain=domain).observe(duration)
+    try:
+        start_time = time.time()
+        batch_results = await asyncio.gather(*search_tasks)
+        duration = time.time() - start_time
+        metrics.RAG_RETRIEVAL_LATENCY.labels(domain=domain).observe(duration)
 
-    results = []
-    for batch in batch_results:
-        results.extend(batch)
+        results = []
+        for batch in batch_results:
+            results.extend(batch)
 
-    logger.debug(f"Retriever found {len(results)} results for query: '{query}'")
-    for r in results:
+        logger.debug(f"Retriever found {len(results)} results for query: '{query}'")
+        for r in results:
+            logger.debug(
+                f" - Found: {r['source']} | Title: {r['metadata'].get('title', 'N/A')}"
+            )
+
+        # BM25 Hybrid Fusion (Layer 2.5): RRF-merge semantic + lexical rankings
+        from src.shared.hybrid_retriever import hybrid_rerank
+
+        results = hybrid_rerank(results, query, top_n=len(results))
         logger.debug(
-            f" - Found: {r['source']} | Title: {r['metadata'].get('title', 'N/A')}"
+            f"Hybrid RRF fusion applied. Top result: {results[0].get('source', '?') if results else 'none'}"
         )
 
-    # BM25 Hybrid Fusion (Layer 2.5): RRF-merge semantic + lexical rankings
-    from src.shared.hybrid_retriever import hybrid_rerank
+        # Context-Aware Reranking (Layer 3)
+        reranker = get_reranker()
+        reranked_results = reranker.rerank(query, results, user_profile=user_profile)
 
-    results = hybrid_rerank(results, query, top_n=len(results))
-    logger.debug(
-        f"Hybrid RRF fusion applied. Top result: {results[0].get('source', '?') if results else 'none'}"
-    )
+        logger.debug(f"Reranked top {len(reranked_results)} results.")
 
-    # Context-Aware Reranking (Layer 3)
-    reranker = get_reranker()
-    reranked_results = reranker.rerank(query, results, user_profile=user_profile)
-
-    logger.debug(f"Reranked top {len(reranked_results)} results.")
-
-    return reranked_results
+        return reranked_results
+    except Exception as e:
+        logger.error(f"Critical error during Qdrant retrieval: {str(e)}")
+        # Graceful degradation: return empty results instead of crashing the whole agent
+        return []
 
 
 def warmup():
