@@ -73,8 +73,8 @@ All `guardrail_keywords` support a multilingual dict format (`fr`, `en`, `vi`), 
 | **Phase 3** | Supervisor Router (Fast/Slow Lane) | ✅ DONE (v1.1) |
 | **Phase 4** | Data-Driven Topic Registry | ✅ DONE (v1.2) |
 | **Phase 5** | Multilingual keyword support + guardrail hardening | ✅ DONE (v1.3) |
-| **Phase 6** | OpenTelemetry tracing + Grafana dashboard | 🏗️ Next |
-| **Phase 7** | Kubernetes production deployment | 🌠 Q3 2026 |
+| **Phase 6** | OpenTelemetry tracing, SSE streaming, Grafana dashboard, Docker/K8s | ✅ DONE (v1.4) |
+| **Phase 7** | Interactive UI (Streamlit), Dual-Model Inference, Systemic Fallbacks | ✅ DONE (v1.5) |
 
 ---
 

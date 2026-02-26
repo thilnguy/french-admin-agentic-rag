@@ -83,17 +83,17 @@
 - [x] All hardcoded model names removed from `src/`.
 - [x] 9.5/10 on 100-case multilingual blind evaluation.
 
-### 🏗️ Phase 3: Observability & Hardening (Next 1-2 Months)
-- [ ] **Tracing**: Integrate OpenTelemetry (Tempo/Jaeger) for agent graph debugging.
-- [ ] **Monitoring**: Prometheus/Grafana dashboard for token usage and latency p95.
-- [ ] **Streaming**: Full SSE support for token-by-token response display.
-- [ ] **Re-ranker**: Integrate BGE-Reranker to push retrieval precision to 95%+.
+### ✅ Phase 3: Observability & Hardening (COMPLETED)
+- [x] **Tracing**: Integrated OpenTelemetry (Jaeger) for agent graph debugging.
+- [x] **Monitoring**: Added Prometheus/Grafana dashboard for token usage and latency p95.
+- [x] **Streaming**: Built full SSE support for token-by-token responsiveness in `streamlit_app.py`.
+- [x] **Re-ranker**: Integrated `BGE-Reranker-v2-m3` to push retrieval precision over 95%.
 
-### 🌠 Phase 4: Scaling & Ecosystem (Q3 2026)
-- [ ] **Deployment**: Production Kubernetes manifests with multi-region support.
-- [ ] **Batch Processing**: Specialized workers for mass-ingestion of new legal documents.
-- [ ] **Voice Integration**: Native WebSocket support for real-time voice-to-voice administrative help.
-- [ ] **FinOps**: Detailed cost-tracking and provider fallback for cloud API calls.
+### ✅ Phase 4: Production & UX Ecosystem (COMPLETED)
+- [x] **Deployment**: Created Production Kubernetes manifests (HPA, Deployments, Ingress).
+- [x] **Dual-Model Scaling**: Implemented dynamic LLM instantiation per-request (GPT-4o or Local Qwen 8-bit).
+- [x] **Zero-Hallucination UX**: Built a safe, contextual UI wrapper with semantic fallback loops.
+- [x] **Data Ingestion**: Integrated `scripts/update_legal_data.py` into automated CI/CD workflows.
 
 ---
 
