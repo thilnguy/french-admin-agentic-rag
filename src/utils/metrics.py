@@ -28,6 +28,12 @@ RAG_GENERATION_LATENCY = Histogram(
     buckets=[1.0, 2.0, 5.0, 10.0, 20.0],
 )
 
+RERANKER_LATENCY = Histogram(
+    "reranker_latency_seconds",
+    "Time spent in cross-encoder reranking layer",
+    buckets=[0.1, 0.2, 0.5, 1.0, 2.0],
+)
+
 # Business Metrics
 USER_FEEDBACK = Counter(
     "user_feedback_total",

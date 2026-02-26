@@ -95,9 +95,12 @@ async def retrieve_legal_info(query: str, domain: str = "general", user_profile=
 
         # Context-Aware Reranking (Layer 3)
         reranker = get_reranker()
+        rerank_start = time.time()
         reranked_results = reranker.rerank(query, results, user_profile=user_profile)
+        rerank_duration = time.time() - rerank_start
+        metrics.RERANKER_LATENCY.observe(rerank_duration)
 
-        logger.debug(f"Reranked top {len(reranked_results)} results.")
+        logger.debug(f"Reranked top {len(reranked_results)} results in {rerank_duration:.3f}s")
 
         return reranked_results
     except Exception as e:
