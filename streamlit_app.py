@@ -2,6 +2,7 @@ import streamlit as st
 import httpx
 import json
 import uuid
+import re
 
 # --- Streamlit UI Configuration ---
 st.set_page_config(page_title="Marianne AI - French Administration", page_icon="🇫🇷", layout="centered")
@@ -130,7 +131,14 @@ if prompt := st.chat_input("Ask Marianne AI (e.g., I lost my residence permit, w
                                     status_placeholder.caption(f"🔄 {content}")
                                 elif event_type == "token":
                                     full_response += content
-                                    message_placeholder.markdown(full_response + "▌")
+                                    
+                                    # Clean up internal tags and any surrounding markdown/colons for UI display
+                                    display_response = re.sub(r"\**\[(?:DEMANDER|EXPLIQUER|DONNER)\]\**\s*:?\s*", "", full_response)
+                                    
+                                    # Still strip leading whitespace that might have followed the tag 
+                                    display_response = display_response.lstrip()
+                                        
+                                    message_placeholder.markdown(display_response + "▌")
                                 elif event_type == "error":
                                     st.error(f"Error: {content}")
                             except json.JSONDecodeError:
@@ -139,10 +147,14 @@ if prompt := st.chat_input("Ask Marianne AI (e.g., I lost my residence permit, w
                     error_content = response.read().decode()
                     st.error(f"API Connection Error ({response.status_code}): {error_content}")
             
+            # Clean final response before saving
+            final_display_response = re.sub(r"\**\[(?:DEMANDER|EXPLIQUER|DONNER)\]\**\s*:?\s*", "", full_response)
+            final_display_response = final_display_response.lstrip()
+            
             # Remove blinking cursor and save to history
-            message_placeholder.markdown(full_response)
+            message_placeholder.markdown(final_display_response)
             status_placeholder.empty()
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            st.session_state.messages.append({"role": "assistant", "content": final_display_response})
             # Sync to global session context
             st.session_state.all_sessions[st.session_state.session_id]["messages"] = st.session_state.messages
 
