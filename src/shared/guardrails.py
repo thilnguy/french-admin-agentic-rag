@@ -150,14 +150,10 @@ class GuardrailManager:
 
     def add_disclaimer(self, answer: str, language: str = "fr") -> str:
         """
-        Adds a mandatory legal disclaimer. (Sync is fine here as it's just string manip)
+        [DEPRECATED by UI] The disclaimer is now handled persistently by the frontend UI.
+        Returning the answer unmodified.
         """
-        disclaimers = {
-            "fr": "\n\n*Note : Ces informations sont données à titre indicatif. Pour toute décision officielle, veuillez consulter le site service-public.fr ou contacter les autorités compétentes.*",
-            "en": "\n\n*Note: This information is for guidance only. For official decisions, please consult service-public.fr or contact the relevant authorities.*",
-            "vi": "\n\n*Lưu ý: Thông tin này chỉ mang tính chất tham khảo. Để có quyết định chính thức, vui lòng truy cập service-public.fr hoặc liên hệ cơ quan có thẩm quyền.*",
-        }
-        return answer + disclaimers.get(language.lower()[:2], disclaimers["fr"])
+        return answer
 
 
 guardrail_manager = GuardrailManager()
