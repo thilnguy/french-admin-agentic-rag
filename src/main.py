@@ -10,7 +10,6 @@ from fastapi import (
     HTTPException,
     Security,
     Depends,
-    Query,
 )
 from fastapi.security import APIKeyHeader
 from fastapi.responses import JSONResponse
@@ -210,25 +209,20 @@ async def chat(request: Request, chat_request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/chat/stream", dependencies=[Depends(get_api_key)])
+@app.post("/chat/stream", dependencies=[Depends(get_api_key)])
 @limiter.limit(settings.RATE_LIMIT)
 async def chat_stream(
     request: Request,
-    query: str = Query(
-        ..., min_length=1, max_length=500, description="User query (1-500 chars)"
-    ),
-    language: str = Query(
-        "fr", pattern="^(fr|en|vi)$", description="Response language: fr, en, or vi"
-    ),
-    session_id: str = Query(
-        "default", min_length=1, max_length=100, description="Session identifier"
-    ),
-    api_key: str = None,  # Captured by Depends(get_api_key) but needed in signature for OpenAPI
+    chat_request: ChatRequest,
 ):
     """
     Streaming endpoint using Server-Sent Events (SSE).
     Yields JSON events: {"type": "token"|"status"|"error", "content": "..."}
     """
+    query = chat_request.query
+    language = chat_request.language
+    session_id = chat_request.session_id
+    
     logger.info(f"Received stream request: {query} [{language}]")
 
     async def event_generator():

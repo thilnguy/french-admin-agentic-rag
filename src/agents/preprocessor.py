@@ -126,10 +126,12 @@ class ProfileExtractor:
             3. Return a JSON object matching the schema.
 
             **EXAMPLES**:
-            - Human: "Tìm hiểu về thẻ cư trú" -> language: 'vi'
-            - Human: "I am American" -> language: 'en', nationality: 'Américaine'
-            - Human: "Je veux un visa student" -> language: 'fr'
-            - Human: "I live in Paris for 1 year" -> language: 'en', has_legal_residency: true, location: 'Paris'
+            - language (fr, en, vi).
+              - **Language Recognition Priority**: Vietnamese sentences often end with "ạ", "nhỉ", "nhể", or contain "mình", "em", "bạn". If these are present -> 'vi'.
+              - **NO BIAS RULE**: Mentioning "France", "VLS-TS", "Titre de séjour", or "Paris" does NOT mean the language is French. Focus on the syntax.
+              - **Example**: "làm thẻ cư trú" -> syntax is Vietnamese -> 'vi'.
+              - **Example**: "how to get a visa" -> syntax is English -> 'en'.
+              - **Example**: "comment obtenir un visa" -> syntax is French -> 'fr'.
 
             Conversation History:
             {history}
