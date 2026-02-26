@@ -234,6 +234,20 @@ class AdminOrchestrator:
             state.messages.append(HumanMessage(content=query))
             # Note: The graph nodes should now prefer state.metadata["current_query"] if available
 
+            # --- POLYGLOT RAG FIX ---
+            # Ensure the query used for RAG is in French, similar to the Fast Lane.
+            # QueryRewriter preserves the original language by default. 
+            # If the user is speaking Vietnamese/English, we MUST translate the rewritten query 
+            # into French before RAG search, otherwise the vector DB will return 0 results.
+            retrieval_query_fr = rewritten_query
+            if full_lang != "French":
+                logger.info("Translating rewritten query to French for Slow Lane RAG...")
+                retrieval_query_fr = await self.translator(
+                    text=f"Translate strictly to French administrative terms: {rewritten_query}",
+                    target_language="French",
+                )
+            state.metadata["retrieval_query_fr"] = retrieval_query_fr
+
             # Invoke Graph
             # Graph returns a dict with key "messages" containing the response (AIMessage)
             # We need to handle the state update.
@@ -536,6 +550,15 @@ class AdminOrchestrator:
             # SLOW LANE (Agent Graph)
             yield {"type": "status", "content": "Routage vers le système expert..."}
             state.messages.append(HumanMessage(content=query))
+            
+            # --- POLYGLOT RAG FIX ---
+            retrieval_query_fr = rewritten_query
+            if full_lang != "French":
+                retrieval_query_fr = await self.translator(
+                    text=f"Translate strictly to French administrative terms: {rewritten_query}",
+                    target_language="French",
+                )
+            state.metadata["retrieval_query_fr"] = retrieval_query_fr
 
             # Stream events from Graph filtering for 'final_answer' tagged LLM runs
             async for event in agent_graph.astream_events(state, version="v2"):

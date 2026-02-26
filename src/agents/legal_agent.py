@@ -91,16 +91,75 @@ class LegalResearchAgent:
         logger.info(f"LegalResearchAgent started for query: {query}")
         user_lang = state.user_profile.language or "French"
 
-        # Step 1: Refine Query
-        refined_query = await self._refine_query(query)
-        logger.info(f"Refined query: {refined_query}")
+        # Note: `query` here is already the goal-anchored, pipeline-rewritten query.
+        # Step 1: Search using the pipeline-anchored query
+        docs = await retrieve_legal_info(query, domain="general")
+        
+        # Pre-Synthesis Verification (Groundedness Check)
+        is_grounded = await self._verify_groundedness(query, docs, state.user_profile.model_dump())
+        if not is_grounded:
+            logger.warning(f"Groundedness check failed in LegalAgent for query: {query}. Triggering fallback.")
+            return await self._ask_clarification_fallback(query, user_lang)
 
-        # Step 2: Search (Iteration 1)
-        docs = await retrieve_legal_info(refined_query, domain="general")
         context = self._format_docs(docs)
 
-        # Step 3: Synthesize (with implicit evaluation)
+        # Step 2: Synthesize
         return await self._synthesize_answer(query, context, user_lang)
+
+    async def _verify_groundedness(self, query: str, docs: List[Dict], user_profile: dict) -> bool:
+        if not docs:
+            return False
+
+        context_summary = "\n".join([d["content"][:500] for d in docs[:3]])
+        
+        prompt = ChatPromptTemplate.from_template(
+            """Evaluate if the provided Context contains sufficient legal information to answer the User Query.
+
+            User Query: {query}
+            User Profile: {profile}
+            
+            Context:
+            {context}
+
+            Rules:
+            - Provide ONLY "YES" if the context contains relevant legal definitions, criteria, or statuses.
+            - Provide ONLY "NO" if the context is about a different topic, or is just irrelevant info.
+
+            Evaluation (YES/NO):"""
+        )
+        
+        chain = prompt | self.llm_fast | StrOutputParser()
+        try:
+            result = await chain.ainvoke({
+                "query": query,
+                "profile": user_profile,
+                "context": context_summary
+            })
+            return "YES" in result.upper()
+        except Exception as e:
+            logger.error(f"Groundedness check failed: {e}. Defaulting to True to avoid blocking.")
+            return True
+
+    async def _ask_clarification_fallback(self, query: str, user_lang: str) -> str:
+        """Fallback response when retrieved documents are irrelevant."""
+        prompt = ChatPromptTemplate.from_template(
+            """You are a French Administration Assistant.
+            The user asked a legal question but your database search returned IRRELEVANT documents.
+            
+            DO NOT attempt to answer the legal question.
+            
+            Provide a response following this structure:
+            **[DONNER]**: State clearly that you cannot find the specific law or text for their situation.
+            **[EXPLIQUER]**: Explain that you need more keywords or context to search the legal database effectively.
+            **[DEMANDER]**: Ask them to provide the specific name of the procedure, document, or situation they are inquiring about.
+            
+            User's original query: {query}
+            
+            Respond in {user_language}.
+            """
+        )
+        chain = (prompt | self.llm | StrOutputParser()).with_config({"tags": ["final_answer"]})
+        return await self._run_chain(chain, {"query": query, "user_language": user_lang})
 
     async def _refine_query(self, query: str) -> str:
         # Optimization: Use llm_fast (gpt-4o-mini)

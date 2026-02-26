@@ -99,8 +99,62 @@ class ProcedureGuideAgent:
         if next_step == "CLARIFICATION":
             return await self._ask_clarification(query, state, docs)
 
+        # Pre-Synthesis Verification (Groundedness Check)
+        is_grounded = await self._verify_groundedness(query, docs, state.user_profile.model_dump())
+        if not is_grounded:
+            logger.warning(f"Groundedness check failed for query: {query}. Falling back to CLARIFICATION.")
+            # Inject a system prompt note to force a fallback question
+            state.metadata["groundedness_failed"] = True
+            return await self._ask_clarification(query, state, docs)
+
         # For RETRIEVAL or EXPLANATION or default w/ docs
         return await self._explain_procedure(query, state, docs)
+
+    async def _verify_groundedness(self, query: str, docs: List[Dict], user_profile: dict) -> bool:
+        """
+        Fast check to ensure the retrieved context is actually relevant to the query.
+        Prevents hallucinated answers when RAG retrieval fails.
+        """
+        if not docs:
+            return False
+
+        # Use the fast, cheap model for verification
+        from langchain_openai import ChatOpenAI
+        fast_llm = ChatOpenAI(
+            model=settings.FAST_LLM_MODEL,
+            temperature=0,
+            api_key=settings.OPENAI_API_KEY,
+        )
+
+        context_summary = "\n".join([d["content"][:500] for d in docs[:3]])
+        
+        prompt = ChatPromptTemplate.from_template(
+            """Evaluate if the provided Context contains sufficient information to answer the User Query for the given User Profile.
+
+            User Query: {query}
+            User Profile: {profile}
+            
+            Context:
+            {context}
+
+            Rules:
+            - Provide ONLY "YES" if the context directly addresses the core administrative task requested.
+            - Provide ONLY "NO" if the context is about a completely different procedure, explicitly excludes the user's profile conditions, or is just irrelevant generic information.
+
+            Evaluation (YES/NO):"""
+        )
+        
+        chain = prompt | fast_llm | StrOutputParser()
+        try:
+            result = await chain.ainvoke({
+                "query": query,
+                "profile": user_profile,
+                "context": context_summary
+            })
+            return "YES" in result.upper()
+        except Exception as e:
+            logger.error(f"Groundedness check failed: {e}. Defaulting to True to avoid blocking.")
+            return True
 
     async def _determine_step(
         self, query: str, user_profile: dict, history: str, topic_key: str = "daily_life"
@@ -126,8 +180,11 @@ class ProcedureGuideAgent:
     async def _ask_clarification(
         self, query: str, state: AgentState, docs: List[Dict]
     ) -> str:
+        # If Groundedness Check failed, we explicitly ignore context to avoid hallucinations.
+        groundedness_failed = state.metadata.get("groundedness_failed", False)
+        
         context_summary = ""
-        if docs:
+        if docs and not groundedness_failed:
             context_summary = "\n".join([d["content"][:1500] for d in docs[:3]])
 
         # Get topic-specific rules from registry
@@ -136,6 +193,14 @@ class ProcedureGuideAgent:
             topic_key, state.user_profile.model_dump(), query
         )
         global_rules = self.registry.build_global_rules_fragment()
+        
+        fallback_instruction = ""
+        if groundedness_failed:
+            fallback_instruction = """
+            CRITICAL INSTRUCTION: The retrieved documents DO NOT MATCH the user's situation. 
+            DO NOT answer the user's question, as you lack the legal context. 
+            Instead, formulate a [DEMANDER] block asking for the exact name of the administrative document they are trying to process, and explain in [EXPLIQUER] that you need more precision to find the right procedure.
+            """
 
         prompt = ChatPromptTemplate.from_template(
             """{persona}
@@ -147,6 +212,8 @@ class ProcedureGuideAgent:
             {topic_rules}
 
             {global_rules}
+            
+            {fallback_instruction}
             
             Respond in {user_language}.
             """
@@ -163,6 +230,7 @@ class ProcedureGuideAgent:
                 "user_language": state.user_profile.language or "fr",
                 "topic_rules": topic_fragment,
                 "global_rules": global_rules,
+                "fallback_instruction": fallback_instruction,
                 "persona": self.registry.persona,
             },
         )
