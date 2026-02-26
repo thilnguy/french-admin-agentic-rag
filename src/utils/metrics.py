@@ -34,3 +34,15 @@ USER_FEEDBACK = Counter(
     "User feedback scores",
     ["score"],  # positive, negative
 )
+
+GUARDRAIL_REJECTIONS = Counter(
+    "guardrail_rejections_total",
+    "Total number of queries rejected by guardrails",
+    ["reason"],
+)
+
+TOPIC_DETECTION = Counter(
+    "topic_detection_total",
+    "Total queries classified by topic",
+    ["topic"],
+)

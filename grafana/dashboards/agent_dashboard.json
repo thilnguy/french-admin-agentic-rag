@@ -1,0 +1,84 @@
+{
+    "title": "Agent Dashboard",
+    "tags": [
+        "ai",
+        "llm"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "refresh": "5s",
+    "panels": [
+        {
+            "title": "Token Usage (Total)",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(llm_token_usage_total[1m])) by (model)",
+                    "legendFormat": "{{model}}",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "title": "LLM Request Duration (P95/P99)",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 0
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(llm_request_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "p95",
+                    "refId": "A"
+                },
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(llm_request_duration_seconds_bucket[5m])) by (le))",
+                    "legendFormat": "p99",
+                    "refId": "B"
+                }
+            ]
+        },
+        {
+            "title": "Guardrail Rejections",
+            "type": "stat",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 0,
+                "y": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum(increase(guardrail_rejections_total[1h]))",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "title": "Topic Distribution",
+            "type": "piechart",
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 6,
+                "y": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum(increase(topic_detection_total[1h])) by (topic)",
+                    "legendFormat": "{{topic}}",
+                    "refId": "A"
+                }
+            ]
+        }
+    ]
+}
