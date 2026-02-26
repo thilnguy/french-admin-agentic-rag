@@ -7,6 +7,7 @@ class ChatRequest(BaseModel):
         "fr", pattern="^(fr|en|vi)$", description="Language code (fr, en, vi)"
     )
     session_id: str = Field("default", min_length=1, description="Session identifier")
+    model: str | None = Field(None, description="The LLM model override to use")
 
 
 class ChatResponse(BaseModel):
