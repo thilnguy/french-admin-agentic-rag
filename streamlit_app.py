@@ -65,7 +65,7 @@ div[data-testid="stChatMessage"] {
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🇫🇷 Marianne AI - French Administrative Assistant")
+st.markdown("<h2 style='font-size: 1.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>🇫🇷 Marianne AI - French Administrative Assistant</h2>", unsafe_allow_html=True)
 st.markdown("**Agentic RAG** system assisting with French residency laws and procedures (English/French/Vietnamese).")
 
 API_URL = "http://127.0.0.1:8001/chat/stream"
