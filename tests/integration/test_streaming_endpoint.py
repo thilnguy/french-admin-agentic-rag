@@ -8,7 +8,7 @@ import json
 @pytest.mark.asyncio
 async def test_chat_stream_endpoint():
     # Mock orchestrator.stream_query
-    async def mock_stream_query(query, user_lang, session_id):
+    async def mock_stream_query(query, user_lang, session_id, model=None):
         yield {"type": "status", "content": "Thinking..."}
         yield {"type": "token", "content": "Hello"}
         yield {"type": "token", "content": " World"}
@@ -17,9 +17,9 @@ async def test_chat_stream_endpoint():
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             async with client.stream(
-                "GET",
+                "POST",
                 "/chat/stream",
-                params={"query": "Test", "language": "fr", "session_id": "123"},
+                json={"query": "Test", "language": "fr", "session_id": "123"},
                 headers={"X-API-Key": "test-key"},
             ) as response:
                 assert response.status_code == 200
@@ -49,9 +49,9 @@ async def test_chat_stream_empty_query_returns_422():
     """Empty query string should be rejected with 422 Unprocessable Entity."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.get(
+        response = await client.post(
             "/chat/stream",
-            params={"query": "", "language": "fr"},
+            json={"query": "", "language": "fr"},
             headers={"X-API-Key": "test-key"},
         )
     assert response.status_code == 422
@@ -63,9 +63,9 @@ async def test_chat_stream_oversized_query_returns_422():
     oversized = "A" * 501
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.get(
+        response = await client.post(
             "/chat/stream",
-            params={"query": oversized, "language": "fr"},
+            json={"query": oversized, "language": "fr"},
             headers={"X-API-Key": "test-key"},
         )
     assert response.status_code == 422
@@ -76,9 +76,9 @@ async def test_chat_stream_invalid_language_returns_422():
     """Language not in (fr, en, vi) should be rejected with 422."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.get(
+        response = await client.post(
             "/chat/stream",
-            params={"query": "Hello", "language": "zh"},
+            json={"query": "Hello", "language": "zh"},
             headers={"X-API-Key": "test-key"},
         )
     assert response.status_code == 422
@@ -88,16 +88,16 @@ async def test_chat_stream_invalid_language_returns_422():
 async def test_chat_stream_valid_request_passes_validation():
     """Valid request with all constraints satisfied reaches the orchestrator."""
 
-    async def mock_stream_query(query, user_lang, session_id):
+    async def mock_stream_query(query, user_lang, session_id, model=None):
         yield {"type": "token", "content": "OK"}
 
     with patch("src.main.orchestrator.stream_query", side_effect=mock_stream_query):
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             async with client.stream(
-                "GET",
+                "POST",
                 "/chat/stream",
-                params={"query": "Bonjour", "language": "en", "session_id": "sess1"},
+                json={"query": "Bonjour", "language": "en", "session_id": "sess1"},
                 headers={"X-API-Key": "test-key"},
             ) as response:
                 assert response.status_code == 200

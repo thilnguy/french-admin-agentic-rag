@@ -6,7 +6,7 @@ from httpx import AsyncClient
 async def test_chat_stream_endpoint(ac: AsyncClient):
     """Chat stream endpoint should yield SSE JSON events when orchestrator is mocked."""
     
-    async def mock_stream_query(query, language, session_id):
+    async def mock_stream_query(query, language, session_id, model=None):
         yield {"type": "status", "content": "Analysing request..."}
         yield {"type": "token", "content": "Test"}
         yield {"type": "token", "content": " response"}
@@ -17,9 +17,9 @@ async def test_chat_stream_endpoint(ac: AsyncClient):
         # Streaming responses in httpx require reading the stream or just fetching it.
         # Since FastAPI StreamingResponse sends data as it comes, we can just GET request.
         # Ensure httpx gets the whole response text or we can iterate over lines.
-        response = await ac.get(
+        response = await ac.post(
             "/chat/stream",
-            params={"query": "Comment faire un passeport ?", "language": "fr"}
+            json={"query": "Comment faire un passeport ?", "language": "fr"}
         )
         
         assert response.status_code == 200
@@ -36,14 +36,14 @@ async def test_chat_stream_endpoint(ac: AsyncClient):
 async def test_chat_stream_validation(ac: AsyncClient):
     """Missing or invalid fields in stream should return 422."""
     # Missing query
-    response = await ac.get("/chat/stream", params={"language": "fr"})
+    response = await ac.post("/chat/stream", json={"language": "fr"})
     assert response.status_code == 422
 
     # Invalid language
-    response = await ac.get("/chat/stream", params={"query": "hello", "language": "xx"})
+    response = await ac.post("/chat/stream", json={"query": "hello", "language": "xx"})
     assert response.status_code == 422
 
     # Query too long
     long_query = "a" * 501
-    response = await ac.get("/chat/stream", params={"query": long_query, "language": "fr"})
+    response = await ac.post("/chat/stream", json={"query": long_query, "language": "fr"})
     assert response.status_code == 422

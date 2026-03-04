@@ -270,20 +270,21 @@ async def test_contract_stream_query_simple_qa_yields_events():
         orch.cache.setex = AsyncMock()
 
         # LLM streams tokens
-        async def mock_astream(messages):
+        async def mock_astream_gen(*args, **kwargs):
             yield MagicMock(content="Bonjour")
             yield MagicMock(content=" monde")
 
-        orch.llm = MagicMock()
-        orch.llm.astream = mock_astream
+        mock_llm = MagicMock()
+        mock_llm.astream.side_effect = mock_astream_gen
 
-        state = make_state()
-        mock_mem.load_agent_state = AsyncMock(return_value=state)
-        mock_mem.save_agent_state = AsyncMock()
+        with patch("src.agents.orchestrator.get_llm", return_value=mock_llm):
+            state = make_state()
+            mock_mem.load_agent_state = AsyncMock(return_value=state)
+            mock_mem.save_agent_state = AsyncMock()
 
-        events = []
-        async for event in orch.stream_query("Quelle est la procédure?", "fr", "s4"):
-            events.append(event)
+            events = []
+            async for event in orch.stream_query("Quelle est la procédure?", "fr", "s4"):
+                events.append(event)
 
         types = [e["type"] for e in events]
         # CONTRACT: at least one status event and one token event

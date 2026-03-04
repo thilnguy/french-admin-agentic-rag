@@ -26,7 +26,7 @@ async def test_layer3_reranker_integration():
             patch("skills.legal_retriever.main._get_qdrant_client"),
             patch("skills.legal_retriever.main._get_embeddings"),
             patch("src.agents.orchestrator.redis.Redis"),
-            patch("src.agents.orchestrator.ChatOpenAI"),
+            patch("src.agents.orchestrator.get_llm"),
         ):
             # We also need to mock the vector search result
             # But let's just run the orchestrator and see if reranker.rerank is called with profile.

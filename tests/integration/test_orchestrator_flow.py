@@ -24,7 +24,7 @@ async def test_orchestrator_full_flow_simple_qa():
     mock_mem_client = AsyncMock()
     mock_mem_client.get.return_value = None  # No existing state
 
-    with patch("src.agents.orchestrator.ChatOpenAI", return_value=mock_llm), patch(
+    with patch("src.agents.orchestrator.get_llm", return_value=mock_llm), patch(
         "src.agents.orchestrator.retrieve_legal_info", mock_retriever
     ), patch("src.agents.orchestrator.translate_admin_text", mock_translator), patch(
         "src.agents.orchestrator.redis.Redis", return_value=mock_cache
