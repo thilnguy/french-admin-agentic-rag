@@ -1,8 +1,6 @@
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from src.agents.state import UserProfile
-from src.config import settings
 from src.utils.llm_factory import get_llm
 from src.utils.logger import logger
 

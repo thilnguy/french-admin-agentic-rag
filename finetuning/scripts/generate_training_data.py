@@ -192,7 +192,8 @@ async def main():
             
             while sum(counts.values()) < args.total:
                 remaining = {k: targets[k] - counts[k] for k in counts if counts[k] < targets[k]}
-                if not remaining: break
+                if not remaining:
+                    break
                 
                 complexity = random.choice(list(remaining.keys()))
                 n = min(args.batch_size, remaining[complexity])

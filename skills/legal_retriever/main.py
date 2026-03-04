@@ -8,6 +8,8 @@ from src.utils.logger import logger
 from src.utils import metrics
 from src.shared.reranker import get_reranker
 import time
+from src.utils.tracing import tracer
+from opentelemetry import trace
 
 
 # Singleton clients — avoid re-creating expensive connections per request
@@ -28,8 +30,7 @@ def _get_embeddings():
     return HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
 
 
-from src.utils.tracing import tracer
-from opentelemetry import trace
+
 
 @tracer.start_as_current_span("retrieve_legal_info")
 async def retrieve_legal_info(query: str, domain: str = "general", user_profile=None):

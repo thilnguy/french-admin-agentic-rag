@@ -2,6 +2,7 @@ import os
 import tempfile
 import uvicorn
 import time
+import openai
 from fastapi import (
     FastAPI,
     UploadFile,
@@ -72,7 +73,6 @@ orchestrator = AdminOrchestrator()
 
 
 # Global Exception Handler
-import openai
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

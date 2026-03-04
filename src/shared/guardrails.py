@@ -4,7 +4,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from src.utils.logger import logger
 from src.config import settings
-from src.utils.llm_factory import get_llm
 
 
 

@@ -12,8 +12,6 @@ Run with:
 """
 import yaml
 import textwrap
-import pytest
-from unittest.mock import patch, mock_open
 
 # ── helper: build a minimal YAML string ────────────────────────────────────
 FLAT_YAML = textwrap.dedent("""\

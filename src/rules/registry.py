@@ -11,7 +11,7 @@ Usage:
 
 import os
 import yaml
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List
 from src.utils.logger import logger
 
 
@@ -136,7 +136,7 @@ class TopicRegistry:
             if "FORM" in intent_str:
                 return "immigration"
         
-        logger.debug(f"TopicDetector: no keyword match, defaulting to 'daily_life'")
+        logger.debug("TopicDetector: no keyword match, defaulting to 'daily_life'")
         return "daily_life"
     
     def get_rules(self, topic_key: str) -> Optional[TopicRules]:

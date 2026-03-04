@@ -1,7 +1,6 @@
 import hashlib
 import time
 import redis.asyncio as redis
-from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from tenacity import (
     retry,
@@ -550,7 +549,6 @@ class AdminOrchestrator:
             yield {"type": "token", "content": resp}
             return
 
-        final_answer = ""
         internal_answer = ""
 
         # 5. Routing

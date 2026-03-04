@@ -1,5 +1,4 @@
 from typing import List, Dict
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from tenacity import (
@@ -8,8 +7,7 @@ from tenacity import (
     stop_after_attempt,
     retry_if_exception_type,
 )
-from src.config import settings
-from src.agents.state import AgentState, UserProfile
+from src.agents.state import AgentState
 from src.utils.llm_factory import get_llm
 from skills.legal_retriever.main import retrieve_legal_info
 from src.utils.logger import logger

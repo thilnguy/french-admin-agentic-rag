@@ -1,7 +1,6 @@
 import os
 import json
 import csv
-from datetime import datetime
 import argparse
 
 def export_audit_logs(input_log: str, output_csv: str, limit: int = 50):

@@ -1,6 +1,4 @@
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from src.config import settings
 from src.utils.llm_factory import get_llm
 from enum import Enum
 
