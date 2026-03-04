@@ -1,58 +1,58 @@
-# Hướng dẫn Fine-tune model cho French Admin Assistant
+# Fine-tuning Guide for French Admin Assistant
 
-Đây là hướng dẫn thực hiện Phase 3 và Phase 4 của kế hoạch tối ưu chi phí LLM.
+This is the guide for executing Phase 3 and Phase 4 of the LLM cost optimization plan.
 
-## 1. Chuẩn bị dữ liệu (Data Preparation)
-Dữ liệu chuyên gia đã được chuẩn bị với 600 mẫu (bao gồm Reasoning CoT và data Clarification Injection):
+## 1. Data Preparation
+The expert dataset has been prepared with 600 samples (including CoT Reasoning and Clarification Injection data):
 `finetuning/data/train_expert_formatted.jsonl`
 
 
-## 2. Phần cứng khuyến nghị
-### Dành cho Linux (NVIDIA GPU)
-- **GPU**: Khuyến nghị tối thiểu 24GB VRAM (RTX 3090, 4090, A10g, A100) để chạy QLoRA với batch size tốt.
+## 2. Hardware Recommendations
+### For Linux (NVIDIA GPU)
+- **GPU**: Minimum 24GB VRAM recommended (RTX 3090, 4090, A10g, A100) to run QLoRA with a good batch size.
 - **RAM**: 32GB+.
 
-### Dành cho Mac (Apple Silicon)
-- **Chip**: M2/M3/M4 Max hoặc Ultra (Memory bandwidth cao).
-- **Unified Memory**: Tối thiểu 32GB (Khuyến nghị 64GB+).
+### For Mac (Apple Silicon)
+- **Chip**: M2/M3/M4 Max or Ultra (high memory bandwidth).
+- **Unified Memory**: Minimum 32GB (64GB+ recommended).
 
 ---
 
-## 3. Cài đặt môi trường Training
-Bạn nên sử dụng **Axolotl** hoặc **Unsloth** để đạt tốc độ cao nhất trên Linux, và **MLX** trên Mac.
+## 3. Training Environment Setup
+We recommend using **Axolotl** or **Unsloth** for maximum speed on Linux, and **MLX** on Mac.
 
 ### Linux (NVIDIA)
-Khuyên dùng Docker chứa sẵn CUDA toolkit từ [Axolotl](https://github.com/OpenAccess-AI-Collective/axolotl) hoặc dùng môi trường [Unsloth](https://github.com/unslothai/unsloth) để tốc độ training tăng x2 và giảm 50% VRAM:
+It is recommended to use a Docker image with pre-installed CUDA toolkit from [Axolotl](https://github.com/OpenAccess-AI-Collective/axolotl) or use the [Unsloth](https://github.com/unslothai/unsloth) environment to double training speed and reduce VRAM usage by 50%:
 ```bash
-# Cài đặt Unsloth
+# Install Unsloth
 pip install "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
 pip install --no-deps "trl<0.9.0" peft accelerate bitsandbytes
 ```
 
 ---
 
-## 4. Chạy Training
-Dùng file cấu hình tôi đã chuẩn bị:
+## 4. Running the Training
+Use the prepared configuration file:
 ```bash
 axolotl finetuning/axolotl_config.yml
 ```
-Sau khi hoàn tất, model (LoRA adapters) sẽ được lưu tại thư mục `finetuning/qwen-7b-french-admin-distilled`.
+Upon completion, the model (LoRA adapters) will be saved in the `finetuning/qwen-7b-french-admin-distilled` directory.
 
 ---
 
-## 5. Deploy và Sử dụng Model
+## 5. Model Deployment and Usage
 
-Marianne AI hỗ trợ cả 2 hệ sinh thái Local lớn nhất hiện nay: vLLM (cho Linux/NVIDIA) và MLX (cho Mac/Apple Silicon).
+Marianne AI supports the two largest local ecosystems currently available: vLLM (for Linux/NVIDIA) and MLX (for Mac/Apple Silicon).
 
-### Lựa chọn A: Linux Server (Dùng vLLM)
-vLLM là engine inference nhanh nhất hiện nay cho production server NVIDIA.
+### Option A: Linux Server (Using vLLM)
+vLLM is currently the fastest inference engine for NVIDIA production servers.
 
-**Bước 1: Chạy Server vLLM**
+**Step 1: Run vLLM Server**
 ```bash
-# Cài đặt vLLM
+# Install vLLM
 pip install vllm
 
-# Khởi chạy OpenAI-compatible server với model đã fine-tune (nhúng sẵn lora adapters)
+# Launch OpenAI-compatible server with the fine-tuned model (injecting LoRA adapters)
 python -m vllm.entrypoints.openai.api_server \
     --model Qwen/Qwen2.5-7B-Instruct \
     --enable-lora \
@@ -60,10 +60,10 @@ python -m vllm.entrypoints.openai.api_server \
     --port 8020
 ```
 
-### Lựa chọn B: MacBook (Dùng MLX Server)
-Đối với máy Mac, framework MLX của Apple là lựa chọn tối ưu 100%.
+### Option B: MacBook (Using MLX Server)
+For Macs, Apple's MLX framework is the 100% optimal choice.
 
-**Bước 1: Chạy Server MLX**
+**Step 1: Run MLX Server**
 ```bash
 uv run --with mlx-lm python -m mlx_lm.server \
     --model mlx-community/Qwen2.5-7B-Instruct-8bit \
@@ -73,26 +73,26 @@ uv run --with mlx-lm python -m mlx_lm.server \
 
 ---
 
-### Bước 2: Cấu hình Agent (Chung cho cả Linux & Mac)
-Cập nhật file `.env` ở thư mục gốc để app trỏ request về Local Server thay vì gọi API Cloud:
+### Step 2: Agent Configuration (Common for Linux & Mac)
+Update the `.env` file in the root directory to point the app requests to the Local Server instead of the Cloud API:
 ```env
 LLM_PROVIDER=local
 LOCAL_LLM_URL=http://localhost:8020/v1
-LOCAL_LLM_MODEL=french_admin # (hoặc tên model tuỳ bạn đặt theo MLX/vLLM)
+LOCAL_LLM_MODEL=your_custom_model_name_for_mlx_or_vllm
 ```
 
-### Bước 3: Kiểm tra chất lượng (Evaluation)
-Để biết model mới xịn hơn GPT-4o thế nào ở môi trường Local của bạn, hãy chạy script đánh giá:
+### Step 3: Quality Evaluation
+To see how the new model performs compared to GPT-4o in your local environment, run the evaluation script:
 ```bash
 uv run python evals/llm_judge.py
 ```
 
 ---
 
-## 6. Test nhanh (CLI)
-Nếu không muốn chạy server API, bạn có thể test thử model generate chữ trực tiếp từ Terminal:
+## 6. Quick Test (CLI)
+If you don't want to run the API server, you can test direct text generation from the model via the Terminal:
 
-**Trên Mac (MLX):**
+**On Mac (MLX):**
 ```bash
 uv run --with mlx-lm python -m mlx_lm.generate \
     --model mlx-community/Qwen2.5-7B-Instruct-8bit \
@@ -100,4 +100,3 @@ uv run --with mlx-lm python -m mlx_lm.generate \
     --prompt "<|im_start|>user\nComment obtenir un titre de séjour salarié?<|im_end|>\n<|im_start|>assistant\n<thinking>" \
     --max-tokens 500
 ```
-
