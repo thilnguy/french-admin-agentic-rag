@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 
@@ -50,5 +50,4 @@ class AgentState(BaseModel):
         default_factory=list
     )  # Stores docs for Hallucination Check
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)

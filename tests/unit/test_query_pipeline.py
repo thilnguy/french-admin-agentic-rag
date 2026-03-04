@@ -93,7 +93,7 @@ async def test_pipeline_passes_current_goal_to_extractor():
     pipeline = make_pipeline(goal_result="Obtenir un permis de conduire")
     goal_call_args = []
 
-    async def capturing_extract_goal(query, history, current_goal):
+    async def capturing_extract_goal(query, history, current_goal=None, model_override=None):
         goal_call_args.append(current_goal)
         return "Obtenir un permis de conduire"
 
@@ -112,7 +112,7 @@ async def test_pipeline_passes_user_profile_to_rewriter():
     pipeline = make_pipeline()
     rewrite_call_kwargs = {}
 
-    async def capturing_rewrite(query, history, core_goal=None, user_profile=None):
+    async def capturing_rewrite(query, history, core_goal=None, user_profile=None, model_override=None):
         rewrite_call_kwargs["core_goal"] = core_goal
         rewrite_call_kwargs["user_profile"] = user_profile
         return query

@@ -6,7 +6,7 @@ from src.agents.state import AgentState, UserProfile
 
 @pytest.mark.asyncio
 async def test_determine_step_logic():
-    with patch("src.agents.procedure_agent.ChatOpenAI"):
+    with patch("src.agents.procedure_agent.get_llm"):
         agent = ProcedureGuideAgent()
         # Mock _run_chain to return specific steps
         agent._run_chain = AsyncMock(return_value="CLARIFICATION")
@@ -18,7 +18,7 @@ async def test_determine_step_logic():
 
 @pytest.mark.asyncio
 async def test_ask_clarification_logic():
-    with patch("src.agents.procedure_agent.ChatOpenAI"):
+    with patch("src.agents.procedure_agent.get_llm"):
         agent = ProcedureGuideAgent()
         agent._run_chain = AsyncMock(return_value="Quelle est votre nationalité ?")
 
@@ -30,7 +30,7 @@ async def test_ask_clarification_logic():
 
 @pytest.mark.asyncio
 async def test_explain_procedure_logic():
-    with patch("src.agents.procedure_agent.ChatOpenAI"):
+    with patch("src.agents.procedure_agent.get_llm"):
         agent = ProcedureGuideAgent()
         agent._run_chain = AsyncMock(return_value="Step 1: Do this.")
 
@@ -50,7 +50,7 @@ async def test_explain_procedure_logic():
 async def test_full_run_integration_mocked_llm():
     """Test the run() method logic linking the steps."""
     with (
-        patch("src.agents.procedure_agent.ChatOpenAI"),
+        patch("src.agents.procedure_agent.get_llm"),
         patch(
             "src.agents.procedure_agent.retrieve_legal_info", new_callable=AsyncMock
         ) as mock_retrieve,
@@ -83,7 +83,7 @@ async def test_full_run_integration_mocked_llm():
 @pytest.mark.asyncio
 async def test_procedure_agent_fallback_and_explanation():
     with (
-        patch("src.agents.procedure_agent.ChatOpenAI"),
+        patch("src.agents.procedure_agent.get_llm"),
         patch(
             "src.agents.procedure_agent.retrieve_legal_info", new_callable=AsyncMock
         ) as mock_retrieve,

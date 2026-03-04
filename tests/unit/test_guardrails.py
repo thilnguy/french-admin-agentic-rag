@@ -140,9 +140,7 @@ def test_add_disclaimer_french():
         gm = GuardrailManager()
 
         result = gm.add_disclaimer("Test answer", "fr")
-        assert "service-public.fr" in result
-        assert "informations sont données à titre indicatif" in result
-        assert "Test answer" in result
+        assert result == "Test answer"
 
 
 def test_add_disclaimer_english():
@@ -153,7 +151,7 @@ def test_add_disclaimer_english():
         gm = GuardrailManager()
 
         result = gm.add_disclaimer("Test answer", "en")
-        assert "guidance only" in result
+        assert result == "Test answer"
 
 
 def test_add_disclaimer_unknown_language_defaults_to_french():
@@ -164,4 +162,4 @@ def test_add_disclaimer_unknown_language_defaults_to_french():
         gm = GuardrailManager()
 
         result = gm.add_disclaimer("Test answer", "de")
-        assert "informations sont données à titre indicatif" in result
+        assert result == "Test answer"

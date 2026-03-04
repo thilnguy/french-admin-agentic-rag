@@ -11,7 +11,7 @@ async def test_orchestrator_routes_to_fast_lane_simple_qa():
     """Test that SIMPLE_QA uses the legacy/fast path."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
-        patch("src.agents.orchestrator.ChatOpenAI"),
+        patch("src.agents.orchestrator.get_llm") as mock_get_llm,
         patch("src.agents.orchestrator.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.intent_classifier.intent_classifier.classify",
@@ -40,8 +40,9 @@ async def test_orchestrator_routes_to_fast_lane_simple_qa():
     ):
         # Setup
         orchestrator = AdminOrchestrator()
-        orchestrator.llm = MagicMock()
-        orchestrator.llm.ainvoke = AsyncMock(
+        mock_llm_instance = MagicMock()
+        mock_get_llm.return_value = mock_llm_instance
+        mock_llm_instance.ainvoke = AsyncMock(
             return_value=MagicMock(content="Fast response")
         )
 
@@ -84,7 +85,7 @@ async def test_orchestrator_routes_to_agent_graph_complex():
     """Test that COMPLEX_PROCEDURE uses the AgentGraph."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
-        patch("src.agents.orchestrator.ChatOpenAI"),
+        patch("src.agents.orchestrator.get_llm") as mock_get_llm,
         patch("src.agents.orchestrator.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.intent_classifier.intent_classifier.classify",
@@ -115,6 +116,7 @@ async def test_orchestrator_routes_to_agent_graph_complex():
     ):
         # Setup
         orchestrator = AdminOrchestrator()
+        mock_get_llm.return_value = MagicMock()
         mock_translator.return_value = (
             "Graph response"  # Fallback if translator is called
         )

@@ -10,8 +10,9 @@ async def test_orchestrator_initialization():
     """Test that orchestrator initializes correctly."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
-        patch("src.config.settings.OPENAI_API_KEY", "sk-test-key-mock"),
+        patch("src.agents.orchestrator.get_llm") as mock_get_llm,
     ):
+        mock_get_llm.return_value = MagicMock()
         orchestrator = AdminOrchestrator()
         assert orchestrator.llm is not None
         assert orchestrator.cache is not None
@@ -62,6 +63,7 @@ async def test_handle_query_flow():
 
     with (
         patch("src.agents.orchestrator.redis.Redis") as mock_redis_cls,
+        patch("src.agents.orchestrator.get_llm") as mock_get_llm,
         patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock
@@ -104,10 +106,12 @@ async def test_handle_query_flow():
 
         orchestrator = AdminOrchestrator()
         orchestrator.cache = mock_redis
-        orchestrator.llm = MagicMock()
-        orchestrator.llm.ainvoke = AsyncMock(
+        
+        mock_llm_instance = MagicMock()
+        mock_llm_instance.ainvoke = AsyncMock(
             return_value=MagicMock(content="Generated Answer")
         )
+        mock_get_llm.return_value = mock_llm_instance
 
         # Setup Mock Memory with AgentState
         mock_state = AgentState(session_id="test_session", messages=[])
@@ -128,7 +132,7 @@ async def test_handle_query_flow():
         # Verify
         mock_validate.assert_called_once()
         mock_retriever.assert_called_once()
-        orchestrator.llm.ainvoke.assert_called_once()
+        mock_llm_instance.ainvoke.assert_called_once()
         mock_memory_manager.load_agent_state.assert_called_once()
         mock_memory_manager.save_agent_state.assert_called_once()
 
@@ -139,6 +143,7 @@ async def test_handle_query_flow():
 async def test_orchestrator_cache_exceptions():
     with (
         patch("src.agents.orchestrator.redis.Redis") as mock_redis_cls,
+        patch("src.agents.orchestrator.get_llm") as mock_get_llm,
         patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.orchestrator.translate_admin_text",
@@ -188,8 +193,10 @@ async def test_orchestrator_cache_exceptions():
         )
         mock_validate.return_value = (True, "")
         mock_load.return_value = AgentState(session_id="test", messages=[])
-        orchestrator.llm = MagicMock()
-        orchestrator.llm.ainvoke = AsyncMock(return_value=MagicMock(content="Ans"))
+        
+        mock_llm_instance = MagicMock()
+        mock_llm_instance.ainvoke = AsyncMock(return_value=MagicMock(content="Ans"))
+        mock_get_llm.return_value = mock_llm_instance
 
         res = await orchestrator.handle_query("query")
         assert "Ans" in res
@@ -199,6 +206,7 @@ async def test_orchestrator_cache_exceptions():
 async def test_orchestrator_guardrail_rejections():
     with (
         patch("src.agents.orchestrator.redis.Redis"),
+        patch("src.agents.orchestrator.get_llm") as mock_get_llm,
         patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.orchestrator.translate_admin_text",
@@ -219,6 +227,7 @@ async def test_orchestrator_guardrail_rejections():
     ):
         orchestrator = AdminOrchestrator()
         mock_load.return_value = AgentState(session_id="test", messages=[])
+        mock_get_llm.return_value = MagicMock()
 
         # Mock Pipeline
         mock_pipeline_instance = AsyncMock()

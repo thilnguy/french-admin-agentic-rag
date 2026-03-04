@@ -34,36 +34,36 @@ async def test_stream_filtering():
             # Event 2: Real answer (Should be yielded)
             {
                 "event": "on_chat_model_stream",
-                "tags": [],
+                "tags": ["final_answer"],
                 "data": {"chunk": create_chunk("Hello user.")},
             },
         ]
         for e in events:
             yield e
 
-    mock_graph.astream_events.side_effect = mock_astream_events
+    mock_graph.astream_events = mock_astream_events
 
     # Create Orchestrator
     with (
         patch("src.agents.orchestrator.memory_manager", mock_memory),
-        patch("src.agents.orchestrator.agent_graph") as mock_agent_graph,
+        patch("src.agents.graph.agent_graph") as mock_agent_graph,
         patch("src.agents.preprocessor.query_rewriter") as mock_rewriter,
         patch("src.agents.preprocessor.profile_extractor") as mock_profile,
         patch("src.agents.intent_classifier.intent_classifier") as mock_intent,
-        patch("src.shared.guardrails.guardrail_manager") as mock_guard,
+        patch("src.agents.orchestrator.guardrail_manager") as mock_guard,
         patch("src.agents.orchestrator.redis.Redis") as mock_redis,
-        patch("src.agents.orchestrator.ChatOpenAI"),
+        patch("src.agents.orchestrator.get_llm"),
         patch(
             "src.agents.orchestrator.translate_admin_text", new_callable=AsyncMock
         ) as mock_translator,
         patch(
             "src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock
         ) as mock_retriever,
-        patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
+        patch("src.agents.orchestrator.get_query_pipeline") as mock_get_pipeline,
     ):
         mock_redis.return_value = AsyncMock()
         mock_redis.return_value.get.return_value = None
-        mock_agent_graph.astream_events.side_effect = mock_astream_events
+        mock_agent_graph.astream_events = mock_astream_events
         # Setup Translator/Retriever
         mock_translator.return_value = "Mocked translation"
         mock_retriever.return_value = []
@@ -92,8 +92,6 @@ async def test_stream_filtering():
         async for event in orchestrator.stream_query("query", "fr", "test"):
             if event["type"] == "token":
                 events.append(event["content"])
-
-        print(f"Captured events: {events}")
 
         assert "Thinking..." not in events, "Failed to filter 'internal' event"
         assert "Hello user." in events, "Failed to yield standard event"

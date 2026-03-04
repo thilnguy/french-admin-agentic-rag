@@ -1,0 +1,20 @@
+#!/bin/bash
+# Pre-commit hook to ensure no lint errors are committed
+
+echo "================================================================"
+echo "🧹 Running ruff linter check"
+echo "================================================================"
+
+# Using uv to run ruff in the current environment
+uv run ruff check .
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo ""
+    echo "❌ Lint errors found! Commit aborted."
+    echo "💡 Run 'uv run ruff check . --fix' to auto-fix some of these issues."
+    exit 1
+fi
+
+echo "✅ Lint check passed. Committing allowed."
+exit 0

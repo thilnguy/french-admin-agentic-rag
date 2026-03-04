@@ -8,12 +8,12 @@ from src.agents.state import AgentState
 async def test_legal_agent_run_flow():
     # Mock dependencies
     with (
-        patch("src.agents.legal_agent.ChatOpenAI") as mock_llm_cls,
+        patch("src.agents.legal_agent.get_llm") as mock_get_llm,
         patch("src.agents.legal_agent.retrieve_legal_info", new_callable=AsyncMock),
     ):
         # Setup LLM Mock
         mock_llm = MagicMock()
-        mock_llm_cls.return_value = mock_llm
+        mock_get_llm.return_value = mock_llm
 
         # We need to mock the chains or the llm.invoke
 
@@ -23,7 +23,7 @@ async def test_legal_agent_run_flow():
 
 @pytest.mark.asyncio
 async def test_refine_query_logic():
-    with patch("src.agents.legal_agent.ChatOpenAI"):
+    with patch("src.agents.legal_agent.get_llm"):
         agent = LegalResearchAgent()
         agent._run_chain = AsyncMock(return_value="Refined Query")
 
@@ -34,7 +34,7 @@ async def test_refine_query_logic():
 
 @pytest.mark.asyncio
 async def test_synthesize_answer_logic():
-    with patch("src.agents.legal_agent.ChatOpenAI"):
+    with patch("src.agents.legal_agent.get_llm"):
         agent = LegalResearchAgent()
         agent._run_chain = AsyncMock(return_value="Final Answer")
 
@@ -51,15 +51,14 @@ async def test_synthesize_answer_logic():
 @pytest.mark.asyncio
 async def test_legal_agent_run_full_flow():
     with (
-        patch("src.agents.legal_agent.ChatOpenAI"),
+        patch("src.agents.legal_agent.get_llm"),
         patch(
             "src.agents.legal_agent.retrieve_legal_info", new_callable=AsyncMock
         ) as mock_retrieve,
     ):
         agent = LegalResearchAgent()
 
-        agent._refine_query = AsyncMock(return_value="refined")
-        # agent._evaluate_context = AsyncMock(return_value=True) # Removed
+        agent._verify_groundedness = AsyncMock(return_value=True)
         agent._synthesize_answer = AsyncMock(return_value="answer")
 
         mock_retrieve.return_value = [
@@ -74,7 +73,6 @@ async def test_legal_agent_run_full_flow():
         res = await agent.run("query", state)
 
         assert res == "answer"
-        agent._refine_query.assert_called_with("query")
         mock_retrieve.assert_called()
         agent._synthesize_answer.assert_called()
 
@@ -82,13 +80,14 @@ async def test_legal_agent_run_full_flow():
 @pytest.mark.asyncio
 async def test_legal_agent_insufficient_context():
     # Test handling of empty or insufficient docs
-    with patch("src.agents.legal_agent.ChatOpenAI"):
+    with patch("src.agents.legal_agent.get_llm"):
         agent = LegalResearchAgent()
 
         # Mock methods
         agent._refine_query = AsyncMock(return_value="refined")
-        # agent._evaluate_context removed
-        agent._synthesize_answer = AsyncMock(return_value="Fallback Answer")
+        agent._verify_groundedness = AsyncMock(return_value=False)
+        agent._ask_clarification_fallback = AsyncMock(return_value="Fallback Answer")
+        agent._synthesize_answer = AsyncMock(return_value="Synthesized Answer")
         agent._format_docs = MagicMock(return_value="docs")
 
         with patch(
@@ -103,6 +102,6 @@ async def test_legal_agent_insufficient_context():
             )
             response = await agent.run("query", state)
 
-            # Should still synthesize (fallback logic in code)
-            agent._synthesize_answer.assert_called()
+            # Should call fallback when context is insufficient/irrelevant
+            agent._ask_clarification_fallback.assert_called()
             assert response == "Fallback Answer"

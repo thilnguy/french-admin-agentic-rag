@@ -6,6 +6,16 @@ echo "================================================================"
 echo "🛡️  Running RAG Anti-Regression Pre-Push Hook"
 echo "================================================================"
 
+echo "🧹 Running ruff linter check..."
+uv run ruff check .
+if [ $? -ne 0 ]; then
+    echo "❌ Lint errors found! Push aborted."
+    echo "💡 Run 'uv run ruff check . --fix' to auto-fix some of these issues before pushing."
+    exit 1
+fi
+echo "✅ Lint check passed. Proceeding to RAG evaluations..."
+
+
 # Check if OpenAI API Key is set
 if [ -z "$OPENAI_API_KEY" ]; then
     echo "⚠️  OPENAI_API_KEY is not set. Skipping pre-push RAG evals."

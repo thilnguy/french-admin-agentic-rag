@@ -11,7 +11,7 @@ async def test_stream_query_fast_lane():
     """Test streaming for SIMPLE_QA (Fast Lane)."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
-        patch("langchain_openai.ChatOpenAI"),
+        patch("src.agents.orchestrator.get_llm") as mock_get_llm,
         patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.agents.orchestrator.retrieve_legal_info", new_callable=AsyncMock
@@ -41,14 +41,14 @@ async def test_stream_query_fast_lane():
             new_core_goal=None,
         )
 
-        orchestrator.llm = MagicMock()
-
         # Mock LLM streaming
+        mock_llm_instance = MagicMock()
         async def mock_astream(messages):
             yield MagicMock(content="Hello")
             yield MagicMock(content=" World")
 
-        orchestrator.llm.astream = mock_astream
+        mock_llm_instance.astream = mock_astream
+        mock_get_llm.return_value = mock_llm_instance
 
         mock_validate.return_value = (True, "")
         mock_retriever.return_value = [{"source": "doc", "content": "info"}]
@@ -70,8 +70,8 @@ async def test_stream_query_fast_lane():
 
         # Verify status messages
         statuses = [e["content"] for e in events if e["type"] == "status"]
-        assert "Analysing request..." in statuses
-        assert "Searching administrative database..." in statuses
+        assert "Analyse de la requête..." in statuses
+        assert "Recherche dans la base de données..." in statuses
 
 
 @pytest.mark.asyncio
@@ -79,7 +79,7 @@ async def test_stream_query_slow_lane():
     """Test streaming for COMPLEX_PROCEDURE (Slow Lane/AgentGraph)."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
-        patch("langchain_openai.ChatOpenAI"),
+        patch("src.agents.orchestrator.get_llm") as mock_get_llm,
         patch("src.shared.query_pipeline.get_query_pipeline") as mock_get_pipeline,
         patch(
             "src.shared.guardrails.guardrail_manager.validate_topic",
@@ -96,6 +96,7 @@ async def test_stream_query_slow_lane():
         orchestrator = AdminOrchestrator()
         orchestrator.cache = AsyncMock()
         orchestrator.cache.get.return_value = None
+        mock_get_llm.return_value = MagicMock()
 
         # Mock Pipeline
         mock_pipeline_instance = AsyncMock()
@@ -118,10 +119,12 @@ async def test_stream_query_slow_lane():
             yield {"event": "on_tool_start", "name": "check_eligibility"}
             yield {
                 "event": "on_chat_model_stream",
+                "tags": ["final_answer"],
                 "data": {"chunk": MagicMock(content="Eligible")},
             }
             yield {
                 "event": "on_chat_model_stream",
+                "tags": ["final_answer"],
                 "data": {"chunk": MagicMock(content="!")},
             }
 
@@ -138,8 +141,7 @@ async def test_stream_query_slow_lane():
         assert "!" in tokens
 
         statuses = [e["content"] for e in events if e["type"] == "status"]
-        assert "Routing to Expert Agent..." in statuses
-        assert "Executing tool: check_eligibility..." in statuses
+        assert "Routage vers le système expert..." in statuses
 
 
 @pytest.mark.asyncio
@@ -147,17 +149,18 @@ async def test_stream_query_cache_hit():
     """Test streaming returns cached response."""
     with (
         patch("src.agents.orchestrator.redis.Redis"),
-        patch("langchain_openai.ChatOpenAI"),
+        patch("src.agents.orchestrator.get_llm") as mock_get_llm,
         patch("src.config.settings.DEBUG", False),
     ):
         orchestrator = AdminOrchestrator()
         orchestrator.cache = AsyncMock()
         orchestrator.cache.get.return_value = "Cached Answer"
+        mock_get_llm.return_value = MagicMock()
 
         events = []
         async for event in orchestrator.stream_query("Cached query", "fr"):
             events.append(event)
 
         assert len(events) == 2
-        assert events[0] == {"type": "status", "content": "Cache hit"}
+        assert events[0] == {"type": "status", "content": "Récupération depuis le cache..."}
         assert events[1] == {"type": "token", "content": "Cached Answer"}
