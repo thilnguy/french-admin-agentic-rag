@@ -19,19 +19,7 @@ class LegalResearchAgent:
         # We no longer instantiate self.llm globally to support dynamic model switching per request
         pass
 
-
-        # 1. Query Refiner: Optimizes user query for vector search
-        self.refiner_prompt = ChatPromptTemplate.from_template(
-            """You are a French Legal Research Assistant.
-            Refine the following user query into a precise keyword-based search query for a legal database (service-public.fr, legifrance).
-            Remove conversational filler. Focus on administrative terms.
-
-            User Query: {query}
-
-            Refined Query:"""
-        )
-
-        # 3. Synthesizer: Generates the final answer
+        # Synthesizer: Generates the final answer
         self.synthesis_prompt = ChatPromptTemplate.from_template(
             """You are a French Administration Assistant. Reason step-by-step before answering.
             Answer the user's question using ONLY the provided context.
@@ -42,8 +30,6 @@ class LegalResearchAgent:
             **[EXPLIQUER]**: Explanation of legal articles or criteria.
             **[DEMANDER]**: Mandatory clarification. 
             
-            **CLARIFICATION LOGIC**:
-            **CLARIFICATION LOGIC**:
             **CLARIFICATION LOGIC**:
             If info is missing, you MUST ask for 2-3 specific details based on the topic:
             - TAXES: Annual income, fiscal household composition, date of last gift.
@@ -164,13 +150,6 @@ class LegalResearchAgent:
 
         chain = (prompt | llm | StrOutputParser()).with_config({"tags": ["final_answer"]})
         return await self._run_chain(chain, {"query": query, "user_language": user_lang})
-
-    async def _refine_query(self, query: str, state: AgentState = None) -> str:
-        # Optimization: Use llm_fast (gpt-4o-mini)
-        model_override = state.metadata.get("model") if state else None
-        llm_fast = get_llm(temperature=0, model_override=model_override)
-        chain = self.refiner_prompt | llm_fast | StrOutputParser()
-        return await self._run_chain(chain, {"query": query})
 
     async def _synthesize_answer(self, query: str, context: str, user_lang: str, state: AgentState = None) -> str:
         if not context:

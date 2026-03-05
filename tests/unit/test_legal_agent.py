@@ -21,15 +21,6 @@ async def test_legal_agent_run_flow():
 # The original test_legal_agent_run_flow will be replaced by the new tests.
 
 
-@pytest.mark.asyncio
-async def test_refine_query_logic():
-    with patch("src.agents.legal_agent.get_llm"):
-        agent = LegalResearchAgent()
-        agent._run_chain = AsyncMock(return_value="Refined Query")
-
-        refined = await agent._refine_query("raw query")
-        assert refined == "Refined Query"
-        agent._run_chain.assert_called_once()
 
 
 @pytest.mark.asyncio
